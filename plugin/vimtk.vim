@@ -12,7 +12,7 @@ endif
 "  finish
 "endif
 let g:loaded_vimtk = 1
-echo "Loading VimTK"
+"echo "Loading VimTK"
 
 
 let g:_VIMTK_VERSION = '0.0.0'
@@ -36,7 +36,7 @@ endif
 
 function! VimTK_default_remap() 
   " copy and execute the current line, word, or visual selection in the terminal 
-  echo "Setting up VimTK default mappings"
+  "echo "Setting up VimTK default mappings"
   noremap  <leader>a :call vimtk#execute_text_in_terminal(mode())<CR>
   vnoremap <leader>a :call vimtk#execute_text_in_terminal(visualmode())<CR>
   noremap  <leader>m :call vimtk#execute_text_in_terminal('word')<CR>
