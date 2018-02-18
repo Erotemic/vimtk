@@ -50,6 +50,18 @@ if exists("g:vimtk_default_mappings") && g:vimtk_default_mappings
   :call VimTK_default_remap()
 endif
 
+" Setup the PYTHONPATH for the vimtk python module
+Python2or3 << EOF
+# We can not call this in a function or we wont get the right filename
+from os.path import dirname 
+thisfile = vim.eval("expand('<sfile>:p')")
+repodir = dirname(dirname(thisfile))
+import sys
+sys.path.append(repodir)
+EOF
+
+
+
 
 " Reload user's settings
 let &cpo = s:cpo_save
