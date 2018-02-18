@@ -1,0 +1,4 @@
+ubelt
+pyperclip
+six
+# python-qt5
