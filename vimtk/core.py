@@ -2,6 +2,7 @@ import re
 import sys
 import ubelt as ub  # NOQA
 from vimtk import xctrl
+from vimtk import cplat
 import logging
 
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ class Config(object):
 class Clipboard(object):
     @staticmethod
     def copy(text):
-        return xctrl.copy_text_to_clipboard(text)
+        return cplat.copy_text_to_clipboard(text)
 
     @staticmethod
     def paste():
@@ -45,7 +46,7 @@ class Clipboard(object):
             import vim
             text = vim.eval('@+')
         except ImportError:
-            text = xctrl.get_clipboard()
+            text = cplat.get_clipboard()
         return text
 
 
@@ -235,8 +236,15 @@ def execute_text_in_terminal(text, return_to_vim=True):
 
     # Build xdtool script
     if sys.platform.startswith('win32'):
-        print('win32 cannot copy to terminal yet. Just copied to clipboard. '
-              ' Needs AHK support for motion?')
+        from vimtk import win32_ctrl
+        import pywinauto
+        active_gvim = win32_ctrl.find_window('gvim.exe')
+        terminal = win32_ctrl.find_window('cmd.exe')
+        terminal.focus()
+        pywinauto.keyboard.SendKeys('^v')
+        pywinauto.keyboard.SendKeys('{ENTER}')
+        pywinauto.keyboard.SendKeys('{ENTER}')
+        active_gvim.focus()
         return
 
     # Make sure regexes are bash escaped

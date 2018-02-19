@@ -19,9 +19,16 @@ def reload():
     import vimtk.core
     import vimtk.xctrl
     import vimtk.pyinspect
+    import vimtk.cplat
 
     import imp
     imp.reload(vimtk.pyinspect)
+    imp.reload(vimtk.cplat)
     imp.reload(vimtk.core)
     imp.reload(vimtk.xctrl)
     imp.reload(vimtk)
+
+    import ubelt as ub
+    if ub.WIN32:
+        import vimtk.win32_ctrl
+        imp.reload(vimtk.win32_ctrl)

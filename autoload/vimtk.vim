@@ -36,7 +36,7 @@ import vimtk
 #import logging
 #logging.basicConfig()
 #logging.getLogger().setLevel(logging.DEBUG)
-#vimtk.reload()
+vimtk.reload()
 
 argv = vimtk.vim_argv(defaults=['clipboard', '1'])
 mode = argv[0]
@@ -105,6 +105,7 @@ import textwrap
 #logging.basicConfig()
 #logging.getLogger().setLevel(logging.DEBUG)
 #vimtk.reload()
+vimtk.reload()
 
 if vimtk.is_module_pythonfile():
     import vim
