@@ -239,12 +239,20 @@ def execute_text_in_terminal(text, return_to_vim=True):
         from vimtk import win32_ctrl
         import pywinauto
         active_gvim = win32_ctrl.find_window('gvim.exe')
-        terminal = win32_ctrl.find_window('cmd.exe')
+        # TODO: custom terminal spec
+        # Make sure regexes are bash escaped
+        terminal_pattern = CONFIG.get('vimtk_terminal_pattern', None)
+        if terminal_pattern is None:
+            terminal_pattern = 'cmd.exe'
+        terminal = win32_ctrl.find_window(terminal_pattern)
         terminal.focus()
+        # TODO: some terminals paste with a right click on win32
+        # support these.
         pywinauto.keyboard.SendKeys('^v')
         pywinauto.keyboard.SendKeys('{ENTER}')
         pywinauto.keyboard.SendKeys('{ENTER}')
-        active_gvim.focus()
+        if return_to_vim:
+            active_gvim.focus()
         return
 
     # Make sure regexes are bash escaped

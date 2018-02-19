@@ -13,6 +13,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class XWindow(object):
+    pass
+
+
 def _wmctrl_terminal_patterns():
     """
     wmctrl patterns associated with common terminals
