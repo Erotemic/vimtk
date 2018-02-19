@@ -227,6 +227,8 @@ def execute_text_in_terminal(text, return_to_vim=True):
     # Copy the text to the clipboard
     Clipboard.copy(text)
 
+    terminal_pattern = CONFIG.get('vimtk_terminal_pattern', None)
+
     # Build xdtool script
     if sys.platform.startswith('win32'):
         from vimtk import win32_ctrl
@@ -234,7 +236,6 @@ def execute_text_in_terminal(text, return_to_vim=True):
         active_gvim = win32_ctrl.find_window('gvim.exe')
         # TODO: custom terminal spec
         # Make sure regexes are bash escaped
-        terminal_pattern = CONFIG.get('vimtk_terminal_pattern', None)
         if terminal_pattern is None:
             terminal_pattern = 'cmd.exe'
         terminal = win32_ctrl.find_window(terminal_pattern)
@@ -247,8 +248,6 @@ def execute_text_in_terminal(text, return_to_vim=True):
         if return_to_vim:
             active_gvim.focus()
     else:
-        # Make sure regexes are bash escaped
-        terminal_pattern = CONFIG.get('vimtk_terminal_pattern', None)
         if terminal_pattern is None:
             terminal_pattern = xctrl._wmctrl_terminal_patterns()
 
