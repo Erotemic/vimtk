@@ -145,8 +145,7 @@ class TextSelector(object):
     def text_between_lines(lnum1, lnum2, col1=0, col2=sys.maxsize - 1):
         import vim
         lines = vim.eval('getline({}, {})'.format(lnum1, lnum2))
-        import utool as ut
-        lines = ut.ensure_unicode_strlist(lines)
+        lines = [ub.ensure_unicode(line) for line in lines]
         try:
             if len(lines) == 0:
                 pass
@@ -157,11 +156,7 @@ class TextSelector(object):
                 lines[-1] = lines[-1][:col2 + 1]
             text = '\n'.join(lines)
         except Exception:
-            import utool as ut
-            ut.ENABLE_COLORS = False
-            ut.util_str.ENABLE_COLORS = False
-            ut.util_dbg.COLORED_EXCEPTIONS = False
-            print(ut.repr2(lines))
+            print(ub.repr2(lines))
             raise
         return text
 
@@ -253,33 +248,32 @@ def execute_text_in_terminal(text, return_to_vim=True):
         pywinauto.keyboard.SendKeys('{ENTER}')
         if return_to_vim:
             active_gvim.focus()
-        return
+    else:
+        # Make sure regexes are bash escaped
+        terminal_pattern = CONFIG.get('vimtk_terminal_pattern', None)
+        if terminal_pattern is None:
+            terminal_pattern = xctrl._wmctrl_terminal_patterns()
 
-    # Make sure regexes are bash escaped
-    terminal_pattern = CONFIG.get('vimtk_terminal_pattern', None)
-    if terminal_pattern is None:
-        terminal_pattern = xctrl._wmctrl_terminal_patterns()
+        # Sequence of key presses that will trigger a paste event
+        paste_keypress = 'ctrl+shift+v'
 
-    # Sequence of key presses that will trigger a paste event
-    paste_keypress = 'ctrl+shift+v'
-
-    doscript = [
-        ('remember_window_id', 'ACTIVE_GVIM'),
-        ('focus', terminal_pattern),
-        ('key', paste_keypress),
-        ('key', 'KP_Enter'),
-    ]
-    if '\n' in text:
-        # Press enter twice for multiline texts
-        doscript += [
+        doscript = [
+            ('remember_window_id', 'ACTIVE_GVIM'),
+            ('focus', terminal_pattern),
+            ('key', paste_keypress),
             ('key', 'KP_Enter'),
         ]
-    if return_to_vim:
-        doscript += [
-            ('focus_id', '$ACTIVE_GVIM'),
-        ]
-    # execute script
-    xctrl.XCtrl.do(*doscript, sleeptime=.01)
+        if '\n' in text:
+            # Press enter twice for multiline texts
+            doscript += [
+                ('key', 'KP_Enter'),
+            ]
+        if return_to_vim:
+            doscript += [
+                ('focus_id', '$ACTIVE_GVIM'),
+            ]
+        # execute script
+        xctrl.XCtrl.do(*doscript, sleeptime=.01)
 
 
 def vim_argv(defaults=None):
