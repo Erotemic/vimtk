@@ -1,4 +1,5 @@
 ubelt
 pyperclip
 six
+psutil
 # python-qt5
