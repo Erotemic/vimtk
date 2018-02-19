@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function, unicode_literals
+# -*- coding: utf-8 -*- from __future__ import absolute_import, division, print_function, unicode_literals
 import ubelt as ub
 from vimtk import cplat
 import time
@@ -13,8 +12,232 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class XWindow(object):
-    pass
+def wmctrl_list():
+    lines = ub.cmd('wmctrl -lxp')['out']
+    windows = {}
+    for line in lines.split('\n'):
+        if line:
+            parts = re.split(' +', line)
+            hexid, deskid, pid, wm_class, client = parts[0:5]
+            title = ' '.join(parts[5:])
+            wm_id = int(hexid, 16)
+            windows[wm_id] = {
+                'hexid': hexid,
+                'wm_id': wm_id,
+                'deskid': deskid,
+                'pid': int(pid),
+                'wm_class': wm_class,
+                'client': client,
+                'title': title,
+            }
+    return windows
+
+
+def windows_in_order():
+    """
+    CommandLine:
+        python -m vimtk.xctrl windows_in_order
+
+    Example:
+        >>> from vimtk.xctrl import *
+        >>> result = list(windows_in_order())
+        >>> for win in result:
+        ...     if win.visible():
+        ...         print(win)
+    """
+    info = XCtrl.cmd('xprop -root')
+    lines = [line for line in info['out'].split('\n')
+             if line.startswith('_NET_CLIENT_LIST_STACKING')]
+    assert len(lines) == 1, str(lines)
+    winid_order_str = lines[0]
+    winid_order = winid_order_str.split('#')[1].strip().split(', ')[::-1]
+    winid_order = [int(h, 16) for h in winid_order]
+
+    windows = wmctrl_list()
+
+    for wm_id in winid_order:
+        info = windows[wm_id]
+        yield XWindow(wm_id, info)
+
+
+def find_windows(proc=None, title=None, visible=True):
+    """
+    CommandLine:
+        python -m vimtk.xctrl find_windows
+
+    Example:
+        >>> for win in find_windows('gvim'):
+        >>>     print(ub.repr2(win.info()))
+        >>> for win in find_windows('terminator'):
+        >>>     print(ub.repr2(win.info()))
+    """
+    import re
+    for win in windows_in_order():
+        flag = True
+        if proc:
+            flag &= bool(re.match(proc, win.process_name()))
+        if title:
+            flag &= bool(re.match(title, win.title()))
+        if visible:
+            flag &= win.visible()
+        if flag:
+            yield win
+
+
+class XWindow(ub.NiceRepr):
+    """
+    TODO: make API consistent with the win32 version
+    """
+
+    def __init__(self, wm_id, info=None):
+        self.wm_id = wm_id
+        self.cache = info
+
+    @classmethod
+    def current(XWindow):
+        r"""
+        CommandLine:
+            python -m vimtk.xctrl current
+
+        Example:
+            >>> # DISABLE_DOCTEST
+            >>> from vimtk.xctrl import *  # NOQA
+            >>> self = XWindow.current()
+            >>> print(ub.repr2(self))
+        """
+        wm_id = int(ub.cmd('xdotool getwindowfocus')['out'].strip())
+        win = XWindow(wm_id)
+        return win
+
+    def _wmquery(self, key):
+        if self.cache:
+            return self.cache[key]
+        windows = wmctrl_list()
+        info = windows[self.wm_id]
+        self.cache = info
+        return info['title']
+
+    @property
+    def hexid(self):
+        return hex(self.wm_id)
+
+    def title(self):
+        self._wmquery('title')
+
+    def visible(self):
+        """ Basically true for wmctrl (afaik) """
+        return True
+
+    def __nice__(self):
+        fname = self.process_name()
+        return str(self.wm_id) + ' ' + fname + ' ' + repr(self.title())
+
+    def wm_class(self):
+        return self._wmquery('wm_class')
+
+    def process(self):
+        import psutil
+        pid = self._wmquery('pid')
+        proc = psutil.Process(pid)
+        return proc
+
+    def process_name(self):
+        proc = self.process()
+        return proc.name()
+
+    def focus(self):
+        ub.cmd('wmctrl -ia {}'.format(self.hexid))
+
+    def info(self):
+        info = self.cache.copy()
+        info['proc_name'] = self.process_name()
+        return info
+
+    def move(self, bbox):
+        """
+        CommandLine:
+            # List windows
+            wmctrl -l
+            # List desktops
+            wmctrl -d
+
+            # Window info
+            xwininfo -id 60817412
+
+            python -m vimtk.xctrl XWindow.move joncrall 0+1920,680,400,600,400
+            python -m vimtk.xctrl XWindow.move joncrall [0,0,1000,1000]
+            python -m vimtk.xctrl XWindow.move GVIM special2
+            python -m vimtk.xctrl XWindow.move joncrall special2
+            python -m vimtk.xctrl XWindow.move x-terminal-emulator.X-terminal-emulator [0,0,1000,1000]
+        CommandLine:
+            python -m vimtk.xctrl XWindow.move
+
+        CommandLine:
+            python -m vimtk.xctrl XCtrl.move_window
+
+        Example:
+            >>> # DISABLE_DOCTEST
+            >>> XCtrl.move_window('joncrall', '[0,0,1000,1000]')
+
+        Ignore:
+            # >>> orig_window = []
+            # >>> X = xctrl.XCtrl
+            win_key =  'x-terminal-emulator.X-terminal-emulator'
+            win_id = X.findall_window_ids(key)[0]
+
+            python -m xctrl XCtrl.findall_window_ids gvim
+
+        """
+        monitor_infos = {
+            i + 1: cplat.get_resolution_info(i)
+            for i in range(2)
+        }
+        # TODO: cut out borders
+        # TODO: fix screeninfo monitor offsets
+        # TODO: dynamic num screens
+        def rel_to_abs_bbox(m, x, y, w, h):
+            """ monitor_num, relative x, y, w, h """
+            minfo = monitor_infos[m]
+            # print('minfo(%d) = %s' % (m, ub.repr2(minfo),))
+            mx, my = minfo['off_x'], minfo['off_y']
+            mw, mh = minfo['pixels_w'], minfo['pixels_h']
+            # Transform to the absolution position
+            abs_x = (x * mw) + mx
+            abs_y = (y * mh) + my
+            abs_w = (w * mw)
+            abs_h = (h * mh)
+            abs_bbox = [abs_x, abs_y, abs_w, abs_h]
+            abs_bbox = ','.join(map(str, map(int, abs_bbox)))
+            return abs_bbox
+
+        if self.title().startswith('joncrall') and bbox == 'special2':
+            # Specify the relative position
+            abs_bbox = rel_to_abs_bbox(m=2,
+                                       x=0.0, y=0.7,
+                                       w=1.0, h=0.3)
+        elif self.title().startswith('GVIM') and bbox == 'special2':
+            # Specify the relative position
+            abs_bbox = rel_to_abs_bbox(m=2,
+                                       x=0.0, y=0.0,
+                                       w=1.0, h=0.7)
+        else:
+            abs_bbox = ','.join(map(str, eval(bbox)))
+
+        print('MOVING: win_key = %r' % (self.title(),))
+        print('TO: abs_bbox = %r' % (abs_bbox,))
+        # abs_bbox.replace('[', '').replace(']', '')
+        # get = lambda cmd: XCtrl.cmd(' '.join(["/bin/bash", "-c", cmd]))['out']  # NOQA
+        win_id = XCtrl.find_window_id(self.title(), error='raise')
+        print('MOVING: win_id = %r' % (win_id,))
+        fmtdict = locals()
+        cmd_list = [
+            ("wmctrl -ir {win_id} -b remove,maximized_horz".format(**fmtdict)),
+            ("wmctrl -ir {win_id} -b remove,maximized_vert".format(**fmtdict)),
+            ("wmctrl -ir {win_id} -e 0,{abs_bbox}".format(**fmtdict)),
+        ]
+        print('\n'.join(cmd_list))
+        for cmd in cmd_list:
+            XCtrl.cmd(cmd)
 
 
 def _wmctrl_terminal_patterns():
@@ -109,91 +332,6 @@ class XCtrl(object):
     #     print('send key input: %r' % (keys,))
     #     args = ['xdotool', 'type', keys]
     #     XCtrl.cmd(*args, quiet=True, silence=True)
-
-    @staticmethod
-    def move_window(win_key, bbox):
-        """
-        CommandLine:
-            # List windows
-            wmctrl -l
-            # List desktops
-            wmctrl -d
-
-            # Window info
-            xwininfo -id 60817412
-
-            python -m vimtk.xctrl XCtrl.move_window joncrall 0+1920,680,400,600,400
-            python -m vimtk.xctrl XCtrl.move_window joncrall [0,0,1000,1000]
-            python -m vimtk.xctrl XCtrl.move_window GVIM special2
-            python -m vimtk.xctrl XCtrl.move_window joncrall special2
-            python -m vimtk.xctrl XCtrl.move_window x-terminal-emulator.X-terminal-emulator [0,0,1000,1000]
-
-        CommandLine:
-            python -m vimtk.xctrl XCtrl.move_window
-
-        Example:
-            >>> # DISABLE_DOCTEST
-            >>> XCtrl.move_window('joncrall', '[0,0,1000,1000]')
-
-        Ignore:
-            # >>> orig_window = []
-            # >>> X = xctrl.XCtrl
-            win_key =  'x-terminal-emulator.X-terminal-emulator'
-            win_id = X.findall_window_ids(key)[0]
-
-            python -m xctrl XCtrl.findall_window_ids gvim
-
-        """
-        monitor_infos = {
-            i + 1: cplat.get_resolution_info(i)
-            for i in range(2)
-        }
-        # TODO: cut out borders
-        # TODO: fix screeninfo monitor offsets
-        # TODO: dynamic num screens
-        def rel_to_abs_bbox(m, x, y, w, h):
-            """ monitor_num, relative x, y, w, h """
-            minfo = monitor_infos[m]
-            # print('minfo(%d) = %s' % (m, ub.repr2(minfo),))
-            mx, my = minfo['off_x'], minfo['off_y']
-            mw, mh = minfo['pixels_w'], minfo['pixels_h']
-            # Transform to the absolution position
-            abs_x = (x * mw) + mx
-            abs_y = (y * mh) + my
-            abs_w = (w * mw)
-            abs_h = (h * mh)
-            abs_bbox = [abs_x, abs_y, abs_w, abs_h]
-            abs_bbox = ','.join(map(str, map(int, abs_bbox)))
-            return abs_bbox
-
-        if win_key.startswith('joncrall') and bbox == 'special2':
-            # Specify the relative position
-            abs_bbox = rel_to_abs_bbox(m=2,
-                                       x=0.0, y=0.7,
-                                       w=1.0, h=0.3)
-        elif win_key.startswith('GVIM') and bbox == 'special2':
-            # Specify the relative position
-            abs_bbox = rel_to_abs_bbox(m=2,
-                                       x=0.0, y=0.0,
-                                       w=1.0, h=0.7)
-        else:
-            abs_bbox = ','.join(map(str, eval(bbox)))
-
-        print('MOVING: win_key = %r' % (win_key,))
-        print('TO: abs_bbox = %r' % (abs_bbox,))
-        # abs_bbox.replace('[', '').replace(']', '')
-        # get = lambda cmd: XCtrl.cmd(' '.join(["/bin/bash", "-c", cmd]))['out']  # NOQA
-        win_id = XCtrl.find_window_id(win_key, error='raise')
-        print('MOVING: win_id = %r' % (win_id,))
-        fmtdict = locals()
-        cmd_list = [
-            ("wmctrl -ir {win_id} -b remove,maximized_horz".format(**fmtdict)),
-            ("wmctrl -ir {win_id} -b remove,maximized_vert".format(**fmtdict)),
-            ("wmctrl -ir {win_id} -e 0,{abs_bbox}".format(**fmtdict)),
-        ]
-        print('\n'.join(cmd_list))
-        for cmd in cmd_list:
-            XCtrl.cmd(cmd)
 
     @staticmethod
     def cmd(command):

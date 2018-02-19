@@ -25,9 +25,9 @@ class Win32Window(ub.NiceRepr):
 
     def __nice__(self):
         fname = self.process_name()
-        return str(self.hwnd) + ' ' + fname + ' ' + repr(self.text())
+        return str(self.hwnd) + ' ' + fname + ' ' + repr(self.title())
 
-    def text(self):
+    def title(self):
         """ text in the title bar """
         return win32gui.GetWindowText(self.hwnd)
 
@@ -67,7 +67,7 @@ class Win32Window(ub.NiceRepr):
             'hwnd': self.hwnd,
             # 'proc_handle': self.process_handle(),
             'proc_name': self.process_name(),
-            'text': self.text(),
+            'title': self.title(),
         }
 
     def focus(self):
@@ -109,7 +109,7 @@ def send_keys(keys):
     shell.SendKeys('keys to send to active window...')
 
 
-def find_window(proc=None, text=None, visible=True):
+def find_window(proc=None, title=None, visible=True):
     """
     CommandLine:
         python -m vimtk.win32_ctrl find_window
@@ -122,12 +122,12 @@ def find_window(proc=None, text=None, visible=True):
         >>> win = find_window('cmd.exe')
         >>> print(win.info())
     """
-    for win in find_windows(proc, text):
+    for win in find_windows(proc, title):
         return win
-    raise Exception('Cannot find window matching proc={}, text={}'.format(proc, text))
+    raise Exception('Cannot find window matching proc={}, title={}'.format(proc, title))
 
 
-def find_windows(proc=None, text=None, visible=True):
+def find_windows(proc=None, title=None, visible=True):
     """
     CommandLine:
         python -m vimtk.win32_ctrl find_windows
@@ -136,17 +136,17 @@ def find_windows(proc=None, text=None, visible=True):
         >>> # xdoc: +REQUIRES(win32)
         >>> from vimtk.win32_ctrl import *  # NOQA
         >>> for win in find_windows('gvim.exe'):
-        >>>     print(win.info())
+        >>>     print(ub.repr2(win.info()))
         >>> for win in find_windows('cmd.exe'):
-        >>>     print(win.info())
+        >>>     print(ub.repr2(win.info()))
     """
     import re
     for win in windows_in_order():
         flag = True
         if proc:
             flag &= bool(re.match(proc, win.process_name()))
-        if text:
-            flag &= bool(re.match(text, win.text()))
+        if title:
+            flag &= bool(re.match(title, win.title()))
         if visible:
             flag &= win.visible()
         if flag:
@@ -166,7 +166,7 @@ def current_window_name():
     """
     logging.debug('Get current window name')
     hwnd = win32gui.GetForegroundWindow()
-    value = Win32Window(hwnd).text()
+    value = Win32Window(hwnd).title()
     logging.debug('... current window name = {!r}'.format(value))
     return value
 
