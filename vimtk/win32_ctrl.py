@@ -6,9 +6,9 @@ import logging
 import psutil
 logger = logging.getLogger(__name__)
 
-logging.basicConfig()
-logger.setLevel(logging.DEBUG)
-logging.getLogger('parso').setLevel(logging.INFO)
+# logging.basicConfig()
+# logger.setLevel(logging.DEBUG)
+# logging.getLogger('parso').setLevel(logging.INFO)
 
 
 if ub.WIN32:
