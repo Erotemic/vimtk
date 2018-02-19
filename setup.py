@@ -37,6 +37,7 @@ Pypi:
 
 """
 from setuptools import setup
+import sys
 
 
 def parse_version(package):
@@ -118,13 +119,17 @@ def parse_requirements(fname='requirements.txt'):
 version = parse_version('vimtk')  # needs to be a global var for git tags
 
 if __name__ == '__main__':
+    install_requires = parse_requirements('requirements.txt')
+    if sys.platform.startswith('win32'):
+        install_requires = parse_requirements('requirements-win32.txt')
+
     setup(
         name='vimtk',
         version=version,
         author='Jon Crall',
         description='Python backend for vimtk plugin',
         long_description=parse_description(),
-        install_requires=parse_requirements('requirements.txt'),
+        install_requires=install_requires,
         # extras_require={
         #     'all': parse_requirements('optional-requirements.txt')
         # },

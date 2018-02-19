@@ -1,9 +1,9 @@
 import re
 import sys
-import ubelt as ub  # NOQA
+import ubelt as ub
+import logging
 from vimtk import xctrl
 from vimtk import cplat
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -76,15 +76,13 @@ class TextSelector(object):
                                 nonword_chars_right=None):
         r"""
         Args:
-            line (?):
-            col (?):
+            line (str):
+            col (int):
 
         CommandLine:
-            python  ~/local/vim/rc/pyvim_funcs.py --test-get_word_in_line_at_col
+            python -m vimtk.core TextSelector.get_word_in_line_at_col
 
         Example:
-            >>> # DISABLE_DOCTEST
-            >>> from pyvim_funcs import *  # NOQA
             >>> line = 'myvar.foo = yourvar.foobar'
             >>> line = 'def loadfunc(self):'
             >>> col = 6
@@ -133,8 +131,8 @@ class TextSelector(object):
         one. two three. four.
 
         """
-        logger.debug('grabbing visually selected text')
         import vim
+        logger.debug('grabbing visually selected text')
         buf = vim.current.buffer
         (lnum1, col1) = buf.mark('<')
         (lnum2, col2) = buf.mark('>')
@@ -162,8 +160,8 @@ class TextSelector(object):
 
     @staticmethod
     def line_at_cursor():
-        logger.debug('grabbing text at current line')
         import vim
+        logger.debug('grabbing text at current line')
         buf = vim.current.buffer
         (row, col) = vim.current.window.cursor
         line = buf[row - 1]
