@@ -141,12 +141,13 @@ def find_windows(proc=None, title=None, visible=True):
         >>>     print(ub.repr2(win.info()))
     """
     import re
+    flags = re.IGNORECASE
     for win in windows_in_order():
         flag = True
         if proc:
-            flag &= bool(re.match(proc, win.process_name()))
+            flag &= bool(re.match(proc, win.process_name(), flags=flags))
         if title:
-            flag &= bool(re.match(title, win.title()))
+            flag &= bool(re.match(title, win.title(), flags=flags))
         if visible:
             flag &= win.visible()
         if flag:

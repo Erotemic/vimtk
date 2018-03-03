@@ -243,7 +243,10 @@ def execute_text_in_terminal(text, return_to_vim=True):
         # Make sure regexes are bash escaped
         terminal_pattern = CONFIG.get('vimtk_terminal_pattern', None)
         if terminal_pattern is None:
-            terminal_pattern = 'cmd.exe'
+            terminal_pattern = '|'.join(map(re.escape, [
+                'cmd.exe',
+                'Cmder',
+            ]))
         terminal = win32_ctrl.find_window(terminal_pattern)
         terminal.focus()
         # TODO: some terminals paste with a right click on win32
