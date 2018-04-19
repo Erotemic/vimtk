@@ -2,10 +2,16 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import ubelt as ub
 import sys
-import pyperclip
 import logging
-
 logger = logging.getLogger(__name__)
+
+try:
+    import pyperclip
+except ImportError:
+    msg = ('Python cannot import pyperclip: '
+           'python version={}, prefix={}').format(sys.version_info, sys.prefix)
+    logger.error(msg)
+    raise
 
 __PyQt__ = None
 

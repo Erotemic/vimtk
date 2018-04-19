@@ -12,6 +12,7 @@ class Config(object):
     def __init__(self):
         self.default = {
             'vimtk_terminal_pattern': None,
+            'vimtk_multiline_num_press_enter': 3,
         }
         self.state = self.default.copy()
         pass
@@ -228,6 +229,7 @@ def execute_text_in_terminal(text, return_to_vim=True):
     Clipboard.copy(text)
 
     terminal_pattern = CONFIG.get('vimtk_terminal_pattern', None)
+    vimtk_multiline_num_press_enter = CONFIG.get('vimtk_multiline_num_press_enter', 3)
 
     # Build xdtool script
     if sys.platform.startswith('win32'):
@@ -248,6 +250,9 @@ def execute_text_in_terminal(text, return_to_vim=True):
         pywinauto.keyboard.SendKeys('^v')
         pywinauto.keyboard.SendKeys('{ENTER}')
         pywinauto.keyboard.SendKeys('{ENTER}')
+        if '\n' in text:
+            for _ in range(vimtk_multiline_num_press_enter - 2):
+                pywinauto.keyboard.SendKeys('{ENTER}')
         if return_to_vim:
             active_gvim.focus()
     else:
@@ -257,23 +262,43 @@ def execute_text_in_terminal(text, return_to_vim=True):
         # Sequence of key presses that will trigger a paste event
         paste_keypress = 'ctrl+shift+v'
 
-        doscript = [
-            ('remember_window_id', 'ACTIVE_GVIM'),
-            ('focus', terminal_pattern),
-            ('key', paste_keypress),
-            ('key', 'KP_Enter'),
-        ]
-        if '\n' in text:
-            # Press enter twice for multiline texts
-            doscript += [
+        if True:
+            sleeptime = .01
+            import time
+            time.sleep(.05)
+
+            xctrl.XCtrl.cmd('xset r off')
+
+            active_gvim = xctrl.XWindow.current()
+            xctrl.XWindow.find(terminal_pattern).focus(sleeptime)
+            xctrl.XCtrl.send_keys(paste_keypress, sleeptime)
+            xctrl.XCtrl.send_keys('KP_Enter', sleeptime)
+            if '\n' in text:
+                # Press enter multiple times for multiline texts
+                for _ in range(vimtk_multiline_num_press_enter - 1):
+                    xctrl.XCtrl.send_keys('KP_Enter', sleeptime)
+            if return_to_vim:
+                active_gvim.focus(sleeptime)
+
+            xctrl.XCtrl.cmd('xset r on')
+        else:
+            doscript = [
+                ('remember_window_id', 'ACTIVE_GVIM'),
+                ('focus', terminal_pattern),
+                ('key', paste_keypress),
                 ('key', 'KP_Enter'),
             ]
-        if return_to_vim:
-            doscript += [
-                ('focus_id', '$ACTIVE_GVIM'),
-            ]
-        # execute script
-        xctrl.XCtrl.do(*doscript, sleeptime=.01)
+            if '\n' in text:
+                # Press enter twice for multiline texts
+                doscript += [
+                    ('key', 'KP_Enter'),
+                ]
+            if return_to_vim:
+                doscript += [
+                    ('focus_id', '$ACTIVE_GVIM'),
+                ]
+            # execute script
+            xctrl.XCtrl.do(*doscript, sleeptime=.01)
 
 
 def vim_argv(defaults=None):
