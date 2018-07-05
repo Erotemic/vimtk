@@ -12,6 +12,26 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def is_directory_open(dpath):
+    # FIXME
+    import ubelt as ub  # pip install me! https://github.com/Erotemic/ubelt
+    import platform
+    from os.path import basename
+    import re
+    computer_name = platform.node()
+    dname = basename(dpath)
+    for line in ub.cmd('wmctrl -lxp')['out'].splitlines():
+        parts = re.split(' *', line)
+        if len(parts) > 3 and parts[3] == 'nautilus.Nautilus':
+            if parts[4] == computer_name:
+                # FIXME: Might be a False positive!
+                line_dname = ' '.join(parts[5:])
+                if line_dname == dname:
+                    return True
+    # Always correctly returns False
+    return False
+
+
 def wmctrl_list():
     lines = ub.cmd('wmctrl -lxp')['out']
     windows = {}
