@@ -18,6 +18,17 @@ variable in your vimrc:
 let g:vimtk_default_mappings=1
 ```
 
+Setting this variable to 1 will execute this exact code when the plugin is loaded.
+
+```vim
+noremap  <leader>a :call vimtk#execute_text_in_terminal(mode())<CR>
+vnoremap <leader>a :call vimtk#execute_text_in_terminal(visualmode())<CR>
+noremap  <leader>m :call vimtk#execute_text_in_terminal('word')<CR>
+
+noremap <leader>C :call vimtk#copy_current_fpath()<Esc>
+noremap <leader>M :call vimtk#ipython_import_all()<CR>
+```
+
 
 Currently this "toolkit" has three functions
 
