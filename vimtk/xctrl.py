@@ -12,6 +12,26 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def is_directory_open(dpath):
+    # FIXME
+    import ubelt as ub  # pip install me! https://github.com/Erotemic/ubelt
+    import platform
+    from os.path import basename
+    import re
+    computer_name = platform.node()
+    dname = basename(dpath)
+    for line in ub.cmd('wmctrl -lxp')['out'].splitlines():
+        parts = re.split(' *', line)
+        if len(parts) > 3 and parts[3] == 'nautilus.Nautilus':
+            if parts[4] == computer_name:
+                # FIXME: Might be a False positive!
+                line_dname = ' '.join(parts[5:])
+                if line_dname == dname:
+                    return True
+    # Always correctly returns False
+    return False
+
+
 def wmctrl_list():
     lines = ub.cmd('wmctrl -lxp')['out']
     windows = {}
@@ -89,9 +109,16 @@ class XWindow(ub.NiceRepr):
     TODO: make API consistent with the win32 version
     """
 
-    def __init__(self, wm_id, info=None):
+    def __init__(self, wm_id, info=None, sleeptime=0.01):
         self.wm_id = wm_id
         self.cache = info
+        self.sleeptime = 0.01
+
+    @classmethod
+    def find(XWindow, pattern, method='mru'):
+        wm_id = XCtrl.find_window_id(pattern, method=method)
+        self = XWindow(wm_id)
+        return self
 
     @classmethod
     def current(XWindow):
@@ -145,8 +172,9 @@ class XWindow(ub.NiceRepr):
         proc = self.process()
         return proc.name()
 
-    def focus(self):
+    def focus(self, sleeptime=None):
         ub.cmd('wmctrl -ia {}'.format(self.hexid))
+        time.sleep(sleeptime if sleeptime is not None else  self.sleeptime)
 
     def info(self):
         info = self.cache.copy()
@@ -333,16 +361,16 @@ class XCtrl(object):
     #     args = ['xdotool', 'type', keys]
     #     XCtrl.cmd(*args, quiet=True, silence=True)
 
-    @staticmethod
-    def cmd(command):
+    @classmethod
+    def cmd(XCtrl, command):
         logging.debug('[cmd] {}'.format(command))
         info = ub.cmd(command)
         if info['ret'] != 0:
             logging.warn('Something went wrong {}'.format(ub.repr2(info)))
         return info
 
-    @staticmethod
-    def findall_window_ids(pattern):
+    @classmethod
+    def findall_window_ids(XCtrl, pattern):
         """
         CommandLine:
             python -m vimtk.xctrl XCtrl.findall_window_ids --pat=gvim
@@ -371,8 +399,8 @@ class XCtrl(object):
         winid_list = [int(h, 16) for h in winid_list if h]
         return winid_list
 
-    @staticmethod
-    def sort_window_ids(winid_list, order='mru'):
+    @classmethod
+    def sort_window_ids(XCtrl, winid_list, order='mru'):
         """
         Orders window ids by most recently used
         """
@@ -543,6 +571,9 @@ class XCtrl(object):
 
     @staticmethod
     def do(*cmd_list, **kwargs):
+        """
+        DEPRICATE THIS
+        """
         verbose = kwargs.get('verbose', False)
         if verbose:
             print = logger.info
@@ -656,6 +687,35 @@ class XCtrl(object):
         args = ['wmctrl', '-xa', winhandle]
         XCtrl.cmd(*args, verbose=False)
         time.sleep(sleeptime)
+
+    @classmethod
+    def send_keys(XCtrl, key, sleeptime=0.1):
+        args = ['xdotool', 'key', str(key)]
+        XCtrl.cmd(args)
+        time.sleep(sleeptime)
+
+    # @classmethod
+    # def focus(XCtrl, pattern=None, win_id=None, sleeptime=.01):
+    #     """
+    #     sudo apt-get install xautomation
+    #     apt-get install autokey-gtk
+
+    #     wmctrl -xa gnome-terminal.Gnome-terminal
+    #     wmctrl -xl
+    #     """
+    #     if pattern is not None:
+    #         assert win_id is None
+    #     if win_id is None:
+    #         assert pattern is not None
+    #         win_id = XCtrl.find_window_id(pattern, method='mru')
+
+    #     if win_id is None:
+    #         args = ['wmctrl', '-xa', pattern]
+    #     else:
+    #         args = ['wmctrl', '-ia', hex(win_id)]
+
+    #     XCtrl.cmd(*args, verbose=False)
+    #     time.sleep(sleeptime)
 
 
 if __name__ == '__main__':
