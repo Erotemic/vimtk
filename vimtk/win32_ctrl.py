@@ -76,6 +76,7 @@ class Win32Window(ub.NiceRepr):
             python -m vimtk.win32_ctrl Win32Window.focus:0
 
         Example:
+            >>> # xdoc: +REQUIRES(win32)
             >>> win = find_window('gvim.exe')
             >>> win.focus()
         """

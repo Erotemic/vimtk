@@ -88,7 +88,7 @@ class TextSelector(object):
             >>> line = 'def loadfunc(self):'
             >>> col = 6
             >>> nonword_chars=' \t\n\r[](){}:;.,"\'\\/'
-            >>> word = get_word_in_line_at_col(line, col, nonword_chars)
+            >>> word = TextSelector.get_word_in_line_at_col(line, col, nonword_chars)
             >>> result = ('word = %r' % (word,))
             >>> print(result)
         """

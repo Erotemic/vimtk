@@ -19,17 +19,9 @@ def check_module_installed(modname):
     References:
         http://stackoverflow.com/questions/14050281/module-exists-without-importing
 
-    CommandLine:
-        python -m utool.util_import check_module_installed --show --verbimp --modname=this
-        python -m utool.util_import check_module_installed --show --verbimp --modname=guitool
-        python -m utool.util_import check_module_installed --show --verbimp --modname=guitool.__PYQT__
-        python -m utool.util_import check_module_installed --show --verbimp --modname=ibeis.scripts.iccv
-
     Example:
-        >>> # ENABLE_DOCTEST
-        >>> from utool.util_import import *  # NOQA
-        >>> import utool as ut
-        >>> modname = ut.get_argval('--modname', default='this')
+        >>> import sys
+        >>> modname = ub.argval('--modname', default='this')
         >>> is_installed = check_module_installed(modname)
         >>> is_imported = modname in sys.modules
         >>> print('module(%r).is_installed = %r' % (modname, is_installed))
@@ -74,21 +66,15 @@ def parse_import_names(sourcecode, top_level=True, fpath=None, branch=False):
     Returns:
         list: func_names
 
-    CommandLine:
-        python -m utool.util_inspect parse_import_names
-
     References:
         https://stackoverflow.com/questions/20445733/how-to-tell-which-modules-have-been-imported-in-some-source-code
 
     Example:
-        >>> # ENABLE_DOCTEST
-        >>> from utool.util_inspect import *  # NOQA
-        >>> import utool as ut
-        >>> fpath = ut.util_inspect.__file__.replace('.pyc', '.py')
-        >>> #fpath = ut.truepath('~/code/bintrees/bintrees/avltree.py')
-        >>> sourcecode = ut.readfrom(fpath)
+        >>> from vimtk import pyinspect
+        >>> fpath = pyinspect.__file__.replace('.pyc', '.py')
+        >>> sourcecode = ub.readfrom(fpath)
         >>> func_names = parse_import_names(sourcecode)
-        >>> result = ('func_names = %s' % (ut.repr2(func_names),))
+        >>> result = ('func_names = %s' % (ub.repr2(func_names),))
         >>> print(result)
     """
     import_names = []
@@ -185,18 +171,12 @@ def parse_function_names(sourcecode, top_level=True, ignore_condition=1):
     Returns:
         list: func_names
 
-    CommandLine:
-        python -m utool.util_inspect parse_function_names
-
     Example:
-        >>> # ENABLE_DOCTEST
-        >>> from utool.util_inspect import *  # NOQA
-        >>> import utool as ut
-        >>> fpath = ut.util_inspect.__file__.replace('.pyc', '.py')
-        >>> #fpath = ut.truepath('~/code/bintrees/bintrees/avltree.py')
-        >>> sourcecode = ut.readfrom(fpath)
+        >>> from vimtk import pyinspect
+        >>> fpath = pyinspect.__file__.replace('.pyc', '.py')
+        >>> sourcecode = ub.readfrom(fpath)
         >>> func_names = parse_function_names(sourcecode)
-        >>> result = ('func_names = %s' % (ut.repr2(func_names),))
+        >>> result = ('func_names = %s' % (ub.repr2(func_names),))
         >>> print(result)
     """
     func_names = []
@@ -238,7 +218,7 @@ def parse_function_names(sourcecode, top_level=True, ignore_condition=1):
 
             # Reset the set of conditionals
             # self.condition_id = 0
-            # self.condition_names = ut.ddict(list)
+            # self.condition_names = ub.ddict(list)
 
             # self.in_condition_chain = True
             ast.NodeVisitor.generic_visit(self, node)
