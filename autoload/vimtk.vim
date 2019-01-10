@@ -128,24 +128,39 @@ if vimtk.is_module_pythonfile():
         # 
         # TODO: allow user to force adding to the pythonpath 
         basepath = ub.split_modpath(modpath)[0]
-        lines.append('import sys')
-        lines.append('sys.path.append(%r)' % (basepath,))
+        #lines.append('import sys')
+        #lines.append('sys.path.append(%r)' % (basepath,))
+
+        user_basepath = ub.compressuser(basepath)
+        if user_basepath != basepath:
+            lines.append('import sys, ubelt')
+            lines.append('sys.path.append(ubelt.truepath(%r))' % (user_basepath,))
+        else:
+            lines.append('import sys')
+            lines.append('sys.path.append(%r)' % (basepath,))
 
     lines.append("from {} import *".format(modname))
     # Add private and protected functions, even if they wouldnt be exposed
     try:
         sourcecode = open(modpath, 'r').read()
         # TODO get classes and whatnot
-        func_names = pyinspect.parse_function_names(sourcecode)
-        if '__all__' in sourcecode:
-            # completely disregard __all__
-            import_names, modules = pyinspect.parse_import_names(sourcecode, branch=False)
-            extra_names = list(func_names) + list(import_names)
-        else:
-            extra_names = [name for name in func_names if name.startswith('_')]
+        try:
+            func_names = pyinspect.parse_function_names(sourcecode)
+            if '__all__' in sourcecode:
+                # completely disregard __all__
+                import_names, modules = pyinspect.parse_import_names(sourcecode, branch=False)
+                extra_names = list(func_names) + list(import_names)
+            else:
+                extra_names = [name for name in func_names if name.startswith('_')]
+        except SyntaxError as ex:
+            print('ex = {!r}'.format(ex))
+            extra_names = []
+            lines.append('# vimtk encountered a syntax error')
+
         if len(extra_names) > 0:
-            lines.append("from {} import {}".format(
-                modname, ', '.join(extra_names)))
+            extra = ', '.join(extra_names)
+            lines.append("from {} import {}".format(modname, extra))
+
     except Exception as ex:
         #print(repr(ex))
         import traceback

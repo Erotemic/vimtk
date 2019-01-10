@@ -271,5 +271,4 @@ def parse_function_names(sourcecode, top_level=True, ignore_condition=1):
         FuncVisitor().visit(pt)
     except Exception:
         raise
-        pass
     return func_names
