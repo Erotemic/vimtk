@@ -20,8 +20,11 @@ def is_directory_open(dpath):
     import re
     computer_name = platform.node()
     dname = basename(dpath)
+    if not ub.find_exe('wmctrl'):
+        raise Exception('wmctrl must be installed')
+
     for line in ub.cmd('wmctrl -lxp')['out'].splitlines():
-        parts = re.split(' *', line)
+        parts = re.split(' +', line)
         if len(parts) > 3 and parts[3] == 'nautilus.Nautilus':
             if parts[4] == computer_name:
                 # FIXME: Might be a False positive!
