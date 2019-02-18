@@ -1,7 +1,11 @@
 import re
 import sys
-import ubelt as ub
 import logging
+try:
+    import ubelt as ub
+except Exception:
+    print('\nsys.prefix = {}\n'.format(sys.prefix))
+    raise
 from vimtk import xctrl
 from vimtk import cplat
 
@@ -212,11 +216,21 @@ def preprocess_executable_text(text):
 
 def execute_text_in_terminal(text, return_to_vim=True):
     """
-    Takes a block of text, copies it to the clipboard, pastes it into the most
-    recently used terminal, presses enter (if needed) to run what presumably is
-    a command or script, and then returns to vim.
+    Execute the current text currently selected **vim** text
+
+
+    The steps taken:
+        (1) Takes a block of text,
+        (2) copies it to the clipboard,
+        (3) finds the most recently used terminal,
+        (4) pastes the text into the most recently used terminal,
+        (5) presses enter (if needed),
+            * to run what presumably is a command or script,
+        (6) and then returns focus to vim.
 
     TODO:
+        * If currently focused on a terminal, then focus in a different
+        terminal!
         * User specified terminal pattern
         * User specified paste keypress
         * Allow usage from non-gui terminal vim.
