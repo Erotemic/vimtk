@@ -563,6 +563,13 @@ def autogen_imports(fpath_or_text):
     return import_block
 
 
+def _linux_install():
+    """
+    Installs vimtk to the standard pathogen bundle directory
+    """
+    pass
+
+
 CONFIG = Config()
 
 if __name__ == '__main__':
