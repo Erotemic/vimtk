@@ -499,6 +499,70 @@ def ensure_normalmode():
     #vim.command("ESC")
 
 
+def autogen_imports(fpath_or_text):
+    """
+    Generate import statements for python code
+
+    Example:
+        >>> import vimtk
+        >>> source = ub.codeblock(
+            '''
+            numpy
+            ub
+            nh
+            ''')
+        >>> text = vimtk.autogen_imports(source)
+        >>> print(text)
+        import netharn as nh
+        import numpy
+        import ubelt as ub
+    """
+    import xinspect
+    from os.path import exists
+    from xinspect.autogen import Importables
+    importable = Importables()
+    importable._use_recommended_defaults()
+
+    base = {
+        'it': 'import itertools as it',
+        'nh': 'import netharn as nh',
+        'np': 'import numpy as np',
+        'pd': 'import pandas as pd',
+        'ub': 'import ubelt as ub',
+        'nx': 'import networkx as nx',
+        'Image': 'from PIL import Image',
+        'mpl': 'import matplotlib as mpl',
+        'nn': 'from torch import nn',
+        'torch_data': 'import torch.utils.data as torch_data',
+        'F': 'import torch.nn.functional as F',
+        'math': 'import math',
+        # 'Variable': 'from torch.autograd import Variable',
+    }
+    importable.known.update(base)
+
+    user_importable = None
+    try:
+        user_importable = Config.get('vimtk_auto_importable_modules')
+        importable.known.update(user_importable)
+    except Exception as ex:
+        logger.info('ex = {!r}'.format(ex))
+        logger.info('ERROR user_importable = {!r}'.format(user_importable))
+
+    kw = {'importable': importable}
+    if exists(fpath_or_text):
+        kw['fpath'] = fpath_or_text
+    else:
+        kw['source'] = fpath_or_text
+    lines = xinspect.autogen_imports(**kw)
+
+    x = ub.group_items(lines, [x.startswith('from ') for x in lines])
+    ordered_lines = []
+    ordered_lines += sorted(x.get(False, []))
+    ordered_lines += sorted(x.get(True, []))
+    import_block = '\n'.join(ordered_lines)
+    return import_block
+
+
 CONFIG = Config()
 
 if __name__ == '__main__':

@@ -4,9 +4,15 @@ Requirements:
      pip install -r docs/requirements.txt
      sphinx
 
+
+Notes:
+    mkdir -p ~/code/vimtk/docs
+    cd ~/code/vimtk/docs
+    touch ~/code/vimtk/docs/requirements.txt
+    sphinx-quickstart
+
 Notes:
     cd ~/code/vimtk/docs
-    make html
     sphinx-apidoc -f -o ~/code/vimtk/docs/source ~/code/vimtk/vimtk --separate
     make html
 

@@ -15,50 +15,16 @@ Python2or3 << EOF
 # Introspects the current Python file, and attempts to automatically
 # insert missing import statements.
 import vim
-import xinspect
 import ubelt as ub
-from xinspect.autogen import Importables
+
+fpath = vimtk.get_current_fpath()
 
 vimtk.ensure_normalmode()
 if vimtk.Python.is_module_pythonfile():
-    importable = Importables()  
-    importable._use_recommended_defaults()
-
-    base = {  
-        'it': 'import itertools as it',
-        'nh': 'import netharn as nh',
-        'np': 'import numpy as np',
-        'pd': 'import pandas as pd',
-        'ub': 'import ubelt as ub',
-        'nx': 'import networkx as nx',
-        'Image': 'from PIL import Image',
-        'mpl': 'import matplotlib as mpl',
-        'nn': 'from torch import nn',
-        'torch_data': 'import torch.utils.data as torch_data',
-        'F': 'import torch.nn.functional as F',
-        'math': 'import math',
-        # 'Variable': 'from torch.autograd import Variable',
-    }
-    importable.known.update(base)
-
-    user_importable = None
-    try:
-        user_importable = vimtk.Config.get('vimtk_auto_importable_modules')
-        importable.known.update(user_importable)
-    except Exception as ex:
-        vimtk.logger.info('ex = {!r}'.format(ex))
-        vimtk.logger.info('ERROR user_importable = {!r}'.format(user_importable))
-
-    fpath = vimtk.get_current_fpath()
-    lines = xinspect.autogen_imports(fpath=fpath, importable=importable)
-
-    x = ub.group_items(lines, [x.startswith('from ') for x in lines])
-    ordered_lines = []
-    ordered_lines += sorted(x.get(False, []))
-    ordered_lines += sorted(x.get(True, []))
-    import_block = '\n'.join(ordered_lines)
+    import_block = vimtk.autogen_imports(fpath)
+    offset = import_block.count('\n')
     # FIXME: doesnt work right when row=0
-    with vimtk.CursorContext(offset=len(ordered_lines)):
+    with vimtk.CursorContext(offset=offset):
         vimtk.Python.prepend_import_block(import_block)
 else:
     vimtk.logger.info('current file is not a pythonfile')
