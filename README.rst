@@ -50,17 +50,17 @@ Setting this variable to 1 will execute this exact code when the plugin is loade
 Here is a few functions that exist in this toolkit:
 
 
-- `vimtk#execute_text_in_terminal` - copies the current word, line, or visual selection and executes it in
+- ``vimtk#execute_text_in_terminal`` - copies the current word, line, or visual selection and executes it in
     your most recently used terminal (perhaps running IPython or bash) without
     needing to alt-tab or copy paste.
-- `vimtk#ipython_import_all` - if you are in a python module, this funciton
+- ``vimtk#ipython_import_all`` - if you are in a python module, this funciton
   creates a few lines of code that will import everything in this module into
   the current namespace. Note, it detects if you need to modify your pythonpath
-  and does that.  It also completely disregards `__all__`. These lines are then
+  and does that.  It also completely disregards ``__all__``. These lines are then
   executed in your terminal (which should probably be an IPython session)
-- `vimtk#copy_current_fpath` - Copies the path to the current file into the
-  clipboard. On non-windows the home drive is replae with `~`.
-- `vimtk#auto_import` - Automatically inserts missing Python imports
+- ``vimtk#copy_current_fpath`` - Copies the path to the current file into the
+  clipboard. On non-windows the home drive is replae with ``~``.
+- ``vimtk#auto_import`` - Automatically inserts missing Python imports
 
 
 .. |CircleCI| image:: https://circleci.com/gh/Erotemic/vimtk.svg?style=svg
