@@ -15,10 +15,8 @@ workflows:
     jobs:
       - test-full-3.6
       - test-full-3.5
-      - test-full-2.7
       - test-minimal-3.6
       - test-minimal-3.5
-      - test-minimal-2.7
 
 jobs:
 
@@ -123,13 +121,6 @@ jobs:
     working_directory: ~/repo-test-full-3.5
 
 
-  test-full-2.7:
-    <<: *test-full-template
-    docker:
-      - image: circleci/python:2.7
-    working_directory: ~/repo-test-full-2.7
-
-
   test-minimal-3.5:
     <<: *test-minimal-template
     docker:
@@ -137,10 +128,3 @@ jobs:
       # version we want we can reuse everything else from the template
       - image: circleci/python:3.5
     working_directory: ~/repo-test-minimal-3.5
-
-
-  test-minimal-2.7:
-    <<: *test-minimal-template
-    docker:
-      - image: circleci/python:2.7
-    working_directory: ~/repo-test-minimal-2.7
