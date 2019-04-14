@@ -1,5 +1,5 @@
-VimTk - The Vim toolkit 
-=======================
+VimTk - The (mostly) Python (g)Vim toolkit 
+==========================================
 
 |CircleCI| |Codecov| |Pypi| |Downloads| |ReadTheDocs|
 
