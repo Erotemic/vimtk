@@ -9,31 +9,10 @@ Developing:
     git clone https://github.com/Erotemic/vimtk.git
     pip install -e vimtk
 
-Pypi:
-     # Presetup
-     pip install twine
+    cat requirements/runtime.txt > requirements.txt
 
-     # First tag the source-code
-     VERSION=$(python -c "import setup; print(setup.version)")
-     echo $VERSION
-     git tag $VERSION -m "tarball tag $VERSION"
-     git push --tags origin master
-
-     # NEW API TO UPLOAD TO PYPI
-     # https://packaging.python.org/tutorials/distributing-packages/
-
-     # Build wheel or source distribution
-     python setup.py bdist_wheel --universal
-
-     # Use twine to upload. This will prompt for username and password
-     twine upload --username erotemic --skip-existing dist/*
-
-     # Check the url to make sure everything worked
-     https://pypi.org/project/vimtk/
-
-     # ---------- OLD ----------------
-     # Check the url to make sure everything worked
-     https://pypi.python.org/pypi?:action=display&name=vimtk
+    requirements/win32.txt
+     requirements/tests.txt | sort -u | grep -o '^[^#]*' > _ci_requirements.txt
 
 """
 from setuptools import setup
@@ -119,9 +98,9 @@ def parse_requirements(fname='requirements.txt'):
 version = parse_version('vimtk')  # needs to be a global var for git tags
 
 if __name__ == '__main__':
-    install_requires = parse_requirements('requirements.txt')
+    install_requires = parse_requirements('requirements/runtime.txt')
     if sys.platform.startswith('win32'):
-        install_requires = parse_requirements('requirements-win32.txt')
+        install_requires = parse_requirements('requirements/win32.txt')
 
     setup(
         name='vimtk',

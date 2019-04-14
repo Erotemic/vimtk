@@ -1,6 +1,6 @@
 " vimtk.vim - 
 " Author:   Jon Crall
-" Version:      0.0.1
+" Version:      0.1.0
 
 " Initialization
 
@@ -15,7 +15,8 @@ let g:loaded_vimtk = 1
 "echo "Loading VimTK"
 
 
-let g:_VIMTK_VERSION = '0.0.0'
+" TODO: ensure this is synced with the python version
+let g:_VIMTK_VERSION = '0.1.0'
 "lockvar g:_VIMTK_VERSION
 
 
@@ -37,13 +38,22 @@ endif
 function! VimTK_default_remap() 
   " copy and execute the current line, word, or visual selection in the terminal 
   "echo "Setting up VimTK default mappings"
+  
+  " These functions are defined in 
+  " ../autoload/vimtk
+  " ~/code/vimtk/autoload/vimtk
   noremap  <leader>a :call vimtk#execute_text_in_terminal(mode())<CR>
   vnoremap <leader>a :call vimtk#execute_text_in_terminal(visualmode())<CR>
   noremap  <leader>m :call vimtk#execute_text_in_terminal('word')<CR>
 
   noremap <leader>C :call vimtk#copy_current_fpath()<Esc>
   noremap <leader>M :call vimtk#ipython_import_all()<CR>
-endfunction()
+
+endfunction
+
+
+" Define top-level API commands
+command! AutoImport call vimtk#auto_import()
 
 
 if exists("g:vimtk_default_mappings") && g:vimtk_default_mappings
@@ -51,14 +61,16 @@ if exists("g:vimtk_default_mappings") && g:vimtk_default_mappings
 endif
 
 " Setup the PYTHONPATH for the vimtk python module
-Python2or3 << EOF
-# We can not call this in a function or we wont get the right filename
+Python2or3 << ENDPYTHON
+# --------------
+import sys
 from os.path import dirname 
+# We can not call this in a function or we wont get the right filename
 thisfile = vim.eval("expand('<sfile>:p')")
 repodir = dirname(dirname(thisfile))
-import sys
 sys.path.append(repodir)
-EOF
+# --------------
+ENDPYTHON
 
 
 

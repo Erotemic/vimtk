@@ -10,13 +10,32 @@ from vimtk import xctrl
 from vimtk import cplat
 
 logger = logging.getLogger(__name__)
+# logger.basicConfig()
+logger.setLevel(logging.DEBUG)
 
 
 class Config(object):
+    """
+    Query the state of the vim variable namespace.
+    """
     def __init__(self):
         self.default = {
             'vimtk_terminal_pattern': None,
             'vimtk_multiline_num_press_enter': 3,
+            'vimtk_auto_importable_modules': {
+                'it': 'import itertools as it',
+                'nh': 'import netharn as nh',
+                'np': 'import numpy as np',
+                'pd': 'import pandas as pd',
+                'ub': 'import ubelt as ub',
+                'nx': 'import networkx as nx',
+                'Image': 'from PIL import Image',
+                'mpl': 'import matplotlib as mpl',
+                'nn': 'from torch import nn',
+                'torch_data': 'import torch.utils.data as torch_data',
+                'F': 'import torch.nn.functional as F',
+                'math': 'import math',
+            }
         }
         self.state = self.default.copy()
         pass
@@ -56,6 +75,9 @@ class Clipboard(object):
 
 
 class TextSelector(object):
+    """
+    Tools for selecting and reading text from Vim
+    """
 
     @staticmethod
     def word_at_cursor(url_ok=False):
@@ -171,6 +193,111 @@ class TextSelector(object):
         (row, col) = vim.current.window.cursor
         line = buf[row - 1]
         return line
+
+
+class CursorContext(object):
+    """
+    moves back to original position after context is done
+    """
+    def __init__(self, offset=0):
+        self.pos = None
+        self.offset = offset
+
+    def __enter__(self):
+        self.pos = Cursor.position()
+        return self
+
+    def __exit__(self, *exc_info):
+        row, col = self.pos
+        row += self.offset
+        Cursor.move(row, col)
+
+
+class Cursor(object):
+
+    @staticmethod
+    def move(row, col=0):
+        """ move_cursor """
+        import vim
+        vim.command('cal cursor({},{})'.format(row, col))
+
+    @staticmethod
+    def position():
+        """ get_cursor_position """
+        import vim
+        (row, col) = vim.current.window.cursor
+        return row, col
+
+
+class Python(object):
+    """
+    Tools for handling python-specific functions
+    """
+
+    @staticmethod
+    def is_module_pythonfile():
+        from os.path import splitext
+        import vim
+        modpath = vim.current.buffer.name
+        ext = splitext(modpath)[1]
+        ispyfile = ext == '.py'
+        logger.debug('is_module_pythonfile?')
+        logger.debug('  * modpath = %r' % (modpath,))
+        logger.debug('  * ext = %r' % (ext,))
+        logger.debug('  * ispyfile = %r' % (ispyfile,))
+        return ispyfile
+
+    @staticmethod
+    def find_import_row():
+        """
+        Find lines where import block begins (after __future__)
+        """
+        in_comment = False
+        import vim
+        row = 0
+        # FIXME: currently heuristic based
+        for row, line in enumerate(vim.current.buffer):
+            if not in_comment:
+                if line.strip().startswith('#'):
+                    pass
+                elif line.strip().startswith('"""'):
+                    in_comment = '"'
+                elif line.strip().startswith("''''"):
+                    in_comment = "'"
+                elif line.startswith('from __future__'):
+                    pass
+                elif line.startswith('import'):
+                    break
+                elif line.startswith('from'):
+                    break
+                else:
+                    break
+            else:
+                if line.strip().endswith(in_comment * 3):
+                    in_comment = False
+        return row
+
+    @staticmethod
+    def prepend_import_block(text):
+        import vim
+        row = Python.find_import_row()
+        # FIXME: doesnt work right when row=0
+        buffer_tail = vim.current.buffer[row:]
+        lines = [line.encode('utf-8') for line in text.split('\n')]
+        lines = [x for x in lines if x]
+
+        logger.info('lines = {!r}'.format(lines))
+        new_tail  = lines + buffer_tail
+        del(vim.current.buffer[row:])  # delete old data
+        # vim's buffer __del__ method seems to not work when the slice is 0:None.
+        # It should remove everything, but it seems that one item still exists
+        # It seems we can never remove that last item, so we have to hack.
+        hackaway_row0 = row == 0 and len(vim.current.buffer) == 1
+        # print(len(vim.current.buffer))
+        # print('vim.current.buffer = {!r}'.format(vim.current.buffer[:]))
+        vim.current.buffer.append(new_tail)  # append new data
+        if hackaway_row0:
+            del vim.current.buffer[0]
 
 
 def preprocess_executable_text(text):
@@ -330,23 +457,110 @@ def vim_argv(defaults=None):
     return argv
 
 
-def is_module_pythonfile():
-    from os.path import splitext
-    import vim
-    modpath = vim.current.buffer.name
-    ext = splitext(modpath)[1]
-    ispyfile = ext == '.py'
-    logging.debug('is_module_pythonfile?')
-    logging.debug('  * modpath = %r' % (modpath,))
-    logging.debug('  * ext = %r' % (ext,))
-    logging.debug('  * ispyfile = %r' % (ispyfile,))
-    return ispyfile
-
-
 def get_current_fpath():
     import vim
     fpath = vim.current.buffer.name
     return fpath
+
+
+def ensure_normalmode():
+    """
+    References:
+        http://stackoverflow.com/questions/14013294/vim-how-to-detect-the-mode-in-which-the-user-is-in-for-statusline
+    """
+    allmodes = {
+        'n'  : 'Normal',
+        'no' : 'NOperatorPending',
+        'v'  : 'Visual',
+        'V'  : 'VLine',
+        #'^V' : 'VBlock',
+        's'  : 'Select',
+        'S'  : 'SLine',
+        #'^S' : 'SBlock',
+        'i'  : 'Insert',
+        'R'  : 'Replace',
+        'Rv' : 'VReplace',
+        'c'  : 'Command',
+        'cv' : 'VimEx',
+        'ce' : 'Ex',
+        'r'  : 'Prompt',
+        'rm' : 'More',
+        'r?' : 'Confirm',
+        '!'  : 'Shell',
+    }
+    import vim
+    current_mode_code = vim.eval('mode()')
+    current_mode = allmodes.get(current_mode_code, current_mode_code)
+    if current_mode == 'Normal':
+        return
+    else:
+        logger.debug('current_mode_code = %r' % current_mode)
+        logger.debug('current_mode = %r' % current_mode)
+    #vim.command("ESC")
+
+
+def autogen_imports(fpath_or_text):
+    """
+    Generate import statements for python code
+
+    Example:
+        >>> import vimtk
+        >>> source = ub.codeblock(
+            '''
+            numpy
+            ub
+            nh
+            ''')
+        >>> text = vimtk.autogen_imports(source)
+        >>> print(text)
+        import netharn as nh
+        import numpy
+        import ubelt as ub
+    """
+    import xinspect
+    from os.path import exists
+    from xinspect.autogen import Importables
+    importable = Importables()
+    importable._use_recommended_defaults()
+
+    base = {
+        'it': 'import itertools as it',
+        'nh': 'import netharn as nh',
+        'np': 'import numpy as np',
+        'pd': 'import pandas as pd',
+        'ub': 'import ubelt as ub',
+        'nx': 'import networkx as nx',
+        'Image': 'from PIL import Image',
+        'mpl': 'import matplotlib as mpl',
+        'nn': 'from torch import nn',
+        'torch_data': 'import torch.utils.data as torch_data',
+        'F': 'import torch.nn.functional as F',
+        'math': 'import math',
+        # 'Variable': 'from torch.autograd import Variable',
+    }
+    importable.known.update(base)
+
+    user_importable = None
+    try:
+        user_importable = Config.get('vimtk_auto_importable_modules')
+        importable.known.update(user_importable)
+    except Exception as ex:
+        logger.info('ex = {!r}'.format(ex))
+        logger.info('ERROR user_importable = {!r}'.format(user_importable))
+
+    kw = {'importable': importable}
+    if exists(fpath_or_text):
+        kw['fpath'] = fpath_or_text
+    else:
+        kw['source'] = fpath_or_text
+    lines = xinspect.autogen_imports(**kw)
+
+    x = ub.group_items(lines, [x.startswith('from ') for x in lines])
+    ordered_lines = []
+    ordered_lines += sorted(x.get(False, []))
+    ordered_lines += sorted(x.get(True, []))
+    import_block = '\n'.join(ordered_lines)
+    return import_block
 
 
 CONFIG = Config()
