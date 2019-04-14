@@ -10,7 +10,7 @@ from vimtk.core import *
                          # get_number_of_monitors, get_resolution_info,
                          # import_pyqt,)
 
-__version__ = '0.0.1'
+__version__ = '0.1.0'
 
 
 def reload():
