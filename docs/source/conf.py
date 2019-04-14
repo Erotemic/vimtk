@@ -19,14 +19,18 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'vimtk'
+import vimtk as package
+import sphinx_rtd_theme
+
+
+project = package.__name__
 copyright = '2019, Jon Crall'
 author = 'Jon Crall'
 
 # The short X.Y version
-version = ''
+version = '.'.join(package.__version__.split('.')[0:2])
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
+release = package.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -38,9 +42,17 @@ release = '0.1.0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
+# extensions = [
+#     'sphinx.ext.autodoc',
+#     'sphinx.ext.intersphinx',
+# ]
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
+    'sphinx.ext.todo',
+    'sphinx.ext.autosummary',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -50,7 +62,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # The master toctree document.
 master_doc = 'index'
@@ -76,7 +88,8 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

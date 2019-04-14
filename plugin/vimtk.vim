@@ -1,6 +1,6 @@
 " vimtk.vim - 
 " Author:   Jon Crall
-" Version:      0.1.0
+" Version:      0.1.1
 
 " Initialization
 
@@ -16,7 +16,7 @@ let g:loaded_vimtk = 1
 
 
 " TODO: ensure this is synced with the python version
-let g:_VIMTK_VERSION = '0.1.0'
+let g:_VIMTK_VERSION = '0.1.1'
 "lockvar g:_VIMTK_VERSION
 
 

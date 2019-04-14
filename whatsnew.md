@@ -1,3 +1,8 @@
+VERSION 0.1.1
+-------------
+* Testing version bump process
+
+
 VERSION 0.1.0
 -------------
 * Add AutoImport
