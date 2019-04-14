@@ -9,12 +9,72 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 
-function! vimtk#helloworld()
+func! vimtk#auto_import() 
+"╔═════════════════════════════════════════════════
+Python2or3 << EOF
+# Introspects the current Python file, and attempts to automatically
+# insert missing import statements.
+import vim
+import xinspect
+import ubelt as ub
+from xinspect.autogen import Importables
+
+vimtk.ensure_normalmode()
+if vimtk.Python.is_module_pythonfile():
+    importable = Importables()  
+    importable._use_recommended_defaults()
+
+    base = {  
+        'it': 'import itertools as it',
+        'nh': 'import netharn as nh',
+        'np': 'import numpy as np',
+        'pd': 'import pandas as pd',
+        'ub': 'import ubelt as ub',
+        'nx': 'import networkx as nx',
+        'Image': 'from PIL import Image',
+        'mpl': 'import matplotlib as mpl',
+        'nn': 'from torch import nn',
+        'torch_data': 'import torch.utils.data as torch_data',
+        'F': 'import torch.nn.functional as F',
+        'math': 'import math',
+        # 'Variable': 'from torch.autograd import Variable',
+    }
+    importable.known.update(base)
+
+    user_importable = None
+    try:
+        user_importable = vimtk.Config.get('vimtk_auto_importable_modules')
+        importable.known.update(user_importable)
+    except Exception as ex:
+        vimtk.logger.info('ex = {!r}'.format(ex))
+        vimtk.logger.info('ERROR user_importable = {!r}'.format(user_importable))
+
+    fpath = vimtk.get_current_fpath()
+    lines = xinspect.autogen_imports(fpath=fpath, importable=importable)
+
+    x = ub.group_items(lines, [x.startswith('from ') for x in lines])
+    ordered_lines = []
+    ordered_lines += sorted(x.get(False, []))
+    ordered_lines += sorted(x.get(True, []))
+    import_block = '\n'.join(ordered_lines)
+    # FIXME: doesnt work right when row=0
+    with vimtk.CursorContext(offset=len(ordered_lines)):
+        vimtk.Python.prepend_import_block(import_block)
+else:
+    vimtk.logger.info('current file is not a pythonfile')
+
+EOF
+""╚═════════════════════════════════════════════════
+endfunc
+
+
+
+func! vimtk#helloworld()
    echo "hello world!"
-endfunction
+endfunc
 
 
-function! vimtk#execute_text_in_terminal(...) range
+func! vimtk#execute_text_in_terminal(...) range
 "╔═════════════════════════════════════════════════
 Python2or3 << EOF
 """
@@ -66,7 +126,7 @@ vimtk.execute_text_in_terminal(text, return_to_vim=return_to_vim)
 
 EOF
 "╚═════════════════════════════════════════════════
-endfunction
+endfunc
 
 
 
@@ -77,14 +137,14 @@ import ubelt as ub
 fpath = vimtk.get_current_fpath()
 if not ub.WIN32:
     fpath = ub.compressuser(fpath)
-print('fpath = {!r}'.format(fpath))
+vimtk.logger.info('fpath = {!r}'.format(fpath))
 vimtk.Clipboard.copy(fpath)
 EOF
 endfunc
 
 
 
-function! vimtk#ipython_import_all()
+func! vimtk#ipython_import_all()
 "╔═════════════════════════════════════════════════
 Python2or3 << EOF
 """
@@ -93,6 +153,9 @@ vimtk#ipython_import_all
 ------------------------------
 
 Imports global variables from current module into IPython session
+
+Notes:
+    calls vimtk.execute_text_in_terminal, which depends on gVim
 """
 import vimtk
 from vimtk import pyinspect
@@ -106,14 +169,17 @@ import textwrap
 #logging.getLogger().setLevel(logging.DEBUG)
 #vimtk.reload()
 
-if vimtk.is_module_pythonfile():
+# TODO: mkinit will soon have a generate import * func
+# Use that instead.
+
+if vimtk.Python.is_module_pythonfile():
     import vim
     modpath = vim.current.buffer.name
     modname = ub.modpath_to_modname(modpath)
 
     # HACK to add symlinks back into the paths for system uniformity
     special_symlinks = [
-        ('/media/joncrall/raid/code', expanduser('~/code')),
+        # ('/media/joncrall/raid/code', expanduser('~/code')),
     ]
     # Abstract via symlinks
     for real, link in special_symlinks:
@@ -134,7 +200,7 @@ if vimtk.is_module_pythonfile():
         user_basepath = ub.compressuser(basepath)
         if user_basepath != basepath:
             lines.append('import sys, ubelt')
-            lines.append('sys.path.append(ubelt.truepath(%r))' % (user_basepath,))
+            lines.append('sys.path.append(ubelt.expandpath(%r))' % (user_basepath,))
         else:
             lines.append('import sys')
             lines.append('sys.path.append(%r)' % (basepath,))
@@ -153,7 +219,7 @@ if vimtk.is_module_pythonfile():
             else:
                 extra_names = [name for name in func_names if name.startswith('_')]
         except SyntaxError as ex:
-            print('ex = {!r}'.format(ex))
+            vimtk.logger.info('ex = {!r}'.format(ex))
             extra_names = []
             lines.append('# vimtk encountered a syntax error')
 
@@ -162,7 +228,7 @@ if vimtk.is_module_pythonfile():
             lines.append("from {} import {}".format(modname, extra))
 
     except Exception as ex:
-        #print(repr(ex))
+        #vimtk.logger.info(repr(ex))
         import traceback
         tbtext = traceback.format_exc()
         vimtk.logger.error(tbtext)
@@ -172,8 +238,8 @@ if vimtk.is_module_pythonfile():
     text = textwrap.dedent('\n'.join(lines))
     vimtk.execute_text_in_terminal(text)
 else:
-    print('current file is not a pythonfile')
+    vimtk.logger.info('current file is not a pythonfile')
 #L______________
 EOF
-endfu 
+endfunc
 

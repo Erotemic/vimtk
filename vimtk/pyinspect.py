@@ -1,3 +1,6 @@
+"""
+TODO: use the closer to ensure these functions are synced with xdoctest
+"""
 import ubelt as ub
 import ast
 import os

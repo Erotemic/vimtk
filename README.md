@@ -1,3 +1,10 @@
+# VimTk - The Vim toolkit 
+
+A set of utilities for Vim.
+
+The tools in this package focus on, but are not exclusive to Python development
+with GVim.  This is both a Vim plugin and a pip installable Python module.
+
 ## Development Installation with Pathogen
 
 ln -s ~/code/vimtk ~/.vim/bundle/vimtk
