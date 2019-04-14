@@ -8,6 +8,12 @@ Installation:
 Developing:
     git clone https://github.com/Erotemic/vimtk.git
     pip install -e vimtk
+
+    cat requirements/runtime.txt > requirements.txt
+
+    requirements/win32.txt
+     requirements/tests.txt | sort -u | grep -o '^[^#]*' > _ci_requirements.txt
+
 """
 from setuptools import setup
 import sys
