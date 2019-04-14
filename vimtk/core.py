@@ -567,7 +567,9 @@ def _linux_install():
     """
     Installs vimtk to the standard pathogen bundle directory
     """
-    pass
+    import pkg_resources
+    import vimtk
+    vim_data = pkg_resources.resource_string(vimtk.__name__, "vim")
 
 
 CONFIG = Config()
