@@ -11,7 +11,39 @@ from vimtk import cplat
 
 logger = logging.getLogger(__name__)
 # logger.basicConfig()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+
+
+def reload_vimtk():
+    """
+    Used for development
+    """
+    try:
+        import importlib
+        reload = importlib.reload
+    except (AttributeError, ImportError):
+        import imp
+        reload = imp.reload
+        logger.debug('Reloading vimtk')
+    import vimtk
+    import vimtk.core
+    import vimtk.xctrl
+    import vimtk.pyinspect
+    import vimtk.cplat
+
+    reload(vimtk.pyinspect)
+    reload(vimtk.cplat)
+    reload(vimtk.core)
+    reload(vimtk.xctrl)
+    reload(vimtk)
+
+    import ubelt as ub
+    if ub.WIN32:
+        import vimtk.win32_ctrl
+        reload(vimtk.win32_ctrl)
+
+
+reload = reload_vimtk
 
 
 class Config(object):
@@ -542,7 +574,7 @@ def autogen_imports(fpath_or_text):
 
     user_importable = None
     try:
-        user_importable = Config.get('vimtk_auto_importable_modules')
+        user_importable = CONFIG.get('vimtk_auto_importable_modules')
         importable.known.update(user_importable)
     except Exception as ex:
         logger.info('ex = {!r}'.format(ex))
@@ -569,6 +601,7 @@ def _linux_install():
     """
     import pkg_resources
     import vimtk
+    # TODO: finishme
     vim_data = pkg_resources.resource_string(vimtk.__name__, "vim")
 
 
