@@ -171,7 +171,7 @@ if vimtk.Python.is_module_pythonfile():
             lines.append('import sys')
             lines.append('sys.path.append(%r)' % (basepath,))
 
-    lines.append("from {} import *".format(modname))
+    lines.append("from {} import *  # NOQA".format(modname))
     # Add private and protected functions, even if they wouldnt be exposed
     try:
         sourcecode = open(modpath, 'r').read()
