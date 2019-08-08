@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 * Cleanups
+* Cleanup requirements
 
 
 ## Version 0.1.0

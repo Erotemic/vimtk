@@ -539,15 +539,13 @@ def autogen_imports(fpath_or_text):
         >>> import vimtk
         >>> source = ub.codeblock(
             '''
-            numpy
-            ub
-            nh
+            math
+            it
             ''')
         >>> text = vimtk.autogen_imports(source)
         >>> print(text)
-        import netharn as nh
-        import numpy
-        import ubelt as ub
+        import itertools as it
+        import math
     """
     import xinspect
     from os.path import exists
@@ -568,7 +566,6 @@ def autogen_imports(fpath_or_text):
         'torch_data': 'import torch.utils.data as torch_data',
         'F': 'import torch.nn.functional as F',
         'math': 'import math',
-        # 'Variable': 'from torch.autograd import Variable',
     }
     importable.known.update(base)
 
@@ -602,7 +599,7 @@ def _linux_install():
     import pkg_resources
     import vimtk
     # TODO: finishme
-    vim_data = pkg_resources.resource_string(vimtk.__name__, "vim")
+    # vim_data = pkg_resources.resource_string(vimtk.__name__, "vim")
 
 
 CONFIG = Config()

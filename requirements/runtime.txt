@@ -1,6 +1,9 @@
 ubelt >= 0.7.1
 pyperclip >= 1.7.0
+pyflakes >= 2.1.1
 six >= 1.11.0
 psutil >= 5.4.7
-xinspect
-# python-qt5
+xinspect >= 0.0.3
+pywinauto;platform_system=="Windows"
+
+pyqt5>= 5.11.2;python_version>'2.7'  # 

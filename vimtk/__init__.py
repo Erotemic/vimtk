@@ -21,7 +21,7 @@ from vimtk.core import *
 #                         get_current_fpath, logger, preprocess_executable_text,
 #                         reload_vimtk, vim_argv,)
 # from vimtk.cplat import (copy_text_to_clipboard, get_clipboard,
-#                          get_number_of_monitors, get_resolution_info,
+#                          get_resolution_info,
 #                          import_pyqt, logger, lorium_ipsum,)
 # from vimtk.pyinspect import (check_module_installed, in_pythonpath,
 #                              parse_function_names, parse_import_names,)
@@ -37,7 +37,7 @@ from vimtk.core import *
 #            'copy_text_to_clipboard', 'core', 'cplat', 'current_window_name',
 #            'ensure_normalmode', 'execute_text_in_terminal', 'find_window',
 #            'find_windows', 'find_windows', 'findall_window_ids',
-#            'get_clipboard', 'get_current_fpath', 'get_number_of_monitors',
+#            'get_clipboard', 'get_current_fpath',
 #            'get_resolution_info', 'import_pyqt', 'in_pythonpath',
 #            'is_directory_open', 'logger', 'logger', 'logger', 'logger',
 #            'lorium_ipsum', 'parse_function_names', 'parse_import_names',

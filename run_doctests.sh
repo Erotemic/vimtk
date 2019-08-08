@@ -1,2 +1,2 @@
 #!/bin/bash
-xdoctest vimtk --style=google all
+python -m xdoctest vimtk --style=google all

@@ -29,6 +29,7 @@ def apply_monkey_patch_jedi():
         LooseVersion('0.11.1'),
         LooseVersion('0.12.0'),
         LooseVersion('0.13.3'),
+        LooseVersion('0.14.1'),
     ]
     # min_ver = min(acceptable_versions)
     # max_ver = max(acceptable_versions)
