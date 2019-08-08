@@ -6,4 +6,4 @@ psutil >= 5.4.7
 xinspect >= 0.0.3
 pywinauto;platform_system=="Windows"
 
-pyqt5>= 5.11.2;python_version>'2.7'  # 
+# pyqt5>= 5.11.2;python_version>'2.7'  # 
