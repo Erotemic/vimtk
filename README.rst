@@ -10,16 +10,6 @@ A set of utilities for Vim.
 The tools in this package focus on, but are not exclusive to Python development
 with gVim.  This is both a Vim plugin and a pip installable Python module.
 
-## Development Installation with Pathogen
-
-ln -s ~/code/vimtk ~/.vim/bundle/vimtk
-
-
-Testing
--------
-
-vim -c ':redir > vimtk_test.output' -c ":echo 'hello' | exit" && cat vimtk_test.output
-
 
 Suggested vimrc 
 ---------------
@@ -50,8 +40,7 @@ Then you might use a vimrc someting like this
     filetype plugin indent on
     syntax on
 
-    " Makes "," the leader Makes default remaps 
-
+    " Makes remaps leader to , in addition to the default remaps
     :call VimTK_suggested_remap()
 
 
@@ -110,18 +99,18 @@ Alternatively add this line to explicitly make the default remaps
 Here is a few functions that exist in this toolkit:
 
 
-- ``vimtk#execute_text_in_terminal`` - copies the current word, line, or visual selection and executes it in
-    your most recently used terminal (perhaps running IPython or bash) without
-    needing to alt-tab or copy paste.
+- ``vimtk#execute_text_in_terminal`` - copies the current word, line, or visual
+  selection and executes it in your most recently used terminal (perhaps
+  running IPython or bash) without needing to alt-tab or copy paste.
 
 - ``vimtk#ipython_import_all`` - if you are in a python module, this funciton
   creates a few lines of code that will import everything in this module into
   the current namespace. Note, it detects if you need to modify your pythonpath
-  and does that.  It also completely disregards ``__all__``. These lines are then
-  executed in your terminal (which should probably be an IPython session)
+  and does that.  It also completely disregards ``__all__``. These lines are
+  then executed in your terminal (which should probably be an IPython session)
 
 - ``vimtk#copy_current_fpath`` - Copies the path to the current file into the
-  clipboard. On non-windows the home drive is replae with ``~``.
+  clipboard. On non-windows the home drive is replaced with ``~``.
 
 - ``vimtk#auto_import`` - Automatically inserts missing Python imports
 
@@ -133,6 +122,12 @@ Here is a few functions that exist in this toolkit:
 - ``vimtk#open_path_at_cursor`` - Open a file path or web url at your cursor
 
 - ``vimtk#quickopen(char, fpath)`` - Use <leader>[tvio] to open predefined files / directories
+
+
+Testing
+-------
+
+vim -c ':redir > vimtk_test.output' -c ":echo 'hello' | exit" && cat vimtk_test.output
 
 
 .. |CircleCI| image:: https://circleci.com/gh/Erotemic/vimtk.svg?style=svg
