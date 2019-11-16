@@ -159,7 +159,7 @@ def _node_is_main_if(node):
                 node.test.comparators[0].s == '__main__',
             ]):
                 return True
-        except Exception as ex:
+        except Exception:
             pass
     return False
 

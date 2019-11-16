@@ -5,7 +5,7 @@ TODO: exclude backends line win32 and xctrl
 mkinit ~/local/vim/vimfiles/bundle/vimtk/vimtk/__init__.py -w
 """
 # flake8: noqa
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 
 from vimtk.core import *
 

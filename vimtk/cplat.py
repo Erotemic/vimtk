@@ -41,7 +41,7 @@ class _PyQtWraper(object):
                 from PyQt4 import QtGui as QtWidgets
                 from PyQt4 import QtCore
                 logger.debug('Using PyQt4')
-            except ImportError as ex4:
+            except ImportError:
                 logger.debug('Could not find PyQt4 or PyQt5')
                 raise ex5
         PyQt.QtWidgets = QtWidgets

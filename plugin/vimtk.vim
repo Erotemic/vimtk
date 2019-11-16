@@ -42,6 +42,8 @@ function! VimTK_default_remap()
   " These functions are defined in 
   " ../autoload/vimtk
   " ~/code/vimtk/autoload/vimtk
+  noremap <leader>H :call vimtk#helloworld()<Esc>
+
   noremap  <leader>a :call vimtk#execute_text_in_terminal(mode())<CR>
   vnoremap <leader>a :call vimtk#execute_text_in_terminal(visualmode())<CR>
   noremap  <leader>m :call vimtk#execute_text_in_terminal('word')<CR>
@@ -49,11 +51,28 @@ function! VimTK_default_remap()
   noremap <leader>C :call vimtk#copy_current_fpath()<Esc>
   noremap <leader>M :call vimtk#ipython_import_all()<CR>
 
+  command! AutoImport call vimtk#insert_auto_import()
+  noremap <leader>pv :call vimtk#insert_print_var_at_cursor()<CR>
+  noremap  <c-M-B> :call vimtk#insert_timerit(mode())<CR><Esc>
+  vnoremap <c-M-B> :call vimtk#insert_timerit(visualmode())<CR><Esc>
+
+  noremap <leader>es :call vimtk#smart_search_word_at_cursor()<CR>
+  noremap <leader>go :call vimtk#open_path_at_cursor("e")<CR>
+  noremap <leader>gf :call vimtk#open_path_at_cursor("e")<CR>
+  noremap <leader>gi :call vimtk#open_path_at_cursor("split")<CR>
+  noremap <leader>gv :call vimtk#open_path_at_cursor("vsplit")<CR>
+  noremap <leader>gv :call vimtk#open_path_at_cursor("vsplit")<CR>
+  noremap <leader>gt :call vimtk#open_path_at_cursor("tabe")<CR>
+  noremap gi :call vimtk#open_path_at_cursor("split")<CR>
+
+  call vimtk#quickopen(',', '~/.vimrc')
+  call vimtk#quickopen('5', '~/.bashrc')
+
 endfunction
 
 
 " Define top-level API commands
-command! AutoImport call vimtk#auto_import()
+"command! AutoImport call vimtk#insert_auto_import()
 
 
 if exists("g:vimtk_default_mappings") && g:vimtk_default_mappings
@@ -72,6 +91,20 @@ sys.path.append(repodir)
 # --------------
 ENDPYTHON
 
+
+
+func! QUICKOPEN_leader_tvio(...)
+    " TODO: remove for plugin
+    " Maps <leader>t<key> to tab open a filename
+    " Maps <leader>s<key> to vsplit open a filename
+    " Maps <leader>i<key> to split open a filename
+    let key = a:1
+    let fname = a:2
+    :exec 'noremap <leader>t'.key.' :tabe '.fname.'<CR>'
+    :exec 'noremap <leader>v'.key.' :vsplit '.fname.'<CR>'
+    :exec 'noremap <leader>i'.key.' :split '.fname.'<CR>'
+    :exec 'noremap <leader>o'.key.' :e '.fname.'<CR>'
+endfu
 
 
 
