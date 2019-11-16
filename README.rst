@@ -4,18 +4,17 @@ VimTk - The (mostly) Python (g)Vim toolkit
 |CircleCI| |Codecov| |Pypi| |Downloads| |ReadTheDocs|
 
 
-A set of utilities for Vim.
----------------------------
+Description 
+-----------
 
 The tools in this package focus on, but are not exclusive to Python development
 with gVim.  This is both a Vim plugin and a pip installable Python module.
 
 
-Suggested vimrc 
----------------
+Usage 
+-----
 
-Use vim-plug to manage plugins
-
+We suggest using vim-plug to manage plugins. Install vim plug like this:
 
 .. code:: bash
 
@@ -24,7 +23,7 @@ Use vim-plug to manage plugins
     curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 
-Then you might use a vimrc someting like this
+We suggest the following vimrc as a template:
 
 .. code:: vim
 
@@ -40,31 +39,26 @@ Then you might use a vimrc someting like this
     filetype plugin indent on
     syntax on
 
-    " Makes remaps leader to , in addition to the default remaps
-    :call VimTK_suggested_remap()
+    """" The above code should be among the first things in your vimrc
 
 
-Usage
------
+    " Map your leader key to comma (much easier to hit)
+    let mapleader = ","
+    let maplocalleader = ","
+    noremap \ ,
+
+    " Make default vimtk remaps
+    :call VimTK_default_remap()
+
+    " Register files you use all the time with quickopen
+    " (use <leader>i<char> as a shortcut to specific files
+    call vimtk#quickopen(',', '~/.vimrc')
+    call vimtk#quickopen('5', '~/.bashrc')
+
 
 This module defines many helper functions, but does not bind them to keys by
-default. However, to use the suggested default mapping you can set this
-variable in your vimrc:
-
-
-.. code:: vim
-
-   let g:vimtk_default_mappings=1
-
-
-Setting this variable to 1 will execute this exact code when the plugin is loaded.
-
-Alternatively add this line to explicitly make the default remaps
-
-.. code:: vim
-
-  :call VimTK_default_remap()
-
+default unless ``VimTK_default_remap`` is called. You can also choose the
+remaps you care about: 
 
 .. code:: vim
 
@@ -91,12 +85,8 @@ Alternatively add this line to explicitly make the default remaps
   noremap <leader>gt :call vimtk#open_path_at_cursor("tabe")<CR>
   noremap gi :call vimtk#open_path_at_cursor("split")<CR>
 
-  call vimtk#quickopen(',', '~/.vimrc')
-  call vimtk#quickopen('5', '~/.bashrc')
 
-
-
-Here is a few functions that exist in this toolkit:
+Here is what some of these functions do:
 
 
 - ``vimtk#execute_text_in_terminal`` - copies the current word, line, or visual
@@ -122,12 +112,6 @@ Here is a few functions that exist in this toolkit:
 - ``vimtk#open_path_at_cursor`` - Open a file path or web url at your cursor
 
 - ``vimtk#quickopen(char, fpath)`` - Use <leader>[tvio] to open predefined files / directories
-
-
-Testing
--------
-
-vim -c ':redir > vimtk_test.output' -c ":echo 'hello' | exit" && cat vimtk_test.output
 
 
 .. |CircleCI| image:: https://circleci.com/gh/Erotemic/vimtk.svg?style=svg
