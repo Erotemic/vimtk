@@ -4,63 +4,117 @@ VimTk - The (mostly) Python (g)Vim toolkit
 |CircleCI| |Codecov| |Pypi| |Downloads| |ReadTheDocs|
 
 
-A set of utilities for Vim.
----------------------------
+Description 
+-----------
 
 The tools in this package focus on, but are not exclusive to Python development
 with gVim.  This is both a Vim plugin and a pip installable Python module.
 
-## Development Installation with Pathogen
 
-ln -s ~/code/vimtk ~/.vim/bundle/vimtk
-
-
-Testing
--------
-
-vim -c ':redir > vimtk_test.output' -c ":echo 'hello' | exit" && cat vimtk_test.output
-
-
-Usage
+Usage 
 -----
 
+We suggest using vim-plug to manage plugins. Install vim plug like this:
+
+.. code:: bash
+
+    # Install vim-plug into your autoload directory
+    " See: https://github.com/junegunn/vim-plug
+    curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
+
+We suggest the following vimrc as a template:
+
+.. code:: vim
+
+    " DEMO_VIMRC: 
+
+    call plug#begin('~/.vim/bundle')
+
+    Plug 'sjl/badwolf'
+    Plug 'Erotemic/vimtk'
+
+    call plug#end()            " required
+
+    filetype plugin indent on
+    syntax on
+
+    """" The above code should be among the first things in your vimrc
+
+
+    " Map your leader key to comma (much easier to hit)
+    let mapleader = ","
+    let maplocalleader = ","
+    noremap \ ,
+
+    " Make default vimtk remaps
+    :call VimTK_default_remap()
+
+    " Register files you use all the time with quickopen
+    " (use <leader>i<char> as a shortcut to specific files
+    call vimtk#quickopen(',', '~/.vimrc')
+    call vimtk#quickopen('5', '~/.bashrc')
+
+
 This module defines many helper functions, but does not bind them to keys by
-default. However, to use the suggested default mapping you can set this
-variable in your vimrc:
-
-
-.. code:: vim
-
-   let g:vimtk_default_mappings=1
-
-
-Setting this variable to 1 will execute this exact code when the plugin is loaded.
-
+default unless ``VimTK_default_remap`` is called. The default bindings are as
+follows:
 
 .. code:: vim
 
-   noremap  <leader>a :call vimtk#execute_text_in_terminal(mode())<CR>
-   vnoremap <leader>a :call vimtk#execute_text_in_terminal(visualmode())<CR>
-   noremap  <leader>m :call vimtk#execute_text_in_terminal('word')<CR>
+  noremap <leader>H :call vimtk#helloworld()<Esc>
 
-   noremap <leader>C :call vimtk#copy_current_fpath()<Esc>
-   noremap <leader>M :call vimtk#ipython_import_all()<CR>
+  noremap  <leader>a :call vimtk#execute_text_in_terminal(mode())<CR>
+  vnoremap <leader>a :call vimtk#execute_text_in_terminal(visualmode())<CR>
+  noremap  <leader>m :call vimtk#execute_text_in_terminal('word')<CR>
+
+  noremap <leader>C :call vimtk#copy_current_fpath()<Esc>
+  noremap <leader>M :call vimtk#ipython_import_all()<CR>
+
+  command! AutoImport call vimtk#insert_auto_import()
+  noremap <leader>pv :call vimtk#insert_print_var_at_cursor()<CR>
+  noremap  <c-M-B> :call vimtk#insert_timerit(mode())<CR><Esc>
+  vnoremap <c-M-B> :call vimtk#insert_timerit(visualmode())<CR><Esc>
+
+  noremap <leader>es :call vimtk#smart_search_word_at_cursor()<CR>
+  noremap <leader>go :call vimtk#open_path_at_cursor("e")<CR>
+  noremap <leader>gf :call vimtk#open_path_at_cursor("e")<CR>
+  noremap <leader>gi :call vimtk#open_path_at_cursor("split")<CR>
+  noremap <leader>gv :call vimtk#open_path_at_cursor("vsplit")<CR>
+  noremap <leader>gv :call vimtk#open_path_at_cursor("vsplit")<CR>
+  noremap <leader>gt :call vimtk#open_path_at_cursor("tabe")<CR>
+  noremap gi :call vimtk#open_path_at_cursor("split")<CR>
 
 
-Here is a few functions that exist in this toolkit:
+Obviously you can modify the exact key bindings however you would like.
 
 
-- ``vimtk#execute_text_in_terminal`` - copies the current word, line, or visual selection and executes it in
-    your most recently used terminal (perhaps running IPython or bash) without
-    needing to alt-tab or copy paste.
+Here is what some of these functions do:
+
+- ``vimtk#execute_text_in_terminal`` - copies the current word, line, or visual
+  selection and executes it in your most recently used terminal (perhaps
+  running IPython or bash) without needing to alt-tab or copy paste.
+
 - ``vimtk#ipython_import_all`` - if you are in a python module, this funciton
   creates a few lines of code that will import everything in this module into
   the current namespace. Note, it detects if you need to modify your pythonpath
-  and does that.  It also completely disregards ``__all__``. These lines are then
-  executed in your terminal (which should probably be an IPython session)
+  and does that.  It also completely disregards ``__all__``. These lines are
+  then executed in your terminal (which should probably be an IPython session)
+
 - ``vimtk#copy_current_fpath`` - Copies the path to the current file into the
-  clipboard. On non-windows the home drive is replae with ``~``.
+  clipboard. On non-windows the home drive is replaced with ``~``.
+
 - ``vimtk#auto_import`` - Automatically inserts missing Python imports
+
+- ``vimtk#insert_print_var_at_cursor`` - Insert a print statement around the
+  current variable your cursor is on (supports python, bash, cmake, and C++)
+
+- ``vimtk#insert_timerit`` - Make a stub timerit and insert it at the current
+  position
+
+- ``vimtk#open_path_at_cursor`` - Open a file path or web url at your cursor
+
+- ``vimtk#quickopen(char, fpath)`` - Use <leader>[tvio] to open predefined files / directories
 
 
 .. |CircleCI| image:: https://circleci.com/gh/Erotemic/vimtk.svg?style=svg

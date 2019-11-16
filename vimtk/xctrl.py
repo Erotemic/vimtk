@@ -1,13 +1,18 @@
-# -*- coding: utf-8 -*- from __future__ import absolute_import, division, print_function, unicode_literals
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function, unicode_literals
+"""
+Notes:
+    # https://stackoverflow.com/questions/51070465/is-it-possible-to-get-the-directory-of-a-specific-nautilus-window-in-a-script?noredirect=1#comment95427874_51070465
+    sudo apt install python-nautilus
+    mkdir -p ~/.local/share/nautilus-python/extensions
+"""
 import ubelt as ub
-from vimtk import cplat
 import time
 import six
 import re
 import pipes
-# from functools import partial
-# from six.moves import builtins
 import logging
+from vimtk import cplat
 
 logger = logging.getLogger(__name__)
 

@@ -22,8 +22,10 @@
 import vimtk as package
 import sphinx_rtd_theme
 
+project_name = package.__name__
 
-project = package.__name__
+
+project = project_name
 copyright = '2019, Jon Crall'
 author = 'Jon Crall'
 
@@ -54,6 +56,15 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.autosummary',
 ]
+
+todo_include_todos = True
+napoleon_google_docstring = True
+napoleon_use_param = False
+napoleon_use_ivar = True
+
+autodoc_inherit_docstrings = False
+
+autodoc_member_order = 'bysource'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -95,7 +106,11 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'collapse_navigation': False,
+    'display_version': True,
+    # 'logo_only': True,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -41,7 +41,7 @@ class _PyQtWraper(object):
                 from PyQt4 import QtGui as QtWidgets
                 from PyQt4 import QtCore
                 logger.debug('Using PyQt4')
-            except ImportError as ex4:
+            except ImportError:
                 logger.debug('Could not find PyQt4 or PyQt5')
                 raise ex5
         PyQt.QtWidgets = QtWidgets
@@ -171,7 +171,7 @@ def get_clipboard():
     return text
 
 
-def get_number_of_monitors():
+def _get_number_of_monitors():
     PyQt = import_pyqt()
     desktop = PyQt.QtWidgets.QDesktopWidget()
     if hasattr(desktop, 'numScreens'):
@@ -193,8 +193,9 @@ def get_resolution_info(monitor_num=0):
         python -m vimtk.xctrl get_resolution_info
 
     Example:
+        >>> # xdoctest: +REQUIRES(module:PyQt5)
         >>> monitor_num = 1
-        >>> for monitor_num in range(get_number_of_monitors()):
+        >>> for monitor_num in range(_get_number_of_monitors()):
         >>>     info = get_resolution_info(monitor_num)
         >>>     print('monitor(%d).info = %s' % (monitor_num, ub.repr2(info, precision=3)))
     """

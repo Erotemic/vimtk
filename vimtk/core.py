@@ -1,3 +1,8 @@
+import itertools as it
+from os.path import join
+from os.path import isdir
+from os.path import exists
+from os.path import expanduser
 import re
 import sys
 import logging
@@ -11,7 +16,39 @@ from vimtk import cplat
 
 logger = logging.getLogger(__name__)
 # logger.basicConfig()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+
+
+def reload_vimtk():
+    """
+    Used for development
+    """
+    try:
+        import importlib
+        reload = importlib.reload
+    except (AttributeError, ImportError):
+        import imp
+        reload = imp.reload
+        logger.debug('Reloading vimtk')
+    import vimtk
+    import vimtk.core
+    import vimtk.xctrl
+    import vimtk.pyinspect
+    import vimtk.cplat
+
+    reload(vimtk.pyinspect)
+    reload(vimtk.cplat)
+    reload(vimtk.core)
+    reload(vimtk.xctrl)
+    reload(vimtk)
+
+    import ubelt as ub
+    if ub.WIN32:
+        import vimtk.win32_ctrl
+        reload(vimtk.win32_ctrl)
+
+
+reload = reload_vimtk
 
 
 class Config(object):
@@ -75,13 +112,101 @@ class Clipboard(object):
 
 
 class TextSelector(object):
-    """
+    r"""
     Tools for selecting and reading text from Vim
     """
 
     @staticmethod
+    def _demo_vim():
+        """
+        Notes:
+            requires github.com:Erotemic/vimmock.git@dev/refactor
+
+        """
+        from vimtk._demo import vimmock
+        vimmock.patch_vim()
+        import vim
+        import ubelt as ub
+        vim.setup_text(ub.codeblock(
+            '''
+            def foo():
+                return 1
+
+            def bar():
+                return 2
+            '''))
+        vim.move_cursor(1, 0)
+        return vim
+
+    @staticmethod
+    def current_indent(url_ok=False):
+        """
+        Returns the indentation that should be used when inserting new lines.
+
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> import ubelt as ub
+            >>> import vimtk
+            >>> vim = vimmock.patch_vim()
+            >>> vim.setup_text(ub.codeblock(
+            >>>     '''
+            >>>     class Foo:
+            >>>         def __init__(self):
+            >>>             self.foo = 1
+            >>>             self.foo = 2
+            >>>     '''))
+            >>> vim.move_cursor(1)
+            >>> n1 = len(vimtk.TextSelector.current_indent())
+            >>> vim.move_cursor(2)
+            >>> n2 = len(vimtk.TextSelector.current_indent())
+            >>> vim.move_cursor(3)
+            >>> n3 = len(vimtk.TextSelector.current_indent())
+            >>> assert (n1, n2, n3) == (4, 8, 8)
+        """
+
+        # Check current line for cues
+        curr_line = TextSelector.line_at_cursor()
+        curr_indent = get_minimum_indentation(curr_line)
+        if curr_line is None:
+            next_line = ''
+        if curr_line.strip().endswith(':'):
+            curr_indent += 4
+        # Check next line for cues
+        next_line = get_first_nonempty_line_after_cursor()
+        if next_line is None:
+            next_line = ''
+        next_indent = get_minimum_indentation(next_line)
+        if next_indent <= curr_indent + 8:
+            # hack for overindented lines
+            min_indent = max(curr_indent, next_indent)
+        else:
+            min_indent = curr_indent
+        indent = (' ' * min_indent)
+        if curr_line.strip().startswith('>>>'):
+            indent += '>>> '
+        return indent
+
+    @staticmethod
     def word_at_cursor(url_ok=False):
-        """ returns the word highlighted by the curor """
+        """
+        returns the word highlighted by the curor
+
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> import ubelt as ub
+            >>> vim = vimmock.patch_vim()
+            >>> vim.setup_text(ub.codeblock(
+            >>>     '''
+            >>>     class Foo:
+            >>>         def __init__(self):
+            >>>             self.foo = 1
+            >>>             self.bar = 2
+            >>>     '''))
+            >>> vim.move_cursor(3, 14)
+            >>> word = TextSelector.word_at_cursor()
+            >>> print('word = {!r}'.format(word))
+            word = 'self.foo'
+        """
         import vim
         buf = vim.current.buffer
         (row, col) = vim.current.window.cursor
@@ -138,38 +263,68 @@ class TextSelector(object):
 
     @staticmethod
     def selected_text(select_at_cursor=False):
-        """ make sure the vim function calling this has a range after ()
+        r""" make sure the vim function calling this has a range after ()
 
         Currently used by <ctrl+g>
 
         References:
-            http://stackoverflow.com/questions/18165973/vim-obtain-string-between-visual-selection-range-with-python
+            .. [1] http://stackoverflow.com/questions/18165973/vim-between-selection
 
         SeeAlso:
             ~/local/vim/rc/custom_misc_functions.vim
 
         Test paragraph.
-        Far out in the uncharted backwaters of the unfashionable end of the western
-        spiral arm of the Galaxy lies a small unregarded yellow sun. Orbiting this at a
-        distance of roughly ninety-two million miles is an utterly insignificant little
-        blue green planet whose ape-descended life forms are so amazingly primitive
-        that they still think digital watches are a pretty neat idea.
+        Far out in the uncharted backwaters of the unfashionable end of the
+        western spiral arm of the Galaxy lies a small unregarded yellow sun.
+        Orbiting this at a distance of roughly ninety-two million miles is an
+        utterly insignificant little blue green planet whose ape-descended life
+        forms are so amazingly primitive that they still think digital watches
+        are a pretty neat idea.
         % ---
         one. two three. four.
 
+        CommandLine:
+            xdoctest -m vimtk.core TextSelector.selected_text
+
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> import ubelt as ub
+            >>> vim = vimmock.patch_vim()
+            >>> vim.setup_text(ub.codeblock(
+            >>>     '''
+            >>>     line n1
+            >>>     line n2
+            >>>     line n3
+            >>>     line n4
+            >>>     '''))
+            >>> vim.move_cursor(3)
+            >>> vim.current.buffer._visual_select(2, 3)
+            >>> text = TextSelector.selected_text()
+            >>> print(text)
+            line n2
+            line n3
+            >>> vim.current.buffer._visual_select(2, 3, 0, 5)
+            >>> text = TextSelector.selected_text()
+            >>> print(text)
+            line n
+            line n
         """
         import vim
         logger.debug('grabbing visually selected text')
         buf = vim.current.buffer
-        (lnum1, col1) = buf.mark('<')
-        (lnum2, col2) = buf.mark('>')
-        text = TextSelector.text_between_lines(lnum1, lnum2, col1, col2)
-        return text
+        pos1 = buf.mark('<')
+        pos2 = buf.mark('>')
+        if pos1 and pos2:
+            (lnum1, col1) = pos1
+            (lnum2, col2) = pos2
+            text = TextSelector.text_between_lines(lnum1, lnum2, col1, col2)
+            return text
 
     @staticmethod
     def text_between_lines(lnum1, lnum2, col1=0, col2=sys.maxsize - 1):
         import vim
-        lines = vim.eval('getline({}, {})'.format(lnum1, lnum2))
+        # lines = vim.eval('getline({}, {})'.format(lnum1, lnum2))
+        lines = vim.current.buffer[lnum1 - 1:lnum2]
         lines = [ub.ensure_unicode(line) for line in lines]
         try:
             if len(lines) == 0:
@@ -177,8 +332,10 @@ class TextSelector(object):
             elif len(lines) == 1:
                 lines[0] = lines[0][col1:col2 + 1]
             else:
-                lines[0] = lines[0][col1:]
-                lines[-1] = lines[-1][:col2 + 1]
+                # lines[0] = lines[0][col1:]
+                # lines[-1] = lines[-1][:col2 + 1]
+                for i in range(len(lines)):
+                    lines[i] = lines[i][col1:col2 + 1]
             text = '\n'.join(lines)
         except Exception:
             print(ub.repr2(lines))
@@ -187,6 +344,22 @@ class TextSelector(object):
 
     @staticmethod
     def line_at_cursor():
+        """
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> import ubelt as ub
+            >>> vim = vimmock.patch_vim()
+            >>> vim.setup_text(ub.codeblock(
+            >>>     '''
+            >>>     def foo():
+            >>>         return 1
+            >>>     def bar():
+            >>>         return 2
+            >>>     '''))
+            >>> vim.move_cursor(3)
+            >>> line = TextSelector.line_at_cursor()
+            >>> assert line == 'def bar():'
+        """
         import vim
         logger.debug('grabbing text at current line')
         buf = vim.current.buffer
@@ -227,6 +400,56 @@ class Cursor(object):
         import vim
         (row, col) = vim.current.window.cursor
         return row, col
+
+
+class TextInsertor(object):
+    """
+    Tools for inserting text at various positions
+    """
+
+    @staticmethod
+    def insert_at(text, pos):
+        import vim
+        # lines = [line.encode('utf-8') for line in text.split('\n')]
+        lines = [line for line in text.split('\n')]
+        buffer_tail = vim.current.buffer[pos:]  # Original end of the file
+        new_tail = lines + buffer_tail  # Prepend our data
+        del(vim.current.buffer[pos:])  # delete old data
+        vim.current.buffer.append(new_tail)  # extend new data
+
+    @staticmethod
+    def insert_under_cursor(text):
+        """
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> import ubelt as ub
+            >>> vim = vimmock.patch_vim()
+            >>> vim.setup_text('foo')
+            >>> TextInsertor.insert_under_cursor('bar')
+            >>> print(vim.current.buffer._text)
+            foo
+            bar
+        """
+        import vim
+        (row, col) = vim.current.window.cursor
+        # Rows are 1 indexed, so no need to increment
+        TextInsertor.insert_at(text, row)
+
+    def insert_over_selection(text):
+        import vim
+        buf = vim.current.buffer
+        # These are probably 1 based
+        (row1, col1) = buf.mark('<')
+        (row2, col2) = buf.mark('>')
+        TextInsertor.insert_between_lines(text, row1, row2)
+
+    def insert_between_lines(text, row1, row2):
+        import vim
+        buffer_tail = vim.current.buffer[row2:]  # Original end of the file
+        lines = [line.encode('utf-8') for line in text.split('\n')]
+        new_tail  = lines + buffer_tail
+        del(vim.current.buffer[row1 - 1:])  # delete old data
+        vim.current.buffer.append(new_tail)  # append new data
 
 
 class Python(object):
@@ -314,7 +537,7 @@ def preprocess_executable_text(text):
     lines = text.splitlines(True)
 
     # Handle C++ pybind11 docs
-    if all(re.match('" *(>>>)|(\.\.\.) .*', line) for line in lines):
+    if all(re.match(r'" *(>>>)|(\.\.\.) .*', line) for line in lines):
         if all(line.strip().endswith('"') for line in lines):
             new_lines = []
             for line in lines:
@@ -445,22 +668,57 @@ def execute_text_in_terminal(text, return_to_vim=True):
 def vim_argv(defaults=None):
     """
     Helper for parsing vimscript function arguments
+
+    Gets the arguments to the current variable args vim function
+
+    For instance if you have a vim function
+
+    func! foo(...)
+        echo "hi"
+    endfunc
+
+    You could use this to extract what the args that it was called with
+    were.
     """
     import vim
     nargs = int(vim.eval('a:0'))
+    print('nargs = {!r}'.format(nargs))
     argv = [vim.eval('a:{}'.format(i + 1)) for i in range(nargs)]
     if defaults is not None:
         # fill the remaining unspecified args with defaults
         n_remain = len(defaults) - len(argv)
-        remain = defaults[-n_remain:]
-        argv += remain
+        if n_remain > 0:
+            remain = defaults[-n_remain:]
+            argv += remain
     return argv
 
 
 def get_current_fpath():
+    """
+    Example:
+        >>> from vimtk._demo import vimmock
+        >>> vim = vimmock.patch_vim()
+        >>> vim.setup_text('', 'foo.txt')
+        >>> fpath = get_current_fpath()
+        >>> assert fpath == 'foo.txt'
+    """
     import vim
     fpath = vim.current.buffer.name
     return fpath
+
+
+def get_current_filetype():
+    """
+    Example:
+        >>> from vimtk._demo import vimmock
+        >>> vim = vimmock.patch_vim()
+        >>> vim.setup_text('', 'foo.sh')
+        >>> filetype = get_current_filetype()
+        >>> assert filetype == 'sh'
+    """
+    import vim
+    filetype = vim.eval('&ft')
+    return filetype
 
 
 def ensure_normalmode():
@@ -496,7 +754,7 @@ def ensure_normalmode():
     else:
         logger.debug('current_mode_code = %r' % current_mode)
         logger.debug('current_mode = %r' % current_mode)
-    #vim.command("ESC")
+    vim.command("ESC")
 
 
 def autogen_imports(fpath_or_text):
@@ -507,15 +765,13 @@ def autogen_imports(fpath_or_text):
         >>> import vimtk
         >>> source = ub.codeblock(
             '''
-            numpy
-            ub
-            nh
+            math
+            it
             ''')
         >>> text = vimtk.autogen_imports(source)
         >>> print(text)
-        import netharn as nh
-        import numpy
-        import ubelt as ub
+        import itertools as it
+        import math
     """
     import xinspect
     from os.path import exists
@@ -536,13 +792,12 @@ def autogen_imports(fpath_or_text):
         'torch_data': 'import torch.utils.data as torch_data',
         'F': 'import torch.nn.functional as F',
         'math': 'import math',
-        # 'Variable': 'from torch.autograd import Variable',
     }
     importable.known.update(base)
 
     user_importable = None
     try:
-        user_importable = Config.get('vimtk_auto_importable_modules')
+        user_importable = CONFIG.get('vimtk_auto_importable_modules')
         importable.known.update(user_importable)
     except Exception as ex:
         logger.info('ex = {!r}'.format(ex))
@@ -561,6 +816,379 @@ def autogen_imports(fpath_or_text):
     ordered_lines += sorted(x.get(True, []))
     import_block = '\n'.join(ordered_lines)
     return import_block
+
+
+def is_url(text):
+    """ heuristic check if str is url formatted """
+    return any([
+        text.startswith('http://'),
+        text.startswith('https://'),
+        text.startswith('www.'),
+        '.org/' in text,
+        '.com/' in text,
+    ])
+
+
+def extract_url_embeding(word):
+    """
+    parse several common ways to embed url within a "word"
+    """
+    # rst url embedding
+    if word.startswith('<') and word.endswith('>`_'):
+        word = word[1:-3]
+    # markdown url embedding
+    if word.startswith('[') and word.endswith(')'):
+        import parse
+        pres = parse.parse('[{tag}]({ref})', word)
+        if pres:
+            word = pres.named['ref']
+    return word
+
+
+def find_and_open_path(path, mode='split', verbose=0,
+                       enable_python=True,
+                       enable_url=True, enable_cli=True):
+    """
+    Fancy-Find. Does some magic to try and find the correct path.
+
+    Currently supports:
+        * well-formed absolute and relatiave paths
+        * ill-formed relative paths when you are in a descendant directory
+        * python modules that exist in the PYTHONPATH
+
+    """
+    import os
+
+    def try_open(path):
+        # base = '/home/joncrall/code/VIAME/packages/kwiver/sprokit/src/bindings/python/sprokit/pipeline'
+        # base = '/home'
+        if path and exists(path):
+            if verbose:
+                print('EXISTS path = {!r}\n'.format(path))
+            open_path(path, mode=mode, verbose=verbose)
+            return True
+
+    def expand_module(path):
+        from xdoctest import static_analysis as static
+        try:
+            path = path.split('.')[0]
+            print('expand path = {!r}'.format(path))
+            path = static.modname_to_modpath(path)
+            print('expanded path = {!r}'.format(path))
+        except Exception as ex:
+            print('ex = {!r}'.format(ex))
+            return None
+        return path
+
+    def expand_module_prefix(path):
+        # TODO: we could parse the AST to figure out if the prefix is an
+        # alias
+        # for a known module.
+        from xdoctest import static_analysis as static
+        # Check if the path certainly looks like it could be a chain of
+        # python
+        # attribute accessors.
+        if re.match(r'^[\w\d_.]*$', path):
+            parts = path.split('.')
+            for i in reversed(range(len(parts))):
+                prefix = '.'.join(parts[:i])
+                path = static.modname_to_modpath(prefix)
+                if path is not None:
+                    print('expanded prefix = {!r}'.format(path))
+                    return path
+        print('expanded prefix = {!r}'.format(None))
+        return None
+
+    if enable_url:
+        # https://github.com/Erotemic
+        url = extract_url_embeding(path)
+        if is_url(url):
+            import webbrowser
+            browser = webbrowser.open(url)
+            # browser = webbrowser.get('google-chrome')
+            browser.open(url)
+            # ut.open_url_in_browser(url, 'google-chrome')
+            return
+
+    path = expanduser(path)
+    if try_open(path):
+        return
+
+    if try_open(os.path.expandvars(path)):
+        return
+
+    if enable_cli:
+        # Strip off the --argname= prefix
+        match = re.match(r'--[\w_]*=', path)
+        if match:
+            path = path[match.end():]
+
+    # path = 'sprokit/pipeline/pipeline.h'
+    # base = os.getcwd()
+    # base = '/home/joncrall/code/VIAME/packages/kwiver/sprokit/src/bindings/python/sprokit/pipeline'
+
+    if path.startswith('<') and path.endswith('>'):
+        path = path[1:-1]
+    if path.startswith('`') and path.endswith('`'):
+        path = path[1:-1]
+    if path.endswith(':'):
+        path = path[:-1]
+    path = os.path.expandvars(path)
+    path = expanduser(path)  # expand again in case a prefix was removed
+    if try_open(path):
+        return
+
+    def ancestor_paths(start=None, limit={}):
+        """
+        All paths above you
+        """
+        limit = {expanduser(p) for p in limit}.union(set(limit))
+        if start is None:
+            start = os.getcwd()
+        path = start
+        prev = None
+        while path != prev and prev not in limit:
+            yield path
+            prev = path
+            path = os.path.dirname(path)
+
+    def search_candidate_paths(candidate_path_list, candidate_name_list=None,
+                               priority_paths=None, required_subpaths=[],
+                               verbose=None):
+        """
+        searches for existing paths that meed a requirement
+
+        Args:
+            candidate_path_list (list): list of paths to check. If
+                candidate_name_list is specified this is the dpath list instead
+            candidate_name_list (list): specifies several names to check
+                (default = None)
+            priority_paths (None): specifies paths to check first.
+                Ignore candidate_name_list (default = None)
+            required_subpaths (list): specified required directory structure
+                (default = [])
+            verbose (bool):  verbosity flag(default = True)
+
+        Returns:
+            str: return_path
+
+        CommandLine:
+            xdoctest -m utool.util_path --test-search_candidate_paths
+
+        Example:
+            >>> # DISABLE_DOCTEST
+            >>> from utool.util_path import *  # NOQA
+            >>> candidate_path_list = [ub.truepath('~/RPI/code/utool'),
+            >>>                        ub.truepath('~/code/utool')]
+            >>> candidate_name_list = None
+            >>> required_subpaths = []
+            >>> verbose = True
+            >>> priority_paths = None
+            >>> return_path = search_candidate_paths(candidate_path_list,
+            >>>                                      candidate_name_list,
+            >>>                                      priority_paths, required_subpaths,
+            >>>                                      verbose)
+            >>> result = ('return_path = %s' % (str(return_path),))
+            >>> print(result)
+        """
+        if verbose is None:
+            verbose = 1
+
+        if verbose >= 1:
+            print('[search_candidate_paths] Searching for candidate paths')
+
+        if candidate_name_list is not None:
+            candidate_path_list_ = [join(dpath, fname) for dpath, fname in
+                                    it.product(candidate_path_list,
+                                               candidate_name_list)]
+        else:
+            candidate_path_list_ = candidate_path_list
+
+        if priority_paths is not None:
+            candidate_path_list_ = priority_paths + candidate_path_list_
+
+        return_path = None
+        for path in candidate_path_list_:
+            if path is not None and exists(path):
+                if verbose >= 2:
+                    print('[search_candidate_paths] Found candidate directory %r' % (path,))
+                    print('[search_candidate_paths] ... checking for approprate structure')
+                # tomcat directory exists. Make sure it also contains a webapps dir
+                subpath_list = [join(path, subpath) for subpath in required_subpaths]
+                if all(exists(path_) for path_ in subpath_list):
+                    return_path = path
+                    if verbose >= 2:
+                        print('[search_candidate_paths] Found acceptable path')
+                    return return_path
+                    break
+        if verbose >= 1:
+            print('[search_candidate_paths] Failed to find acceptable path')
+        return return_path
+
+    # Search downwards for relative paths
+    candidates = []
+    if not os.path.isabs(path):
+        limit = {'~', os.path.expanduser('~')}
+        start = os.getcwd()
+        candidates += list(ancestor_paths(start, limit=limit))
+    candidates += os.environ['PATH'].split(os.sep)
+    result = search_candidate_paths(candidates, [path], verbose=verbose)
+    if result is not None:
+        path = result
+
+    current_fpath = get_current_fpath()
+    if os.path.islink(current_fpath):
+        newbase = os.path.dirname(os.path.realpath(current_fpath))
+        resolved_path = os.path.join(newbase, path)
+        if try_open(resolved_path):
+            return
+
+    if try_open(path):
+        return
+    else:
+        print('enable_python = {!r}'.format(enable_python))
+        if enable_python:
+            pypath = expand_module(path)
+            print('pypath = {!r}'.format(pypath))
+            if try_open(pypath):
+                return
+            pypath = expand_module_prefix(path)
+            print('pypath = {!r}'.format(pypath))
+            if try_open(pypath):
+                return
+
+        if re.match(r'--\w*=.*', path):
+            # try and open if its a command line arg
+            stripped_path = expanduser(re.sub(r'--\w*=', '', path))
+            if try_open(stripped_path):
+                return
+        #vim.command('echoerr "Could not find path={}"'.format(path))
+        print('Could not find path={!r}'.format(path))
+
+
+def open_path(fpath, mode='e', nofoldenable=False, verbose=0):
+    """
+    Execs new splits / tabs / etc
+
+    Weird this wont work with directories (on my machine), see [1]_.
+
+    Args:
+        fpath : file path to open
+        mode: how to open the new file
+            (valid options: split, vsplit, tabe, e, new, ...)
+
+    References:
+        .. [1] https://superuser.com/questions/1243344/vim-wont-split-open-a-directory-from-python-but-it-works-interactively
+
+    Ignore:
+        ~/.bashrc
+        ~/code
+    """
+    import vim
+    fpath = expanduser(fpath)
+    if not exists(fpath):
+        print("FPATH DOES NOT EXIST")
+    # command = '{cmd} {fpath}'.format(cmd=cmd, fpath=fpath)
+    if isdir(fpath):
+        # Hack around directory problem
+        if mode.startswith('e'):
+            command = ':Explore! {fpath}'.format(fpath=fpath)
+        elif mode.startswith('sp'):
+            command = ':Hexplore! {fpath}'.format(fpath=fpath)
+        elif mode.startswith('vs'):
+            command = ':Vexplore! {fpath}'.format(fpath=fpath)
+        else:
+            raise NotImplementedError('implement fpath cmd for me')
+    else:
+        command = ":exec ':{mode} {fpath}'".format(mode=mode, fpath=fpath)
+
+    if verbose:
+        print('command = {!r}\n'.format(command))
+
+    try:
+        vim.command(command)
+    except Exception as ex:
+        print('FAILED TO OPEN PATH')
+        print('ex = {!r}'.format(ex))
+        raise
+        pass
+
+    if nofoldenable:
+        vim.command(":set nofoldenable")
+
+
+def find_pattern_above_row(pattern, line_list='current', row='current', maxIter=50):
+    """
+    searches a few lines above the curror until it **matches** a pattern
+    """
+    import re
+    if row == 'current':
+        import vim
+        row = vim.current.window.cursor[0] - 1
+        line_list = vim.current.buffer
+    # Iterate until we match.
+    # Janky way to find function / class name
+    for ix in it.count(0):
+        pos = row - ix
+        if maxIter is not None and ix > maxIter:
+            break
+        if pos < 0:
+            break
+        searchline = line_list[pos]
+        if re.match(pattern, searchline) is not None:
+            return searchline, pos
+    return None
+
+
+def get_first_nonempty_line_after_cursor():
+    import vim
+    buf = vim.current.buffer
+    (row, col) = vim.current.window.cursor
+    for i in range(len(buf) - row):
+        line = buf[row + i]
+        if line:
+            return line
+
+
+def get_indentation(line_):
+    """
+    returns the number of preceding spaces
+    """
+    return len(line_) - len(line_.lstrip())
+
+
+def get_minimum_indentation(text):
+    r"""
+    returns the number of preceding spaces
+
+    Args:
+        text (str): unicode text
+
+    Returns:
+        int: indentation
+
+    Example:
+        >>> text = '    foo\n   bar'
+        >>> result = get_minimum_indentation(text)
+        >>> print(result)
+        3
+    """
+    lines = text.split('\n')
+    indentations = [get_indentation(line_)
+                    for line_ in lines  if len(line_.strip()) > 0]
+    if len(indentations) == 0:
+        return 0
+    return min(indentations)
+
+
+def _linux_install():
+    """
+    Installs vimtk to the standard pathogen bundle directory
+    """
+    import pkg_resources  # NOQA
+    import vimtk  # NOQA
+    # TODO: finishme
+    # vim_data = pkg_resources.resource_string(vimtk.__name__, "vim")
 
 
 CONFIG = Config()
