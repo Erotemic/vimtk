@@ -81,16 +81,22 @@ class BufferMock(ub.NiceRepr):
     def _setmark(self, key, pos):
         self._marked_lines[key] = pos
 
-    def _visual_select(self, row1, row2):
+    def _visual_select(self, row1, row2, col1=0, col2=None):
         """
         first and last line to select inclusive
         """
-        self._setmark('<', (row1, 0))
-        self._setmark('>', (row2, 0))
+        assert row1 > 0
+        assert row2 > 0
+        if col2 is None:
+            # col2 = len(self[row2 - 1]) - 1
+            import sys
+            col2 = sys.maxsize - 1
+        self._setmark('<', (row1, col1))
+        self._setmark('>', (row2, col2))
 
     def mark(self, key):
         """
-        Return the lines of a mark
+        Return the 1-based line number of a mark
         """
         return self._marked_lines.get(key, None)
 
@@ -326,5 +332,5 @@ class VimMock(object):
         }
         if command in hard_coded_commands:
             return hard_coded_commands[command]
-        raise NotImplementedError('eval not generally implemented')
+        raise NotImplementedError('eval not generally implemented for {}'.format(command))
         # maybe :e will call open_file?

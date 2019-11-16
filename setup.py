@@ -10,6 +10,7 @@ Developing:
     pip install -e vimtk
 """
 from setuptools import setup
+from setuptools import find_packages
 import sys
 
 
@@ -151,7 +152,8 @@ if __name__ == '__main__':
         keywords='vim, gvim, python',
         url='https://github.com/Erotemic/vimtk',
         license='Apache 2',
-        packages=['vimtk' 'vimtk._demo', 'vimtk._demo.vimmock'],
+        # packages=['vimtk' 'vimtk._demo', 'vimtk._demo.vimmock'],
+        packages=find_packages(include='vimtk.*'),
         classifiers=[
             # List of classifiers available at:
             # https://pypi.python.org/pypi?%3Aaction=list_classifiers

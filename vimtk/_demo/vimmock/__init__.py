@@ -3,7 +3,7 @@ vim mock object for easier testing of vim plugins written in Python.
 
 Originally from https://github.com/Erotemic/vimmock/tree/buffer_filename
 """
-from vimmock.mocked import VimMock
+from .mocked import VimMock
 
 
 __all__ = ['VimMock', 'patch_vim']

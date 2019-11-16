@@ -263,7 +263,7 @@ class TextSelector(object):
 
     @staticmethod
     def selected_text(select_at_cursor=False):
-        """ make sure the vim function calling this has a range after ()
+        r""" make sure the vim function calling this has a range after ()
 
         Currently used by <ctrl+g>
 
@@ -292,15 +292,22 @@ class TextSelector(object):
             >>> vim = vimmock.patch_vim()
             >>> vim.setup_text(ub.codeblock(
             >>>     '''
-            >>>     def foo():
-            >>>         return 1
-            >>>     def bar():
-            >>>         return 2
+            >>>     line n1
+            >>>     line n2
+            >>>     line n3
+            >>>     line n4
             >>>     '''))
             >>> vim.move_cursor(3)
             >>> vim.current.buffer._visual_select(2, 3)
             >>> text = TextSelector.selected_text()
-
+            >>> print(text)
+            line n2
+            line n3
+            >>> vim.current.buffer._visual_select(2, 3, 0, 5)
+            >>> text = TextSelector.selected_text()
+            >>> print(text)
+            line n
+            line n
         """
         import vim
         logger.debug('grabbing visually selected text')
@@ -316,7 +323,8 @@ class TextSelector(object):
     @staticmethod
     def text_between_lines(lnum1, lnum2, col1=0, col2=sys.maxsize - 1):
         import vim
-        lines = vim.eval('getline({}, {})'.format(lnum1, lnum2))
+        # lines = vim.eval('getline({}, {})'.format(lnum1, lnum2))
+        lines = vim.current.buffer[lnum1 - 1:lnum2]
         lines = [ub.ensure_unicode(line) for line in lines]
         try:
             if len(lines) == 0:
@@ -324,8 +332,10 @@ class TextSelector(object):
             elif len(lines) == 1:
                 lines[0] = lines[0][col1:col2 + 1]
             else:
-                lines[0] = lines[0][col1:]
-                lines[-1] = lines[-1][:col2 + 1]
+                # lines[0] = lines[0][col1:]
+                # lines[-1] = lines[-1][:col2 + 1]
+                for i in range(len(lines)):
+                    lines[i] = lines[i][col1:col2 + 1]
             text = '\n'.join(lines)
         except Exception:
             print(ub.repr2(lines))
