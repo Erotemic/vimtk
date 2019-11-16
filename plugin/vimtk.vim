@@ -1,6 +1,6 @@
 " vimtk.vim - 
 " Author:   Jon Crall
-" Version:      0.1.1
+" Version:      0.2.0
 
 " Initialization
 
@@ -13,11 +13,6 @@ endif
 "endif
 let g:loaded_vimtk = 1
 "echo "Loading VimTK"
-
-
-" TODO: ensure this is synced with the python version
-let g:_VIMTK_VERSION = '0.1.1'
-"lockvar g:_VIMTK_VERSION
 
 
 " Disable user settings
@@ -116,6 +111,20 @@ func! QUICKOPEN_leader_tvio(...)
     :exec 'noremap <leader>i'.key.' :split '.fname.'<CR>'
     :exec 'noremap <leader>o'.key.' :e '.fname.'<CR>'
 endfu
+
+
+" TODO ensure _VIMTK_VERSION is synced with the python version
+let g:_VIMTK_VERSION = '0.2.0'
+"Python2or3 << ENDPYTHON
+"# ensure _VIMTK_VERSION is synced with the python version
+"import vimtk
+"import vim
+"print(dir(vim))
+"print('vim.vars = {!r}'.format(vim.vars))
+"print('vim.vars = {!r}'.format(vim.vvars.keys()))
+"vim.eval('let g:_VIMTK_VERSION = {!r}'.format(vimtk.__version__)) 
+"ENDPYTHON
+""lockvar g:_VIMTK_VERSION
 
 
 
