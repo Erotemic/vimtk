@@ -21,8 +21,8 @@ Testing
 vim -c ':redir > vimtk_test.output' -c ":echo 'hello' | exit" && cat vimtk_test.output
 
 
-How to setup a powerful vimrc
------------------------------
+Suggested vimrc 
+---------------
 
 Use vim-plug to manage plugins
 
