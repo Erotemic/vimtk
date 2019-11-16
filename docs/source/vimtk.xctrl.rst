@@ -2,6 +2,6 @@ vimtk.xctrl module
 ==================
 
 .. automodule:: vimtk.xctrl
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

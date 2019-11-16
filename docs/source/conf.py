@@ -11,6 +11,8 @@ Notes:
 
     sphinx-quickstart
 
+    sphinx-apidoc -f -o ~/code/vimtk/docs/source ~/code/vimtk/vimtk --separate
+
     # need to edit the conf.py
 
     cd ~/code/vimtk/docs
@@ -133,7 +135,8 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
+html_static_path = []
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

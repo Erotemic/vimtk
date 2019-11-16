@@ -263,12 +263,17 @@ class TextSelector(object):
 
     @staticmethod
     def selected_text(select_at_cursor=False):
-        r""" make sure the vim function calling this has a range after ()
+        r"""
+        Returns all text in curent selection.
+
+        make sure the vim function calling this has a range after ()
 
         Currently used by <ctrl+g>
 
+        Refered to [vim_between_selection]_.
+
         References:
-            .. [1] http://stackoverflow.com/questions/18165973/vim-between-selection
+            .. [vim_between_selection] http://stackoverflow.com/questions/18165973/vim-between-selection
 
         SeeAlso:
             ~/local/vim/rc/custom_misc_functions.vim
@@ -570,23 +575,35 @@ def execute_text_in_terminal(text, return_to_vim=True):
 
 
     The steps taken:
+
         (1) Takes a block of text,
+
         (2) copies it to the clipboard,
+
         (3) finds the most recently used terminal,
+
         (4) pastes the text into the most recently used terminal,
+
         (5) presses enter (if needed),
+
             * to run what presumably is a command or script,
+
         (6) and then returns focus to vim.
 
     TODO:
+
         * If currently focused on a terminal, then focus in a different
-        terminal!
+            terminal!
+
         * User specified terminal pattern
+
         * User specified paste keypress
+
         * Allow usage from non-gui terminal vim.
             (ensure we can detect if we are running in a terminal and
              register our window as the active vim, and then paste into
              the second mru terminal)
+
     """
     logger.debug('execute_text_in_terminal')
     # Copy the text to the clipboard
@@ -671,14 +688,23 @@ def vim_argv(defaults=None):
 
     Gets the arguments to the current variable args vim function
 
-    For instance if you have a vim function
+    Notes:
 
-    func! foo(...)
-        echo "hi"
-    endfunc
+        For instance if you have a vim function
 
-    You could use this to extract what the args that it was called with
-    were.
+        .. code:: vim
+
+            func! foo(...)
+                echo "hi"
+                python << EOF
+                import vimtk
+                # You could use this to extract what the args that it was
+                # called with were.
+                argv = vimtk.vim_argv()
+                print('argv = {!r}'.format(argv))
+                EOF
+            endfunc
+
     """
     import vim
     nargs = int(vim.eval('a:0'))
@@ -1070,7 +1096,8 @@ def open_path(fpath, mode='e', nofoldenable=False, verbose=0):
     """
     Execs new splits / tabs / etc
 
-    Weird this wont work with directories (on my machine), see [1]_.
+    Weird this wont work with directories (on my machine), see
+    [vim_split_issue]_.
 
     Args:
         fpath : file path to open
@@ -1078,7 +1105,7 @@ def open_path(fpath, mode='e', nofoldenable=False, verbose=0):
             (valid options: split, vsplit, tabe, e, new, ...)
 
     References:
-        .. [1] https://superuser.com/questions/1243344/vim-wont-split-open-a-directory-from-python-but-it-works-interactively
+        .. [vim_split_issue] https://superuser.com/questions/1243344/vim-wont-split-open-a-directory-from-python-but-it-works-interactively
 
     Ignore:
         ~/.bashrc
