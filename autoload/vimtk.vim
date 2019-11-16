@@ -42,7 +42,8 @@ print('vim.current.buffer[-1] = {!r}'.format(buf[-1]))
 
 print('buf = {!r}'.format(buf))
 print('buf.mark = {!r}'.format(buf.mark))
-print('buf.mark(>) = {!r}'.format(buf.mark('<')))
+print('buf.mark(<) = {!r}'.format(buf.mark('<')))
+print('buf.mark(>) = {!r}'.format(buf.mark('>')))
 
 print('mark a = {!r}'.format(buf.mark('a')))
 
@@ -332,8 +333,8 @@ import ubelt as ub
 mode = vim.eval('a:1')
 indent = vimtk.TextSelector.current_indent()
 newtext = '\n'.join([
-    indent + 'import ubelt as ub',
-    indent + 'ti = ub.Timerit(100, bestof=10, verbose=2)',
+    indent + 'import timerit',
+    indent + 'ti = timerit.Timerit(100, bestof=10, verbose=2)',
     indent + 'for timer in ti.reset(\'time\'):',
     indent + '    with timer:',
 ])
@@ -342,7 +343,7 @@ if 'v' in mode.lower():
     newtext += '\n' + ub.indent(selected, ' ' * 8)
     vimtk.TextInsertor.insert_over_selection(newtext)
 else:
-    vimtk.TextInsertor.insert_under_cursor(newline)
+    vimtk.TextInsertor.insert_under_cursor(newtext)
 EOF
 endfunc
 
@@ -357,26 +358,9 @@ Suggested Binding:
     noremap <leader>es :call vimtk#smart_search_word_at_cursor()<CR>
 """
 import vim
+import vimtk
 word = vimtk.TextSelector.word_at_cursor(url_ok=True)
-
-
-def extract_url_embeding(word):
-    """
-    parse several common ways to embed url within a "word"
-    """
-    # rst url embedding
-    if word.startswith('<') and word.endswith('>`_'):
-        word = word[1:-3]
-    # markdown url embedding
-    if word.startswith('[') and word.endswith(')'):
-        import parse
-        pres = parse.parse('[{tag}]({ref})', word)
-        if pres:
-            word = pres.named['ref']
-    return word
-
-url = extract_url_embeding(word)
-
+url = vimtk.extract_url_embeding(word)
 import webbrowser
 webbrowser.open(url)
 EOF
@@ -421,24 +405,24 @@ call vimtk#open_path_at_cursor('split', '~')
 call vimtk#open_path_at_cursor('split', 'google.com')
 """
 import vim
-import pyvim_funcs; pyvim_funcs.reload(pyvim_funcs)
 import re
 from os.path import exists, expanduser
 import vimtk
 
 argv = vimtk.vim_argv(defaults=['split'])
 mode = argv[0]
+print('argv = {!r}'.format(argv))
 
-if len(argv) > 1:
+if len(argv) >= 2:
     path = argv[1]
 else:
     path = vimtk.TextSelector.word_at_cursor(url_ok=True)
 
-print = vimtk.logger.info
+#print = vimtk.logger.info
 print('vimtk#open_path_at_cursor path = {!r}'.format(path))
 print('exists = {!r}'.format(exists(path)))
 
-vimtk.find_and_open_path(path, mode=mode, verbose=verbose)
+vimtk.find_and_open_path(path, mode=mode, verbose=1)
 EOF
 endfunc
 

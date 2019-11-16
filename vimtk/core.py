@@ -682,12 +682,14 @@ def vim_argv(defaults=None):
     """
     import vim
     nargs = int(vim.eval('a:0'))
+    print('nargs = {!r}'.format(nargs))
     argv = [vim.eval('a:{}'.format(i + 1)) for i in range(nargs)]
     if defaults is not None:
         # fill the remaining unspecified args with defaults
         n_remain = len(defaults) - len(argv)
-        remain = defaults[-n_remain:]
-        argv += remain
+        if n_remain > 0:
+            remain = defaults[-n_remain:]
+            argv += remain
     return argv
 
 
@@ -869,6 +871,7 @@ def find_and_open_path(path, mode='split', verbose=0,
     def expand_module(path):
         from xdoctest import static_analysis as static
         try:
+            path = path.split('.')[0]
             print('expand path = {!r}'.format(path))
             path = static.modname_to_modpath(path)
             print('expanded path = {!r}'.format(path))

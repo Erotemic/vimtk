@@ -66,9 +66,6 @@ function! VimTK_default_remap()
   noremap <leader>gt :call vimtk#open_path_at_cursor("tabe")<CR>
   noremap gi :call vimtk#open_path_at_cursor("split")<CR>
 
-  call vimtk#quickopen(',', '~/.vimrc')
-  call vimtk#quickopen('5', '~/.bashrc')
-
 endfunction
 
 
@@ -77,7 +74,12 @@ function! VimTK_suggested_remap()
   let maplocalleader = ","
   noremap \ ,
 
-  :call VimTK_default_remap()
+  call VimTK_default_remap()
+
+  call vimtk#quickopen(',', '~/.vimrc')
+  call vimtk#quickopen('5', '~/.bashrc')
+
+endfunction
 
 
 " Define top-level API commands
