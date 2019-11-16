@@ -4,7 +4,7 @@ Script to publish a new version of this library on PyPI
 
 Args:
     # These environment variables must / should be set
-    GITHUB_USERNAME : username for pypi
+    TWINE_USERNAME : username for pypi
     TWINE_PASSWORD : password for pypi
     USE_GPG : defaults to True
     GPG_IDENTIFIER
@@ -20,10 +20,10 @@ Usage:
     cd <YOUR REPO>
 
     # Set your variables or load your secrets
-    export GITHUB_USERNAME=<pypi-username>
+    export TWINE_USERNAME=<pypi-username>
     export TWINE_PASSWORD=<pypi-password>
 
-    source $(secret_loader.sh)
+
 
     # Interactive/Dry run
     ./publish.sh 
@@ -33,9 +33,7 @@ Usage:
 '''
 
 # Options
-if [[ "$USER" == "joncrall" ]]; then
-    GITHUB_USERNAME=erotemic
-fi
+TWINE_USERNAME=${TWINE_USERNAME:="<unknown>"}
 TWINE_PASSWORD=${TWINE_PASSWORD:="<unknown>"}
 TAG_AND_UPLOAD=${TAG_AND_UPLOAD:=$1}
 USE_GPG=${USE_GPG:="True"}
@@ -43,8 +41,9 @@ USE_GPG=${USE_GPG:="True"}
 # First tag the source-code
 TRAVIS_BRANCH=${TRAVIS_BRANCH:=$(git branch | grep \* | cut -d ' ' -f2)}
 DEPLOY_BRANCH=${DEPLOY_BRANCH:=release}
-VERSION=$(python -c "import setup; print(setup.parse_version())")
+VERSION=$(python -c "import setup; print(setup.version)")
 GPG_EXECUTABLE=${GPG_EXECUTABLE:=gpg}
+GPG_KEYID=${GPG_KEYID:=D297D757}
 
 
 echo "
@@ -52,7 +51,7 @@ echo "
 TRAVIS_BRANCH='$TRAVIS_BRANCH'
 DEPLOY_BRANCH='$DEPLOY_BRANCH'
 VERSION='$VERSION'
-GITHUB_USERNAME='$GITHUB_USERNAME'
+TWINE_USERNAME='$TWINE_USERNAME'
 "
 
 
@@ -82,11 +81,7 @@ if [ "$USE_GPG" == "True" ]; then
     # https://stackoverflow.com/questions/45188811/how-to-gpg-sign-a-file-that-is-built-by-travis-ci
     # secure gpg --export-secret-keys > all.gpg
 
-    #GPG_IDENTIFIER=${GPG_IDENTIFIER:-"travis-ci-Erotemic"}
-    #GPG_KEYID=$(gpg --list-keys --keyid-format LONG "$GPG_IDENTIFIER" | head -n 2 | tail -n 1 | awk '{print $1}' | tail -c 9)
-    GPG_KEYID=D297D757
     # REQUIRES GPG >= 2.2
-    echo "GPG_IDENTIFIER = $GPG_IDENTIFIER"
     echo "GPG_KEYID=$GPG_KEYID"
 
     echo "Removing old signatures"
@@ -127,8 +122,8 @@ fi
 
 if [[ "$TAG_AND_UPLOAD" == "yes" ]]; then
 
-    if [[ "$GITHUB_USERNAME" == "" ]]; then
-        echo "Error GITHUB_USERNAME is not set"
+    if [[ "$TWINE_USERNAME" == "" ]]; then
+        echo "Error TWINE_USERNAME is not set"
         exit 1
     fi
     if [[ "$TWINE_PASSWORD" == "" ]]; then
@@ -141,11 +136,11 @@ if [[ "$TAG_AND_UPLOAD" == "yes" ]]; then
         git tag $VERSION -m "tarball tag $VERSION"
         git push --tags origin $DEPLOY_BRANCH
         if [ "$USE_GPG" == "True" ]; then
-            twine upload --username $GITHUB_USERNAME --password $TWINE_PASSWORD --sign $BDIST_WHEEL_PATH.asc $BDIST_WHEEL_PATH
-            twine upload --username $GITHUB_USERNAME --password $TWINE_PASSWORD --sign $SDIST_PATH.asc $SDIST_PATH
+            twine upload --username $TWINE_USERNAME --password $TWINE_PASSWORD --sign $BDIST_WHEEL_PATH.asc $BDIST_WHEEL_PATH
+            twine upload --username $TWINE_USERNAME --password $TWINE_PASSWORD --sign $SDIST_PATH.asc $SDIST_PATH
         else
-            twine upload --username $GITHUB_USERNAME --password $TWINE_PASSWORD $BDIST_WHEEL_PATH 
-            twine upload --username $GITHUB_USERNAME --password $TWINE_PASSWORD $SDIST_PATH 
+            twine upload --username $TWINE_USERNAME --password $TWINE_PASSWORD $BDIST_WHEEL_PATH 
+            twine upload --username $TWINE_USERNAME --password $TWINE_PASSWORD $SDIST_PATH 
         fi
     else
         echo "TRAVIS_BRANCH!=DEPLOY_BRANCH. skipping tag and upload"
@@ -164,5 +159,5 @@ __notes__="""
 Notes:
     # References: https://docs.travis-ci.com/user/deployment/pypi/
     travis encrypt TWINE_PASSWORD=$TWINE_PASSWORD  
-    travis encrypt GITHUB_USERNAME=$GITHUB_USERNAME 
+    travis encrypt TWINE_USERNAME=$TWINE_USERNAME 
 """
