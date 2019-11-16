@@ -1,4 +1,23 @@
 # -*- coding: utf-8 -*-
+"""
+Notes:
+    http://docs.readthedocs.io/en/latest/getting_started.html
+
+    pip install sphinx sphinx-autobuild sphinx_rtd_theme sphinxcontrib-napoleon
+
+    cd ~/code/vimtk
+    mkdir -p docs
+    cd docs
+
+    sphinx-quickstart
+
+    # need to edit the conf.py
+
+    cd ~/code/vimtk/docs
+    make html
+    sphinx-apidoc -f -o ~/code/vimtk/docs/source ~/code/vimtk/vimtk --separate
+    make html
+"""
 #
 # Configuration file for the Sphinx documentation builder.
 #
@@ -18,21 +37,17 @@
 
 
 # -- Project information -----------------------------------------------------
-
-import vimtk as package
+import vimtk as ub
 import sphinx_rtd_theme
 
-project_name = package.__name__
-
-
-project = project_name
-copyright = '2019, Jon Crall'
+project = 'VimTK'
+copyright = '2018, Jon Crall'
 author = 'Jon Crall'
 
 # The short X.Y version
-version = '.'.join(package.__version__.split('.')[0:2])
+version = '.'.join(ub.__version__.split('.')[0:2])
 # The full version, including alpha/beta/rc tags
-release = package.__version__
+release = ub.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -44,10 +59,6 @@ release = package.__version__
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-# extensions = [
-#     'sphinx.ext.autodoc',
-#     'sphinx.ext.intersphinx',
-# ]
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
@@ -65,6 +76,12 @@ napoleon_use_ivar = True
 autodoc_inherit_docstrings = False
 
 autodoc_member_order = 'bysource'
+# autodoc_mock_imports = ['torch', 'torchvision', 'visdom']
+# intersphinx_mapping = {
+#     # 'pytorch': ('http://pytorch.org/docs/master/', None),
+#     'python': ('https://docs.python.org/3.6', None),
+#     }
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -72,7 +89,6 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
 source_suffix = ['.rst', '.md']
 
 # The master toctree document.
@@ -111,6 +127,8 @@ html_theme_options = {
     'display_version': True,
     # 'logo_only': True,
 }
+# html_logo = '.static/vimtk.svg'
+# html_favicon = '.static/vimtk.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -131,7 +149,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'vimtkdoc'
+htmlhelp_basename = 'VimTKdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -158,7 +176,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'vimtk.tex', 'vimtk Documentation',
+    (master_doc, 'VimTK.tex', 'VimTK Documentation',
      'Jon Crall', 'manual'),
 ]
 
@@ -168,7 +186,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'vimtk', 'vimtk Documentation',
+    (master_doc, 'vimtk', 'VimTK Documentation',
      [author], 1)
 ]
 
@@ -179,15 +197,10 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'vimtk', 'vimtk Documentation',
-     author, 'vimtk', 'One line description of project.',
+    (master_doc, 'VimTK', 'VimTK Documentation',
+     author, 'VimTK', 'One line description of project.',
      'Miscellaneous'),
 ]
 
 
 # -- Extension configuration -------------------------------------------------
-
-# -- Options for intersphinx extension ---------------------------------------
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
