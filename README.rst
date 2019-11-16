@@ -50,6 +50,8 @@ Then you might use a vimrc someting like this
     filetype plugin indent on
     syntax on
 
+    " Makes "," the leader Makes default remaps 
+
     :call VimTK_suggested_remap()
 
 
@@ -125,6 +127,8 @@ Here is a few functions that exist in this toolkit:
 
 - ``vimtk#insert_print_var_at_cursor`` - Insert a print statement around the
   current variable your cursor is on (supports python, bash, cmake, and C++)
+
+- ``vimtk#insert_timerit`` - Make a stub timerit
 
 - ``vimtk#open_path_at_cursor`` - Open a file path or web url at your cursor
 

@@ -6,6 +6,16 @@ We are currently working on porting this changelog to the specifications in
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Version 0.2.0] - Unreleased
+
+### Added 
+* vimtk#quickopen
+* vimtk#quickopen
+* vimtk#insert_print_var_at_cursor
+* vimtk#insert_timerit
+* `_demo.vimmock` fork with enhancements for doctests.
+
+
 ## Version 0.1.1 - Unreleased
 
 ### Added
