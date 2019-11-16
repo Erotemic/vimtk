@@ -39,6 +39,7 @@ function! VimTK_default_remap()
   " copy and execute the current line, word, or visual selection in the terminal 
   "echo "Setting up VimTK default mappings"
   
+  
   " These functions are defined in 
   " ../autoload/vimtk
   " ~/code/vimtk/autoload/vimtk
@@ -69,6 +70,14 @@ function! VimTK_default_remap()
   call vimtk#quickopen('5', '~/.bashrc')
 
 endfunction
+
+
+function! VimTK_suggested_remap() 
+  let mapleader = ","
+  let maplocalleader = ","
+  noremap \ ,
+
+  :call VimTK_default_remap()
 
 
 " Define top-level API commands
