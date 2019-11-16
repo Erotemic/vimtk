@@ -39,7 +39,7 @@ Notes:
 
 
 # -- Project information -----------------------------------------------------
-import vimtk as ub
+# import vimtk
 import sphinx_rtd_theme
 
 project = 'VimTK'
@@ -47,9 +47,11 @@ copyright = '2018, Jon Crall'
 author = 'Jon Crall'
 
 # The short X.Y version
-version = '.'.join(ub.__version__.split('.')[0:2])
+# version = '.'.join(vimtk.__version__.split('.')[0:2])
 # The full version, including alpha/beta/rc tags
-release = ub.__version__
+# release = vimtk.__version__
+version = '0.2'
+release = '0.2.0'
 
 
 # -- General configuration ---------------------------------------------------
