@@ -283,6 +283,9 @@ class TextSelector(object):
         % ---
         one. two three. four.
 
+        CommandLine:
+            xdoctest -m vimtk.core TextSelector.selected_text
+
         Example:
             >>> from vimtk._demo import vimmock
             >>> import ubelt as ub

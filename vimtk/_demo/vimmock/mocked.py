@@ -1,4 +1,4 @@
-"""
+r"""
 
 Place this script in your the vimrc to inspect attributes of the real vim
 python module. This can be used to make this module more accurately reflect the
@@ -52,7 +52,6 @@ def classname(obj):
 
 
 import ubelt as ub  # NOQA
-
 
 
 class BufferMock(ub.NiceRepr):
