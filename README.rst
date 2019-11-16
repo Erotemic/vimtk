@@ -57,8 +57,8 @@ We suggest the following vimrc as a template:
 
 
 This module defines many helper functions, but does not bind them to keys by
-default unless ``VimTK_default_remap`` is called. You can also choose the
-remaps you care about: 
+default unless ``VimTK_default_remap`` is called. The default bindings are as
+follows:
 
 .. code:: vim
 
@@ -86,8 +86,10 @@ remaps you care about:
   noremap gi :call vimtk#open_path_at_cursor("split")<CR>
 
 
-Here is what some of these functions do:
+Obviously you can modify the exact key bindings however you would like.
 
+
+Here is what some of these functions do:
 
 - ``vimtk#execute_text_in_terminal`` - copies the current word, line, or visual
   selection and executes it in your most recently used terminal (perhaps
@@ -107,7 +109,8 @@ Here is what some of these functions do:
 - ``vimtk#insert_print_var_at_cursor`` - Insert a print statement around the
   current variable your cursor is on (supports python, bash, cmake, and C++)
 
-- ``vimtk#insert_timerit`` - Make a stub timerit
+- ``vimtk#insert_timerit`` - Make a stub timerit and insert it at the current
+  position
 
 - ``vimtk#open_path_at_cursor`` - Open a file path or web url at your cursor
 
