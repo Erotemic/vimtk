@@ -257,7 +257,7 @@ EOF
 endfunc
 
 
-func! vimtk#insert_print_var_at_cursor()
+func! vimtk#insert_print_var_at_cursor(...)
 Python2or3 << EOF
 """
 Inserts a line of code that prints the current variable under the cursor
@@ -272,15 +272,40 @@ import vim
 import vimtk
 import ubelt as ub
 
+argv = vimtk.vim_argv(defaults=['repr'])
+
+if len(argv) != 1:
+    raise Exception('only one argument')
+else:
+    mode = argv[0]
+
 expr = vimtk.TextSelector.word_at_cursor()
 indent = vimtk.TextSelector.current_indent()
 
 filetype = vimtk.get_current_filetype()
 if filetype == 'sh':
-    statement = 'echo "{expr} = ${expr}"'.format(expr=expr)
+    language = 'sh'
 elif filetype in {'cmake'}:
-    statement = 'message(STATUS "{expr} = ${{{expr}}}")'.format(expr=expr)
+    language = 'cmake'
 elif filetype in {'cpp', 'cxx', 'h'}:
+    language = 'cpp'
+elif filetype in {'py'}:
+    language = 'py'
+else:
+    language = 'py'  # Default to python
+
+if language == 'sh':
+    statement = 'echo "{expr} = ${expr}"'.format(expr=expr)
+elif language == 'cmake':
+    statement = 'message(STATUS "{expr} = ${{{expr}}}")'.format(expr=expr)
+elif language == 'py':
+    if mode == 'repr':
+        statement = "print('{expr} = {{!r}}'.format({expr}))".format(expr=expr)
+    elif mode == 'repr2':
+        statement = "print('{expr} = {{}}'.format(ub.repr2({expr}, nl=1)))".format(expr=expr)
+    else:
+        raise KeyError(mode)
+elif language == 'cpp':
     current_fpath = vimtk.get_current_fpath()
 
     # TODO: register a way to use loggers
@@ -309,11 +334,8 @@ elif filetype in {'cpp', 'cxx', 'h'}:
         #    expr=expr, cout=cout, endl=endl)
         statement = '{cout} << "{expr} = " << {expr} << {endl};'.format(
             expr=expr, cout=cout, endl=endl)
-elif filetype in {'py'}:
-    statement = "print('{expr} = {{!r}}'.format({expr}))".format(expr=expr)
 else:
-    # Default to python
-    statement = "print('{expr} = {{!r}}'.format({expr}))".format(expr=expr)
+    raise KeyError(language)
 
 newline = indent + statement.replace('\n', '\n' + indent)
 vimtk.TextInsertor.insert_under_cursor(newline)
@@ -361,6 +383,7 @@ import vim
 import vimtk
 word = vimtk.TextSelector.word_at_cursor(url_ok=True)
 url = vimtk.extract_url_embeding(word)
+print('url = {!r}'.format(url))
 import webbrowser
 webbrowser.open(url)
 EOF

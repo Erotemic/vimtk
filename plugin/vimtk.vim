@@ -33,8 +33,6 @@ endif
 function! VimTK_default_remap() 
   " copy and execute the current line, word, or visual selection in the terminal 
   "echo "Setting up VimTK default mappings"
-  
-  
   " These functions are defined in 
   " ../autoload/vimtk
   " ~/code/vimtk/autoload/vimtk
@@ -48,7 +46,10 @@ function! VimTK_default_remap()
   noremap <leader>M :call vimtk#ipython_import_all()<CR>
 
   command! AutoImport call vimtk#insert_auto_import()
-  noremap <leader>pv :call vimtk#insert_print_var_at_cursor()<CR>
+
+  noremap <leader>pv :call vimtk#insert_print_var_at_cursor("repr")<CR>
+  noremap <leader>ps :call vimtk#insert_print_var_at_cursor("repr2")<CR>
+
   noremap  <c-M-B> :call vimtk#insert_timerit(mode())<CR><Esc>
   vnoremap <c-M-B> :call vimtk#insert_timerit(visualmode())<CR><Esc>
 
