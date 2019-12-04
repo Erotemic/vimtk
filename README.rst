@@ -117,6 +117,98 @@ Here is what some of these functions do:
 - ``vimtk#quickopen(char, fpath)`` - Use <leader>[tvio] to open predefined files / directories
 
 
+Alternate VIMRC 
+---------------
+
+.. code:: vim
+
+    " DEMO_VIMRC: 
+
+    call plug#begin('~/.vim/bundle')
+
+    Plug 'sjl/badwolf'
+    Plug 'Erotemic/vimtk'
+
+    call plug#end()            " required
+
+    filetype plugin indent on
+    syntax on
+
+    """" The above code should be among the first things in your vimrc
+
+    scriptencoding utf-8
+    set encoding=utf-8
+
+    " allow backspacing over everything in insert mode
+    set backspace=indent,eol,start
+
+    " In many terminal emulators the mouse works just fine, thus enable it.
+    if has('mouse')
+      set mouse=a
+    endif
+
+    set fileformat=unix
+    set fileformats=unix,dos
+
+    colorscheme badwolf
+
+    " better version of autochdir that changes cwd to be at the current file
+    autocmd BufEnter * silent! lcd %:p:h
+    set nomousehide
+
+    set shellslash
+    set grepprg=grep\ -nH\ $*
+
+    set shiftwidth=4
+    set tabstop=4
+    set expandtab
+
+    set autoread
+    set ruler
+    set incsearch
+    set hlsearch
+
+    " https://unix.stackexchange.com/questions/196098/copy-paste-in-xfce4-terminal-adds-0-and-1
+    " fix terminal spacing issue
+    set t_BE=
+
+    "set cino='{1s'
+
+    " Map your leader key to comma (much easier to hit)
+    let mapleader = ","
+    let maplocalleader = ","
+    noremap \ ,
+
+    " Search and replace under cursor
+    noremap <leader>ss :%s/\<<C-r><C-w>\>/
+    "Surround word with quotes
+    noremap <leader>qw ciw'<C-r>"'<Esc>
+    noremap <leader>qc ciw`<C-r>"`<Esc>
+
+    " Window navication
+    " Alt + jklh
+    map <silent><A-j> <c-w>j
+    map <silent><A-k> <c-w>k
+    map <silent><A-l> <c-w>l
+    map <silent><A-h> <c-w>h
+    " Control + jklh
+    map <c-j> <c-w>j
+    map <c-k> <c-w>k
+    map <c-l> <c-w>l
+    " Move in split windows
+    " Press leader twice to move between windows
+    noremap <leader>, <C-w>w
+    map <c-h> <c-w>h
+    
+
+    " Make default vimtk remaps
+    :call VimTK_default_remap()
+
+    " Register files you use all the time with quickopen
+    " (use <leader>i<char> as a shortcut to specific files
+    call vimtk#quickopen(',', '~/.vimrc')
+    call vimtk#quickopen('5', '~/.bashrc')
+
 .. |CircleCI| image:: https://circleci.com/gh/Erotemic/vimtk.svg?style=svg
     :target: https://circleci.com/gh/Erotemic/vimtk
 .. |Travis| image:: https://img.shields.io/travis/Erotemic/vimtk/master.svg?label=Travis%20CI

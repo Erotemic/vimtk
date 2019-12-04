@@ -1,12 +1,16 @@
 " vimtk.vim - 
 " Author:   Jon Crall
-" Version:      0.2.0
+" Version:      0.2.1
 
 " Initialization
 
 if &cp || v:version < 700
   finish
 endif
+
+" TODO ensure _VIMTK_VERSION is synced with the python version
+" which is defined in: ~/code/vimtk/vimtk/__init__.py
+let g:_VIMTK_VERSION = '0.2.1'
 
 "if exists("g:loaded_vimtk") 
 "  finish
@@ -99,7 +103,6 @@ sys.path.append(repodir)
 ENDPYTHON
 
 
-
 func! QUICKOPEN_leader_tvio(...)
     " TODO: remove for plugin
     " Maps <leader>t<key> to tab open a filename
@@ -114,8 +117,6 @@ func! QUICKOPEN_leader_tvio(...)
 endfu
 
 
-" TODO ensure _VIMTK_VERSION is synced with the python version
-let g:_VIMTK_VERSION = '0.2.0'
 "Python2or3 << ENDPYTHON
 "# ensure _VIMTK_VERSION is synced with the python version
 "import vimtk

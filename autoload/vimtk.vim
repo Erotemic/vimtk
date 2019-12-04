@@ -482,3 +482,50 @@ EOF
     :exec 'noremap <leader>i'.key.' :split '.fname.'<CR>'
     :exec 'noremap <leader>o'.key.' :e '.fname.'<CR>'
 endfu
+
+
+
+func! vimtk#remap_all_modes(lhs, rhs)
+    " Function which remaps keys in all modes
+    "
+    ":echom 'inoremap '.a:lhs.' '.a:rhs
+    "http://vim.wikia.com/wiki/Mapping_keys_in_Vim_-_Tutorial_(Part_1)
+    "  CHAR	MODE	~
+    " <Space>	Normal, Visual, Select and Operator-pending
+	"n	Normal
+	"v	Visual and Select
+	"s	Select
+	"x	Visual
+	"o	Operator-pending
+	"!	Insert and Command-line
+	"i	Insert
+	"l	":lmap" mappings for Insert, Command-line and Lang-Arg
+	"c	Command-line
+    "--------------
+    " Normal Mode
+    :exec 'noremap '.a:lhs.' '.a:rhs
+    " Visual and Select Mode
+    :exec 'vnoremap '.a:lhs.' '.a:rhs
+    " Display select mode map
+    :exec 'snoremap '.a:lhs.' '.a:rhs
+    " Display visual mode maps
+    :exec 'xnoremap '.a:lhs.' '.a:rhs
+    " Operator Pending Mode
+    :exec 'onoremap '.a:lhs.' '.a:rhs
+    " Insert and Replace Mode
+    :exec 'inoremap '.a:lhs.' '.a:rhs
+    " Language Mode
+    :exec 'lnoremap '.a:lhs.' '.a:rhs
+    " Command Line Mode
+    :exec 'cnoremap '.a:lhs.' '.a:rhs
+    " Make r<lhs> do the right thing
+    :exec 'noremap r'.a:lhs.' r'.a:rhs
+    :exec 'noremap f'.a:lhs.' r'.a:rhs
+endfu
+
+
+func! vimtk#swap_keys(lhs, rhs)
+    " Swaps the functionality of two keys
+    :call vimtk#remap_all_modes(a:lhs, a:rhs)
+    :call vimtk#remap_all_modes(a:rhs, a:lhs)
+endfu

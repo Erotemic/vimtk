@@ -3,9 +3,14 @@ python -c "import ubelt._internal as a; a.autogen_init('vimtk', attrs=True)"
 
 TODO: exclude backends line win32 and xctrl
 mkinit ~/local/vim/vimfiles/bundle/vimtk/vimtk/__init__.py -w
+
+Note;
+
+
+Also change version in: ~/code/vimtk/plugin/vimtk.vim
 """
 # flake8: noqa
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 from vimtk.core import *
 

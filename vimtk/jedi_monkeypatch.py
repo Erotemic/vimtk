@@ -19,13 +19,26 @@ def apply_monkey_patch_jedi():
     if DEBUG:
         print('Applying jedi monkey patch')
 
+    # import os
+    # ret = os.system(sys.executable + ' -m pip install xdoctest -U --user')
+    # print('ret = {!r}'.format(ret))
+
     import jedi
     import re
     import ubelt as ub
+    import xdoctest
+    if 0:
+        import sys
+        print('sys.executable = {!r}'.format(sys.executable))
+        print('sys.prefix = {!r}'.format(sys.prefix))
+        print('xdoctest = {!r}'.format(xdoctest))
+        print('xdoctest.__version__ = {!r}'.format(xdoctest.__version__))
+        print('xdoctest.__file__ = {!r}'.format(xdoctest.__file__))
     from xdoctest.docstr import docscrape_google
     from distutils.version import LooseVersion
 
     acceptable_versions = [
+        LooseVersion('0.10.2'),
         LooseVersion('0.11.1'),
         LooseVersion('0.12.0'),
         LooseVersion('0.13.3'),

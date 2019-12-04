@@ -5,11 +5,16 @@ We are currently working on porting this changelog to the specifications in
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
-## [Version 0.2.0] - Unreleased
+## [Version 0.2.1] - Unreleased
 
 ### Added 
-* vimtk#quickopen
+* vimtk#remap_all_modes
+* vimtk#remap_swap_keys
+
+
+## [Version 0.2.0] 
+
+### Added 
 * vimtk#quickopen
 * vimtk#insert_print_var_at_cursor
 * vimtk#insert_timerit
