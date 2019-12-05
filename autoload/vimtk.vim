@@ -26,6 +26,11 @@ try:
 except Exception:
     print('Error using vimtk')
     import sys
+
+    import os
+    # Hack to try and install deps
+    os.system(sys.prefix + '/bin/python' + str(sys.version_info.major) + ' -m pip install ubelt -U')
+    os.system(sys.prefix + '/bin/python' + str(sys.version_info.major) + ' -m pip install pyperclip -U')
     print('sys.prefix = {!r}'.format(sys.prefix))
     print('sys.executable = {!r}'.format(sys.executable))
     print('sys.version_info = {!r}'.format(sys.version_info))
