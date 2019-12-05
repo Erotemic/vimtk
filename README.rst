@@ -131,7 +131,14 @@ Alternate VIMRC
     " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
     """""""""""""""
 
-    call plug#begin('~/.vim/bundle')
+    set nocompatible
+    filetype off
+    source $VIMRUNTIME/mswin.vim
+    behave mswin
+    set encoding=utf8
+    
+    "call plug#begin('~/.vim/bundle')
+    call plug#begin('~/.vim/plugged')
 
     Plug 'sjl/badwolf'
     Plug 'Erotemic/vimtk'
@@ -217,6 +224,12 @@ Alternate VIMRC
     noremap <leader>, <C-w>w
     map <c-h> <c-w>h
 
+    " Fast nerd tree access
+    noremap <C-T> :NERDTree<CR>
+    noremap <leader>. :NERDTree<CR>
+    noremap <leader>h :NERDTreeToggle<CR>
+    "noremap <leader>h :Tlist<CR>
+    noremap <leader>j :Tagbar<CR>
 
     " Make default vimtk remaps
     :call VimTK_default_remap()
@@ -226,8 +239,8 @@ Alternate VIMRC
 
     " Register files you use all the time with quickopen
     " (use <leader>i<char> as a shortcut to specific files
-    call vimtk#quickopen(',', '~/.vimrc')
-    call vimtk#quickopen('5', '~/.bashrc')
+    :call vimtk#quickopen(',', '~/.vimrc')
+    :call vimtk#quickopen('5', '~/.bashrc')
 
 .. |CircleCI| image:: https://circleci.com/gh/Erotemic/vimtk.svg?style=svg
     :target: https://circleci.com/gh/Erotemic/vimtk

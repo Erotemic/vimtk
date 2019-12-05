@@ -38,8 +38,8 @@ function! VimTK_default_remap()
   " copy and execute the current line, word, or visual selection in the terminal 
   "echo "Setting up VimTK default mappings"
   " These functions are defined in 
-  " ../autoload/vimtk
-  " ~/code/vimtk/autoload/vimtk
+  " ../autoload/vimtk.vim
+  " ~/code/vimtk/autoload/vimtk.vimtk
   noremap <leader>H :call vimtk#helloworld()<Esc>
 
   noremap  <leader>a :call vimtk#execute_text_in_terminal(mode())<CR>
