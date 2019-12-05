@@ -122,8 +122,8 @@ import ubelt as ub
 fpath = vimtk.get_current_fpath()
 if not ub.WIN32:
     fpath = ub.compressuser(fpath)
-vimtk.logger.info('fpath = {!r}'.format(fpath))
 vimtk.Clipboard.copy(fpath)
+vimtk.logger.info('fpath = {!r}'.format(fpath))
 EOF
 endfunc
 

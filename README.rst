@@ -152,21 +152,28 @@ Alternate VIMRC
 
     colorscheme badwolf
 
-    " better version of autochdir that changes cwd to be at the current file
-    autocmd BufEnter * silent! lcd %:p:h
     set nomousehide
 
     set shellslash
     set grepprg=grep\ -nH\ $*
 
-    set shiftwidth=4
-    set tabstop=4
-    set expandtab
-
     set autoread
     set ruler
+
+    " References: https://vi.stackexchange.com/questions/13034/automatic-whitespace-in-python
+    " ---- Minimal configuration:
+    set smartindent   " Do smart autoindenting when starting a new line
+    set shiftwidth=4  " Set number of spaces per auto indentation
+    set expandtab     " When using <Tab>, put spaces instead of a <tab> character
+
+    " ---- Good to have for consistency
+    set tabstop=4   " Number of spaces that a <Tab> in the file counts for
+    set smarttab    " At <Tab> at beginning line inserts spaces set in shiftwidth
+
+    " Highlight search regexes
     set incsearch
     set hlsearch
+    
 
     " https://unix.stackexchange.com/questions/196098/copy-paste-in-xfce4-terminal-adds-0-and-1
     " fix terminal spacing issue
@@ -199,10 +206,13 @@ Alternate VIMRC
     " Press leader twice to move between windows
     noremap <leader>, <C-w>w
     map <c-h> <c-w>h
-    
+
 
     " Make default vimtk remaps
     :call VimTK_default_remap()
+
+    " Swap colon and semicolon
+    :call vimtk#swap_keys(':', ';')
 
     " Register files you use all the time with quickopen
     " (use <leader>i<char> as a shortcut to specific files

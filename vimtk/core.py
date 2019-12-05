@@ -15,8 +15,35 @@ from vimtk import xctrl
 from vimtk import cplat
 
 logger = logging.getLogger(__name__)
+
+
+def __setup_logger():
+    # TODO: setting up logging should be handled by the vim plugin
+    # global loggers in python modules should not log anywhere by default
+    global logger
+
+    # logger.propagate = False
+
+    # Remove existing handlers
+    for h in list(logger.handlers):
+        logger.removeHandler(h)
+
+    # By default loggers write to stderr, but we want to write to stdout
+    # so vim doesn't interpret logs as errors
+    fmtr = logging.Formatter('%(levelname)s: %(message)s')
+
+    hdlr = logging.StreamHandler(sys.stdout)
+    hdlr.setFormatter(fmtr)
+    hdlr.setLevel(logging.INFO)
+    # hdlr.setLevel(logging.DEBUG)
+
+    logger.addHandler(hdlr)
+
+__setup_logger()
+
 # logger.basicConfig()
-logger.setLevel(logging.INFO)
+# logger.setLevel(logging.INFO)
+# logger.setLevel(logging.DEBUG)
 
 
 def reload_vimtk():
@@ -799,7 +826,12 @@ def autogen_imports(fpath_or_text):
         import itertools as it
         import math
     """
-    import xinspect
+    try:
+        import xinspect
+    except Exception:
+        print('UNABLE TO IMPORT XINSPECT')
+        print('sys.prefix = {!r}'.format(sys.prefix))
+        raise
     from os.path import exists
     from xinspect.autogen import Importables
     importable = Importables()

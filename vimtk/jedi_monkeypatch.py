@@ -23,18 +23,32 @@ def apply_monkey_patch_jedi():
     # ret = os.system(sys.executable + ' -m pip install xdoctest -U --user')
     # print('ret = {!r}'.format(ret))
 
-    import jedi
+    try:
+        import jedi
+    except ImportError:
+        print('cannot monkey patch jedi, jedi module not found')
+        return
+
     import re
+    import sys
+    import vimtk
     import ubelt as ub
-    import xdoctest
-    if 0:
-        import sys
-        print('sys.executable = {!r}'.format(sys.executable))
+    try:
+        import xdoctest
+        if 0:
+            print('sys.executable = {!r}'.format(sys.executable))
+            print('sys.prefix = {!r}'.format(sys.prefix))
+            print('xdoctest = {!r}'.format(xdoctest))
+            print('xdoctest.__version__ = {!r}'.format(xdoctest.__version__))
+            print('xdoctest.__file__ = {!r}'.format(xdoctest.__file__))
+        from xdoctest.docstr import docscrape_google
+    except ImportError as ex:
+        print('vimtk = {!r}'.format(vimtk))
+        print('ub = {!r}'.format(ub))
+        print('jedi = {!r}'.format(jedi))
         print('sys.prefix = {!r}'.format(sys.prefix))
-        print('xdoctest = {!r}'.format(xdoctest))
-        print('xdoctest.__version__ = {!r}'.format(xdoctest.__version__))
-        print('xdoctest.__file__ = {!r}'.format(xdoctest.__file__))
-    from xdoctest.docstr import docscrape_google
+        print('ERROR ex = {!r}'.format(ex))
+        raise
     from distutils.version import LooseVersion
 
     acceptable_versions = [
