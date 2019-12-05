@@ -23,13 +23,13 @@ Usage:
     export TWINE_USERNAME=<pypi-username>
     export TWINE_PASSWORD=<pypi-password>
 
-
-
     # Interactive/Dry run
     ./publish.sh 
 
     # Non-Interactive run
     #./publish.sh yes
+    source $(secret_loader.sh)
+    DEPLOY_BRANCH=master ./publish.sh yes
 '''
 
 # Options
