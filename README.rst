@@ -141,10 +141,11 @@ Alternate VIMRC
     call plug#begin('~/.vim/plugged')
 
     Plug 'sjl/badwolf'
-    Plug 'Erotemic/vimtk'
     Plug 'scrooloose/nerdcommenter'
     Plug 'scrooloose/nerdtree'
     Plug 'vim-syntastic/syntastic'
+    Plug 'majutsushi/tagbar'
+    Plug 'Erotemic/vimtk'
 
     call plug#end()            " required
 
@@ -164,10 +165,16 @@ Alternate VIMRC
       set mouse=a
     endif
 
+    if has("win32") || has("win16")
+        " pass
+    else
+        set clipboard=unnamedplus
+    endif
+    
     set fileformat=unix
     set fileformats=unix,dos
 
-    colorscheme badwolf
+    " colorscheme badwolf
 
     set nomousehide
 
@@ -231,6 +238,12 @@ Alternate VIMRC
     "noremap <leader>h :Tlist<CR>
     noremap <leader>j :Tagbar<CR>
 
+    "set autochdir
+    " better version of autochdir that changes cwd to be at the current file
+    autocmd BufEnter * silent! lcd %:p:h
+    
+    " Note: to use vimtk I think we need to have ubelt installed
+    " or get some sort of install-hook pip install command to happen
     " Make default vimtk remaps
     :call VimTK_default_remap()
 

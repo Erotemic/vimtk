@@ -21,7 +21,16 @@ Suggested Binding:
     noremap <leader>H :call vimtk#helloworld()<Esc>
 """
 import vim
-import vimtk
+try:
+    import vimtk
+except Exception:
+    print('Error using vimtk')
+    import sys
+    print('sys.prefix = {!r}'.format(sys.prefix))
+    print('sys.executable = {!r}'.format(sys.executable))
+    print('sys.version_info = {!r}'.format(sys.version_info))
+    raise
+
 
 #print = vimtk.logger.info
 print('hello world from python')
