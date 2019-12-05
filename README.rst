@@ -122,12 +122,22 @@ Alternate VIMRC
 
 .. code:: vim
 
-    " DEMO_VIMRC: 
+    " VimTK Recommended VimRC: 
+    " References: https://github.com/Erotemic/vimtk
+    
+    """""""""""""""
+    " # Install vim-plug into your autoload directory
+    " " See: https://github.com/junegunn/vim-plug
+    " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    """""""""""""""
 
     call plug#begin('~/.vim/bundle')
 
     Plug 'sjl/badwolf'
     Plug 'Erotemic/vimtk'
+    Plug 'scrooloose/nerdcommenter'
+    Plug 'scrooloose/nerdtree'
+    Plug 'vim-syntastic/syntastic'
 
     call plug#end()            " required
 
