@@ -1,6 +1,6 @@
 " Location:     autoload/vimtk.vim
 
-if !exists("g:loaded_vimtk_autoload")  || !exists('g:loaded_vimtk')
+if !exists("g:loaded_vimtk_autoload")  && !exists('g:loaded_vimtk')
   finish
 endif
 let g:loaded_vimtk_autoload = 1
