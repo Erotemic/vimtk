@@ -133,20 +133,17 @@ Alternate VIMRC
 
     set nocompatible
     filetype off
-    source $VIMRUNTIME/mswin.vim
-    behave mswin
+    "source $VIMRUNTIME/mswin.vim
+    "behave mswin
     set encoding=utf8
     
-    "call plug#begin('~/.vim/bundle')
-    call plug#begin('~/.vim/plugged')
-
+    call plug#begin('~/.vim/bundle')
     Plug 'sjl/badwolf'
     Plug 'scrooloose/nerdcommenter'
     Plug 'scrooloose/nerdtree'
     Plug 'vim-syntastic/syntastic'
     Plug 'majutsushi/tagbar'
     Plug 'Erotemic/vimtk'
-
     call plug#end()            " required
 
     filetype plugin indent on
@@ -156,33 +153,6 @@ Alternate VIMRC
 
     scriptencoding utf-8
     set encoding=utf-8
-
-    " allow backspacing over everything in insert mode
-    set backspace=indent,eol,start
-
-    " In many terminal emulators the mouse works just fine, thus enable it.
-    if has('mouse')
-      set mouse=a
-    endif
-
-    if has("win32") || has("win16")
-        " pass
-    else
-        set clipboard=unnamedplus
-    endif
-    
-    set fileformat=unix
-    set fileformats=unix,dos
-
-    " colorscheme badwolf
-
-    set nomousehide
-
-    set shellslash
-    set grepprg=grep\ -nH\ $*
-
-    set autoread
-    set ruler
 
     " References: https://vi.stackexchange.com/questions/13034/automatic-whitespace-in-python
     " ---- Minimal configuration:
@@ -198,13 +168,6 @@ Alternate VIMRC
     set incsearch
     set hlsearch
     
-
-    " https://unix.stackexchange.com/questions/196098/copy-paste-in-xfce4-terminal-adds-0-and-1
-    " fix terminal spacing issue
-    set t_BE=
-
-    "set cino='{1s'
-
     " Map your leader key to comma (much easier to hit)
     let mapleader = ","
     let maplocalleader = ","

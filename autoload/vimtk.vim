@@ -29,6 +29,8 @@ except Exception:
 
     import os
     # Hack to try and install deps
+    print('HACK: VIMTK IS ATTEMPTING TO INSTALL DEPS!')
+    print('HACK: THIS WILL REQUIRE A RESTART OF VIM IF IT WORKS')
     os.system(sys.prefix + '/bin/python' + str(sys.version_info.major) + ' -m pip install ubelt -U')
     os.system(sys.prefix + '/bin/python' + str(sys.version_info.major) + ' -m pip install pyperclip -U')
     print('sys.prefix = {!r}'.format(sys.prefix))
