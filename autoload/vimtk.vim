@@ -305,6 +305,8 @@ elif filetype in {'cmake'}:
     language = 'cmake'
 elif filetype in {'cpp', 'cxx', 'h'}:
     language = 'cpp'
+elif filetype in {'vue', 'js'}:
+    language = 'javascript'
 elif filetype in {'py'}:
     language = 'py'
 else:
@@ -314,6 +316,8 @@ if language == 'sh':
     statement = 'echo "{expr} = ${expr}"'.format(expr=expr)
 elif language == 'cmake':
     statement = 'message(STATUS "{expr} = ${{{expr}}}")'.format(expr=expr)
+elif language == 'javascript':
+    statement = 'console.log({expr});'.format(expr=expr)
 elif language == 'py':
     if mode == 'repr':
         statement = "print('{expr} = {{!r}}'.format({expr}))".format(expr=expr)
