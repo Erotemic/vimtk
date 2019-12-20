@@ -894,6 +894,8 @@ def extract_url_embeding(word):
     # rst url embedding
     if word.startswith('<') and word.endswith('>`_'):
         word = word[1:-3]
+    if word.startswith('(') and word.endswith(')'):
+        word = word[1:-1]
     # markdown url embedding
     if word.startswith('[') and word.endswith(')'):
         import parse
