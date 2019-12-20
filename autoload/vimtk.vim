@@ -317,7 +317,7 @@ if language == 'sh':
 elif language == 'cmake':
     statement = 'message(STATUS "{expr} = ${{{expr}}}")'.format(expr=expr)
 elif language == 'javascript':
-    statement = 'console.log({expr});'.format(expr=expr)
+    statement = 'console.log("{expr} = " + {expr});'.format(expr=expr)
 elif language == 'py':
     if mode == 'repr':
         statement = "print('{expr} = {{!r}}'.format({expr}))".format(expr=expr)
