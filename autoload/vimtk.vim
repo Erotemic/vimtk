@@ -318,6 +318,20 @@ elif language == 'cmake':
     statement = 'message(STATUS "{expr} = ${{{expr}}}")'.format(expr=expr)
 elif language == 'javascript':
     statement = 'console.log("{expr} = " + {expr});'.format(expr=expr)
+    # try to play nice with js linter
+    maxlen = 80 - len(indent)
+    if len(statement) > maxlen:
+        parts = [
+            '"{expr} = " + '.format(expr=expr),
+            '{expr}'.format(expr=expr),
+        ]
+        body = '  ' + ''.join(parts)
+        header = 'console.log('
+        footer = ');'
+        if len(body) < maxlen:
+            statement = '\n'.join([header, body, footer])
+        else:
+            statement = '\n'.join([header, '  ' + parts[0], '    ' + parts[1], footer])
 elif language == 'py':
     if mode == 'repr':
         statement = "print('{expr} = {{!r}}'.format({expr}))".format(expr=expr)

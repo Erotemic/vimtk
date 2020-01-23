@@ -131,6 +131,10 @@ Alternate VIMRC
     " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
     """""""""""""""
 
+    " Enable normal windows hotkeys like: ctrl+c, ctrl+v, ctrl+a, etc...
+    source $VIMRUNTIME/mswin.vim
+    behave mswin
+
     set nocompatible
     filetype off
     "source $VIMRUNTIME/mswin.vim
@@ -167,6 +171,14 @@ Alternate VIMRC
     " Highlight search regexes
     set incsearch
     set hlsearch
+
+    " Disable swap files, which prevents annoying messages when you open the
+    same file twice
+    set noswapfile
+
+    " Use a colorscheme (murphy is builtin, but I like badwolf)
+    colorscheme badwolf
+    "colorscheme murphy
     
     " Map your leader key to comma (much easier to hit)
     let mapleader = ","
