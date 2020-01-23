@@ -173,7 +173,7 @@ Alternate VIMRC
     set hlsearch
 
     " Disable swap files, which prevents annoying messages when you open the
-    same file twice
+    " same file twice
     set noswapfile
 
     " Use a colorscheme (murphy is builtin, but I like badwolf)
