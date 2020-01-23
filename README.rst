@@ -120,6 +120,16 @@ Here is what some of these functions do:
 Alternate VIMRC 
 ---------------
 
+Note to get all the features, you need the following packages:
+
+.. code:: bash
+
+    # The <leader>a ability requires xdotool and wmctrl on linux systems
+    sudo apt install xdotool wmctrl ctags
+
+    # vimtk requires ubelt in whichever environment it is running
+    pip install ubelt --user
+
 .. code:: vim
 
     " VimTK Recommended VimRC: 
