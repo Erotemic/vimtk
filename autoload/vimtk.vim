@@ -563,3 +563,26 @@ func! vimtk#swap_keys(lhs, rhs)
     :call vimtk#remap_all_modes(a:lhs, a:rhs)
     :call vimtk#remap_all_modes(a:rhs, a:lhs)
 endfu
+
+
+func! vimtk#py_format_doctest() range
+Python2or3 << EOF
+import vim
+import vimtk
+text = vimtk.TextSelector.selected_text()
+text2 = vimtk.Python.format_text_as_docstr(text)
+vimtk.TextInsertor.insert_over_selection(text2)
+EOF
+endfunc
+
+
+func! vimtk#py_unformat_doctest() range
+Python2or3 << EOF
+import vim
+import pyvim_funcs; pyvim_funcs.reload(pyvim_funcs)
+text = vimtk.TextSelector.selected_text()
+text2 = vimtk.Python.unformat_text_as_docstr(text)
+vimtk.TextInsertor.insert_over_selection(text2)
+EOF
+endfunc
+

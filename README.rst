@@ -147,6 +147,7 @@ Alternate VIMRC
     Plug 'scrooloose/nerdtree'
     Plug 'vim-syntastic/syntastic'
     Plug 'majutsushi/tagbar'
+    Plug 'ervandew/supertab'
     Plug 'Erotemic/vimtk'
     call plug#end()            " required
 
@@ -219,7 +220,10 @@ Alternate VIMRC
     
     " Note: to use vimtk I think we need to have ubelt installed
     " or get some sort of install-hook pip install command to happen
-    " Make default vimtk remaps
+    " We can hack around this by explicitly sourcing the vimtk plugin
+    source $HOME/.vim/bundle/vimtk/plugin/vimtk.vim
+    
+    " Make default vimtk remaps. 
     :call VimTK_default_remap()
 
     " Swap colon and semicolon

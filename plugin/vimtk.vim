@@ -10,7 +10,7 @@ endif
 
 " TODO ensure _VIMTK_VERSION is synced with the python version
 " which is defined in: ~/code/vimtk/vimtk/__init__.py
-let g:_VIMTK_VERSION = '0.2.1'
+let g:_VIMTK_VERSION = '0.2.2'
 
 "if exists("g:loaded_vimtk") 
 "  finish
@@ -65,6 +65,10 @@ function! VimTK_default_remap()
   noremap <leader>gv :call vimtk#open_path_at_cursor("vsplit")<CR>
   noremap <leader>gt :call vimtk#open_path_at_cursor("tabe")<CR>
   noremap gi :call vimtk#open_path_at_cursor("split")<CR>
+
+  " Doctest editing
+  vnoremap gd :call vimtk#py_format_doctest()<CR>
+  vnoremap gu :call vimtk#py_unformat_doctest()<CR>
 
 endfunction
 

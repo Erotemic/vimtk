@@ -554,6 +554,37 @@ class Python(object):
         if hackaway_row0:
             del vim.current.buffer[0]
 
+    def format_text_as_docstr(text):
+        r"""
+        CommandLine:
+            python  ~/local/vim/rc/pyvim_funcs.py  --test-format_text_as_docstr
+
+        Example:
+            >>> text = ub.codeblock(
+                '''
+                a = 1
+                b = 2
+                ''')
+            >>> formated_text = Python.format_text_as_docstr(text)
+            >>> unformated_text = Python.unformat_text_as_docstr(formated_text)
+            >>> print(formated_text)
+            >>> print(unformated_text)
+        """
+        min_indent = get_minimum_indentation(text)
+        indent_ =  ' ' * min_indent
+        formated_text = re.sub('^' + indent_, '' + indent_ + '>>> ', text,
+                               flags=re.MULTILINE)
+        formated_text = re.sub('^$', '' + indent_ + '>>> #', formated_text,
+                               flags=re.MULTILINE)
+        return formated_text
+
+    def unformat_text_as_docstr(formated_text):
+        min_indent = get_minimum_indentation(formated_text)
+        indent_ =  ' ' * min_indent
+        unformated_text = re.sub('^' + indent_ + '>>> ', '' + indent_,
+                                 formated_text, flags=re.MULTILINE)
+        return unformated_text
+
 
 def preprocess_executable_text(text):
     """
