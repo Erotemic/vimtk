@@ -567,6 +567,9 @@ endfu
 
 func! vimtk#py_format_doctest() range
 Python2or3 << EOF
+"""
+Inserts docstring chevrons
+"""
 import vim
 import vimtk
 text = vimtk.TextSelector.selected_text()
@@ -578,6 +581,9 @@ endfunc
 
 func! vimtk#py_unformat_doctest() range
 Python2or3 << EOF
+"""
+Removes docstring chevrons
+"""
 import vim
 import pyvim_funcs; pyvim_funcs.reload(pyvim_funcs)
 text = vimtk.TextSelector.selected_text()
@@ -586,3 +592,7 @@ vimtk.TextInsertor.insert_over_selection(text2)
 EOF
 endfunc
 
+
+
+" Source helpers relative to this file
+"execute 'source ' . expand('<sfile>:p:h') . '/vimtk_snippets.vim'

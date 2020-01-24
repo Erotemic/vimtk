@@ -467,6 +467,24 @@ class TextInsertor(object):
         # Rows are 1 indexed, so no need to increment
         TextInsertor.insert_at(text, row)
 
+    @staticmethod
+    def insert_above_cursor(text):
+        """
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> import ubelt as ub
+            >>> vim = vimmock.patch_vim()
+            >>> vim.setup_text('foo')
+            >>> TextInsertor.insert_above_cursor('bar')
+            >>> print(vim.current.buffer._text)
+            bar
+            foo
+        """
+        import vim
+        (row, col) = vim.current.window.cursor
+        row = row - 1
+        TextInsertor.insert_at(text, row)
+
     def insert_over_selection(text):
         import vim
         buf = vim.current.buffer
@@ -488,6 +506,35 @@ class Python(object):
     """
     Tools for handling python-specific functions
     """
+
+    @staticmethod
+    def current_module_info():
+        """
+        Returns information about current module
+
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> import ubelt as ub
+            >>> vim = vimmock.patch_vim()
+            >>> vim.setup_text('', 'foo.py')
+            >>> info = Python.current_module_info()
+            >>> print(ub.repr2(info))
+        """
+        import ubelt as ub
+        import vim
+        from xdoctest import static_analysis as static
+
+        modpath = vim.current.buffer.name
+        modname = ub.modpath_to_modname(modpath, check=False)
+        moddir, rel_modpath = ub.split_modpath(modpath, check=False)
+
+        importable = static.is_modname_importable(modname, exclude=['.'])
+        info = {
+            'modname': modname,
+            'modpath': modpath,
+            'importable': importable,
+        }
+        return info
 
     @staticmethod
     def is_module_pythonfile():
@@ -584,6 +631,51 @@ class Python(object):
         unformated_text = re.sub('^' + indent_ + '>>> ', '' + indent_,
                                  formated_text, flags=re.MULTILINE)
         return unformated_text
+
+    def find_func_above_row(row='current', maxIter=50):
+        """
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> import ubelt as ub
+            >>> import vimtk
+            >>> vim = vimmock.patch_vim()
+            >>> vim.setup_text(ub.codeblock(
+            >>>     '''
+            >>>     class Foo:
+            >>>         def __init__(self):
+            >>>             self.foo = 1
+            >>>             self.foo = 2
+            >>>     def foo():
+            >>>         pass
+            >>>     def bar():
+            >>>         pass
+            >>>     def baz():
+            >>>         pass
+            >>>     '''))
+            >>> vim.move_cursor(8)
+            >>> info = vimtk.Python.find_func_above_row()
+            >>> print(ub.repr2(info))
+            >>> vim.move_cursor(4)
+            >>> info = vimtk.Python.find_func_above_row()
+            >>> print(ub.repr2(info))
+        """
+        pattern = r' *(def|class) *(?P<callname>[A-Za-z0-0_]*)\('
+        result = find_pattern_above_row(pattern, maxIter=maxIter)
+        print('result = {!r}'.format(result))
+        if result is not None:
+            line, pos = result
+            match = re.match(pattern, line)
+            callname = match.groupdict()['callname']
+        else:
+            line = None
+            pos = None
+            callname = None
+        info = {
+            'callname': callname,
+            'pos': pos,
+            'line': line,
+        }
+        return info
 
 
 def preprocess_executable_text(text):
@@ -1212,6 +1304,8 @@ def open_path(fpath, mode='e', nofoldenable=False, verbose=0):
 def find_pattern_above_row(pattern, line_list='current', row='current', maxIter=50):
     """
     searches a few lines above the curror until it **matches** a pattern
+
+    TODO: move to some class? Perhaps somethig like Finder?
     """
     import re
     if row == 'current':
