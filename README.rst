@@ -120,6 +120,16 @@ Here is what some of these functions do:
 Alternate VIMRC 
 ---------------
 
+Note to get all the features, you need the following packages:
+
+.. code:: bash
+
+    # The <leader>a ability requires xdotool and wmctrl on linux systems
+    sudo apt install xdotool wmctrl ctags
+
+    # vimtk requires ubelt in whichever environment it is running
+    pip install ubelt --user
+
 .. code:: vim
 
     " VimTK Recommended VimRC: 
@@ -147,6 +157,7 @@ Alternate VIMRC
     Plug 'scrooloose/nerdtree'
     Plug 'vim-syntastic/syntastic'
     Plug 'majutsushi/tagbar'
+    Plug 'ervandew/supertab'
     Plug 'Erotemic/vimtk'
     call plug#end()            " required
 
@@ -219,7 +230,10 @@ Alternate VIMRC
     
     " Note: to use vimtk I think we need to have ubelt installed
     " or get some sort of install-hook pip install command to happen
-    " Make default vimtk remaps
+    " We can hack around this by explicitly sourcing the vimtk plugin
+    source $HOME/.vim/bundle/vimtk/plugin/vimtk.vim
+    
+    " Make default vimtk remaps. 
     :call VimTK_default_remap()
 
     " Swap colon and semicolon

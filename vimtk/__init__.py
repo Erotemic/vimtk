@@ -10,7 +10,7 @@ Note;
 Also change version in: ~/code/vimtk/plugin/vimtk.vim
 """
 # flake8: noqa
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 from vimtk.core import *
 
