@@ -219,6 +219,9 @@ Note to get all the features, you need the following packages:
     noremap <leader>qw ciw'<C-r>"'<Esc>
     noremap <leader>qc ciw`<C-r>"`<Esc>
 
+    " Reload your vimrc
+    noremap <leader>R :source ~/.vimrc<CR>
+
     " Window navication
     " Alt + jklh
     map <silent><A-j> <c-w>j
