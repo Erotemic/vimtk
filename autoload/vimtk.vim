@@ -585,7 +585,6 @@ Python2or3 << EOF
 Removes docstring chevrons
 """
 import vim
-import pyvim_funcs; pyvim_funcs.reload(pyvim_funcs)
 text = vimtk.TextSelector.selected_text()
 text2 = vimtk.Python.unformat_text_as_docstr(text)
 vimtk.TextInsertor.insert_over_selection(text2)
