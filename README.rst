@@ -85,6 +85,10 @@ follows:
   noremap <leader>gt :call vimtk#open_path_at_cursor("tabe")<CR>
   noremap gi :call vimtk#open_path_at_cursor("split")<CR>
 
+  " Doctest editing
+  vnoremap gd :call vimtk#py_format_doctest()<CR>
+  vnoremap gu :call vimtk#py_unformat_doctest()<CR>
+
 
 Obviously you can modify the exact key bindings however you would like.
 
@@ -94,27 +98,40 @@ Here is what some of these functions do:
 - ``vimtk#execute_text_in_terminal`` - copies the current word, line, or visual
   selection and executes it in your most recently used terminal (perhaps
   running IPython or bash) without needing to alt-tab or copy paste.
+  Default binding is ``<leader>a`` for the current line or visual selection and
+  ``<leader>m`` for a word.
 
 - ``vimtk#ipython_import_all`` - if you are in a python module, this funciton
   creates a few lines of code that will import everything in this module into
   the current namespace. Note, it detects if you need to modify your pythonpath
   and does that.  It also completely disregards ``__all__``. These lines are
-  then executed in your terminal (which should probably be an IPython session)
+  then executed in your terminal (which should probably be an IPython session). 
+  Default binding is ``<leader>M``.
 
 - ``vimtk#copy_current_fpath`` - Copies the path to the current file into the
-  clipboard. On non-windows the home drive is replaced with ``~``.
+  clipboard. On non-windows the home drive is replaced with ``~``. Default
+  binding is ``<leader>C``.
 
-- ``vimtk#auto_import`` - Automatically inserts missing Python imports
+- ``vimtk#auto_import`` - Automatically inserts missing Python imports. 
 
 - ``vimtk#insert_print_var_at_cursor`` - Insert a print statement around the
   current variable your cursor is on (supports python, bash, cmake, and C++)
+  Default binding is ``<leader>pv`` for a repr representation and
+  ``<leader>ps`` for a ubelt repr2 representation.
 
 - ``vimtk#insert_timerit`` - Make a stub timerit and insert it at the current
   position
 
-- ``vimtk#open_path_at_cursor`` - Open a file path or web url at your cursor
+- ``vimtk#open_path_at_cursor`` - Open a file path or web url at your cursor. 
 
-- ``vimtk#quickopen(char, fpath)`` - Use <leader>[tvio] to open predefined files / directories
+- ``vimtk#quickopen(char, fpath)`` - Use ``<leader>[tvio]``` to open predefined
+  files / directories
+
+- ``vimtk#py_format_doctest`` - Default binding to <visual-select> ``gd``.
+  Inserts the doctest `` >>> `` prefix before the visually selected code.
+
+- ``vimtk#vimtk#py_unformat_doctest`` - Default binding to <visual-select> ``gu``.
+      Removes the doctest `` >>> `` prefix before the visually selected code.
 
 
 Alternate VIMRC 
