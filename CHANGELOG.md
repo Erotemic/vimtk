@@ -9,6 +9,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added 
 * snippets
+* new config variable `g:vimtk_sys_path`
+
+### Fixed
+* Fails more gracefully when pyperclip not available 
 
 
 ## [Version 0.2.2] - Unreleased

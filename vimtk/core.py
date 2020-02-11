@@ -1,3 +1,4 @@
+# bioharn
 import itertools as it
 from os.path import join
 from os.path import isdir
@@ -81,11 +82,21 @@ reload = reload_vimtk
 class Config(object):
     """
     Query the state of the vim variable namespace.
+
+    Notes:
+        >>> from vimtk._demo import vimmock
+        >>> vim = vimmock.patch_vim()
+        >>> import vimtk
+        >>> vim.eval("let g:vimtk_sys_path = ['$HOME/code/netharn']")
+        >>> vimtk.CONFIG.get('vimtk_sys_path')
     """
     def __init__(self):
+        # TODO: use scriptconfig to add helps?
         self.default = {
             'vimtk_terminal_pattern': None,
+
             'vimtk_multiline_num_press_enter': 3,
+
             'vimtk_auto_importable_modules': {
                 'it': 'import itertools as it',
                 'nh': 'import netharn as nh',
@@ -99,7 +110,10 @@ class Config(object):
                 'torch_data': 'import torch.utils.data as torch_data',
                 'F': 'import torch.nn.functional as F',
                 'math': 'import math',
-            }
+            },
+
+            # Additional paths to search when resolving python modnames
+            'vimtk_sys_path': [],
         }
         self.state = self.default.copy()
         pass
@@ -114,6 +128,7 @@ class Config(object):
         assert key in self.default
         varname = '{}:{}'.format(context, key)
         var_exists = int(vim.eval('exists("{}")'.format(varname)))
+        print('var_exists = {!r}'.format(var_exists))
         if var_exists:
             value = vim.eval('get({}:, "{}")'.format(context, key))
         else:
@@ -522,13 +537,13 @@ class Python(object):
         """
         import ubelt as ub
         import vim
-        from xdoctest import static_analysis as static
 
         modpath = vim.current.buffer.name
         modname = ub.modpath_to_modname(modpath, check=False)
         moddir, rel_modpath = ub.split_modpath(modpath, check=False)
 
-        importable = static.is_modname_importable(modname, exclude=['.'])
+        from ubelt.util_import import is_modname_importable
+        importable = is_modname_importable(modname, exclude=['.'])
         info = {
             'modname': modname,
             'modpath': modpath,
@@ -1052,30 +1067,46 @@ def find_and_open_path(path, mode='split', verbose=0,
             return True
 
     def expand_module(path):
-        from xdoctest import static_analysis as static
-        try:
-            path = path.split('.')[0]
-            print('expand path = {!r}'.format(path))
-            path = static.modname_to_modpath(path)
-            print('expanded path = {!r}'.format(path))
-        except Exception as ex:
-            print('ex = {!r}'.format(ex))
-            return None
+        # TODO: use ubelt util_import instead
+        import ubelt as ub
+        _debug = 0
+        if _debug:
+            import sys
+            print('sys.base_exec_prefix = {!r}'.format(sys.base_exec_prefix))
+            print('sys.base_prefix = {!r}'.format(sys.base_prefix))
+            print('sys.exec_prefix = {!r}'.format(sys.exec_prefix))
+            print('sys.executable = {!r}'.format(sys.executable))
+            print('sys.implementation = {!r}'.format(sys.implementation))
+            print('sys.prefix = {!r}'.format(sys.prefix))
+            print('sys.version = {!r}'.format(sys.version))
+            print('sys.path = {!r}'.format(sys.path))
+
+        import sys
+        extra_path = CONFIG.get('vimtk_sys_path')
+        sys_path = sys.path + [ub.expandpath(p) for p in extra_path]
+        print('expand path = {!r}'.format(path))
+        modparts = path.split('.')
+        for i in reversed(range(1, len(modparts) + 1)):
+            candidate = '.'.join(modparts[0:i])
+            print('candidate = {!r}'.format(candidate))
+            path = ub.modname_to_modpath(candidate, sys_path=sys_path)
+            if path is not None:
+                break
+        print('expanded modname-to-path = {!r}'.format(path))
         return path
 
     def expand_module_prefix(path):
-        # TODO: we could parse the AST to figure out if the prefix is an
-        # alias
+        # TODO: we could parse the AST to figure out if the prefix is an alias
         # for a known module.
-        from xdoctest import static_analysis as static
-        # Check if the path certainly looks like it could be a chain of
-        # python
+        # Check if the path certainly looks like it could be a chain of python
         # attribute accessors.
         if re.match(r'^[\w\d_.]*$', path):
+            extra_path = CONFIG.get('vimtk_sys_path')
+            sys_path = sys.path + [ub.expandpath(p) for p in extra_path]
             parts = path.split('.')
             for i in reversed(range(len(parts))):
                 prefix = '.'.join(parts[:i])
-                path = static.modname_to_modpath(prefix)
+                path = ub.modname_to_modpath(prefix, sys_path=sys_path)
                 if path is not None:
                     print('expanded prefix = {!r}'.format(path))
                     return path

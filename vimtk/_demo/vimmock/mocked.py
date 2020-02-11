@@ -290,6 +290,8 @@ class VimMock(object):
         self.windows = [self.current.window]  # vim.bufferlist
         self.tabpages = [self.current.tabpage]  # vim.tabpagelist
 
+        self.global_variables = {}
+
     def setup_text(self, text, name=''):
         """
         special mock-only function to put text into the buffer
@@ -321,9 +323,29 @@ class VimMock(object):
         self.current.window.cursor = cursor or (0, 0)
 
     def eval(self, command):
+        """
+        A very hack, and very specific implementation of vim eval for tests.
+
+        This only handles very specific commands.
+        """
+        print('command = {!r}'.format(command))
         if command == '&ft':
             from os.path import splitext
             return splitext(self.current.buffer.name)[1].lstrip('.')
+
+        if command.startswith('let '):
+            return self._eval_assignment(command)
+
+        if command.startswith('exists(') and command.endswith(')'):
+            arg = command[8:-2]
+            return arg in self.global_variables
+
+        if command.startswith('get(') and command.endswith(')'):
+            inner = command[4:-1]
+            context, arg = inner.split(':, ')
+            varkey = arg.strip('"')
+            varname = '{}:{}'.format(context, varkey)
+            return self.global_variables[varname]
 
         hard_coded_commands = {
             'jedi#_vim_exceptions("&encoding", 1)': {'result': 'utf-8'},
@@ -334,3 +356,37 @@ class VimMock(object):
             return hard_coded_commands[command]
         raise NotImplementedError('eval not generally implemented for {}'.format(command))
         # maybe :e will call open_file?
+
+    def _eval_assignment(self, command):
+        """
+
+        References:
+            * https://github.com/vim-jp/vim-vimlparser
+            * https://github.com/Vimjas/vint/blob/master/vint/ast/parsing.py
+
+        Ignore:
+            # TODO: use a real vim parser
+            from vint.ast import parsing
+            parser = parsing.Parser()
+            tree = parser.parse("let g:myvar = ['a', 'b', 'c']")
+            tree['body'][0]['right']['value']
+
+            command = "let g:myvar = ['a', 'b', 'c']"
+        """
+        prefix = 'let '
+        assert command.startswith(prefix)
+        remain = command[len(prefix):]
+        lhs, rhs = remain.split('=', 1)
+        lhs = lhs.strip()
+        rhs = rhs.strip()
+
+        context = None
+        varname = lhs
+        if ':' in lhs:
+            context, key = varname.split(':', 1)
+
+        assert context == 'g', 'only globals supported for now'
+
+        import ast
+        varvalue = ast.literal_eval(rhs)
+        self.global_variables[varname] = varvalue

@@ -7,11 +7,13 @@ logger = logging.getLogger(__name__)
 
 try:
     import pyperclip
-except ImportError:
+except (ImportError, Exception) as ex:
     msg = ('Python cannot import pyperclip: '
-           'python version={}, prefix={}').format(sys.version_info, sys.prefix)
-    logger.error(msg)
-    raise
+           'python version={}, prefix={}, ex={!r}').format(
+               sys.version_info, sys.prefix, ex)
+    logger.warn(msg)
+    pyperclip = None
+    # raise
 
 __PyQt__ = None
 
