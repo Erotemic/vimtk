@@ -128,7 +128,6 @@ class Config(object):
         assert key in self.default
         varname = '{}:{}'.format(context, key)
         var_exists = int(vim.eval('exists("{}")'.format(varname)))
-        print('var_exists = {!r}'.format(var_exists))
         if var_exists:
             value = vim.eval('get({}:, "{}")'.format(context, key))
         else:
@@ -873,7 +872,6 @@ def vim_argv(defaults=None):
     """
     import vim
     nargs = int(vim.eval('a:0'))
-    print('nargs = {!r}'.format(nargs))
     argv = [vim.eval('a:{}'.format(i + 1)) for i in range(nargs)]
     if defaults is not None:
         # fill the remaining unspecified args with defaults
