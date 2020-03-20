@@ -127,10 +127,10 @@ Here is what some of these functions do:
   files / directories
 
 - ``vimtk#py_format_doctest`` - Default binding to <visual-select> ``gd``.
-  Inserts the doctest `` >>> `` prefix before the visually selected code.
+  Inserts the doctest ``>>>`` prefix before the visually selected code.
 
-- ``vimtk#py_unformat_doctest`` - Default binding to <visual-select> ``gu``.
-      Removes the doctest `` >>> `` prefix before the visually selected code.
+- ``vimtk#py_unformat_doctest`` - Default binding to <visual-select> ``gu``. 
+  Removes the doctest ``>>>`` prefix before the visually selected code.
 
 
 Alternate VIMRC 
