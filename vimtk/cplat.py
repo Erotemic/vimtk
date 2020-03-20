@@ -5,6 +5,7 @@ import sys
 import logging
 logger = logging.getLogger(__name__)
 
+
 try:
     import pyperclip
 except (ImportError, Exception) as ex:
@@ -148,6 +149,10 @@ def _ensure_clipboard_backend():
 
     for backend in backend_order:
         if _check_clipboard_backend(backend):
+            if pyperclip is None:
+                raise Exception(
+                    'pyperclip is not appear to be installed. '
+                    'See also: https://github.com/Erotemic/vimtk/issues/5')
             pyperclip.set_clipboard(backend)
             pyperclip._vimtk_monkey_backend = backend
             return
@@ -160,15 +165,24 @@ def copy_text_to_clipboard(text):
     Copies text to the clipboard
     """
     _ensure_clipboard_backend()
+    if pyperclip is None:
+        raise Exception(
+            'pyperclip is not appear to be installed. '
+            'See also: https://github.com/Erotemic/vimtk/issues/5')
     pyperclip.copy(text)
 
 
 def get_clipboard():
     """
+    echo hi
     References:
         http://stackoverflow.com/questions/11063458/python-script-to-copy-text-to-clipboard
     """
     _ensure_clipboard_backend()
+    if pyperclip is None:
+        raise Exception(
+            'pyperclip is not appear to be installed. '
+            'See also: https://github.com/Erotemic/vimtk/issues/5')
     text = pyperclip.paste()
     return text
 

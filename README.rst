@@ -147,6 +147,16 @@ Note to get all the features, you need the following packages:
     # vimtk requires ubelt in whichever environment it is running
     pip install ubelt --user
 
+    # There are also third party python packages needed for some functions
+    pip install pyperclip pyflakes xinspect psutil --user
+
+    # On windows you should also install pywinauto
+    pip install pywinauto --user
+
+Note: there have been some issues regarding which Python environment these
+pacakges are installed to and which Python environment is used by Vim. We are
+working to resolve these issues. Bug reports and patches are welcome!
+
 .. code:: vim
 
     " VimTK Recommended VimRC: 
