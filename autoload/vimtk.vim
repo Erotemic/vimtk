@@ -115,6 +115,20 @@ print('buf.mark(>) = {!r}'.format(buf.mark('>')))
 
 print('mark a = {!r}'.format(buf.mark('a')))
 
+
+our_executable = vimtk.sys_executable()
+print('our_executable = {!r}'.format(our_executable))
+print('sys.base_exec_prefix = {!r}'.format(sys.base_exec_prefix))
+print('sys.base_prefix = {!r}'.format(sys.base_prefix))
+print('sys.exec_prefix = {!r}'.format(sys.exec_prefix))
+print('sys.executable = {!r}'.format(sys.executable))
+print('sys.implementation = {!r}'.format(sys.implementation))
+print('sys.prefix = {!r}'.format(sys.prefix))
+print('sys.version = {!r}'.format(sys.version))
+print('sys.path = {!r}'.format(sys.path))
+print('sys.version_info = {!r}'.format(sys.version_info))
+# Hack to try and install deps
+
 print('vimtk.__version__ = {!r}'.format(vimtk.__version__))
 
 EOF
