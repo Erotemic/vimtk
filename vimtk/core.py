@@ -820,12 +820,16 @@ def execute_text_in_terminal(text, return_to_vim=True):
         terminal.focus()
         # TODO: some terminals paste with a right click on win32
         # support these.
-        pywinauto.keyboard.SendKeys('^v')
-        pywinauto.keyboard.SendKeys('{ENTER}')
-        pywinauto.keyboard.SendKeys('{ENTER}')
+        if hasattr(pywinauto.keyboard, 'send_keys'):
+            send_keys = pywinauto.keyboard.send_keys
+        else:
+            send_keys = pywinauto.keyboard.SendKeys
+        send_keys('^v')
+        send_keys('{ENTER}')
+        send_keys('{ENTER}')
         if '\n' in text:
             for _ in range(vimtk_multiline_num_press_enter - 2):
-                pywinauto.keyboard.SendKeys('{ENTER}')
+                send_keys('{ENTER}')
         if return_to_vim:
             active_gvim.focus()
     else:
