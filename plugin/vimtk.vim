@@ -16,7 +16,6 @@ let g:_VIMTK_VERSION = '0.2.5'
 "  finish
 "endif
 let g:loaded_vimtk = 1
-"echo "Loading VimTK"
 
 
 " Disable user settings
@@ -39,7 +38,7 @@ function! VimTK_default_remap()
   "echo "Setting up VimTK default mappings"
   " These functions are defined in 
   " ../autoload/vimtk.vim
-  " ~/code/vimtk/autoload/vimtk.vimtk
+  " ~/code/vimtk/autoload/vimtk.vim
   noremap <leader>H :call vimtk#helloworld()<Esc>
 
   noremap  <leader>a :call vimtk#execute_text_in_terminal(mode())<CR>
@@ -100,9 +99,10 @@ Python2or3 << ENDPYTHON
 import sys
 from os.path import dirname 
 # We can not call this in a function or we wont get the right filename
-thisfile = vim.eval("expand('<sfile>:p')")
-repodir = dirname(dirname(thisfile))
-sys.path.append(repodir)
+vimtk_plugin_fpath = vim.eval("expand('<sfile>:p')")
+vimtk_repodir = dirname(dirname(vimtk_plugin_fpath))
+# Ensure that Python uses the vimtk module inside this repo.
+sys.path.insert(0, vimtk_repodir)
 # --------------
 ENDPYTHON
 

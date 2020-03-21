@@ -692,6 +692,34 @@ class Python(object):
         return info
 
 
+def sys_executable():
+    """
+    Find the system executable. For whatever reason, vim messes with it.
+
+    References:
+        https://github.com/ycm-core/YouCompleteMe/blob/ba7a9f07a57c657c684edb5dde1f1f1dda1c0c7a/python/ycm/paths.py
+        https://github.com/davidhalter/jedi-vim/issues/870
+    """
+    if sys.platform.startswith('win32'):
+        executable = join(sys.exec_prefix, 'python.exe')
+    else:
+        import os
+        bin_dpath = join(sys.exec_prefix, 'bin')
+        assert exists(bin_dpath)
+        pyexe_re = re.compile(r'python([23](\.[5-9])?)?(.exe)?$', re.IGNORECASE )
+        candiates = os.listdir(bin_dpath)
+        found = []
+        for cand in candiates:
+            if pyexe_re.match(cand):
+                fpath = join(bin_dpath, cand)
+                if os.path.isfile(fpath):
+                    if os.access(fpath, os.X_OK):
+                        found.append(fpath)
+        assert len(found) > 0
+        executable = found[0]
+        return executable
+
+
 def preprocess_executable_text(text):
     """
     Handles the case where we are trying to docstrings paste into IPython.

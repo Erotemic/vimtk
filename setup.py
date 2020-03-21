@@ -12,99 +12,27 @@ Developing:
 from setuptools import setup
 from setuptools import find_packages
 import sys
+from os.path import exists
 
 
-def parse_version(package):
+def parse_version(fpath):
     """
-    Statically parse the version number from __init__.py
-
-    CommandLine:
-        python -c "import setup; print(setup.parse_version('vimtk'))"
+    Statically parse the version number from a python file
     """
-    from os.path import dirname, join
     import ast
-    init_fpath = join(dirname(__file__), package, '__init__.py')
-    with open(init_fpath) as file_:
+    if not exists(fpath):
+        raise ValueError('fpath={!r} does not exist'.format(fpath))
+    with open(fpath, 'r') as file_:
         sourcecode = file_.read()
     pt = ast.parse(sourcecode)
     class VersionVisitor(ast.NodeVisitor):
         def visit_Assign(self, node):
             for target in node.targets:
-                if target.id == '__version__':
+                if getattr(target, 'id', None) == '__version__':
                     self.version = node.value.s
     visitor = VersionVisitor()
     visitor.visit(pt)
     return visitor.version
-
-
-def parse_requirements(fname='requirements.txt'):
-    """
-    Parse the package dependencies listed in a requirements file but strips
-    specific versioning information.
-
-    TODO:
-        perhaps use https://github.com/davidfischer/requirements-parser instead
-
-    CommandLine:
-        python -c "import setup; print(setup.parse_requirements())"
-    """
-    from os.path import exists
-    import re
-    require_fpath = fname
-
-    def parse_line(line):
-        """
-        Parse information from a line in a requirements text file
-        """
-        if line.startswith('-r '):
-            # Allow specifying requirements in other files
-            target = line.split(' ')[1]
-            for info in parse_require_file(target):
-                yield info
-        elif line.startswith('-e '):
-            info = {}
-            info['package'] = line.split('#egg=')[1]
-            yield info
-        else:
-            # Remove versioning from the package
-            pat = '(' + '|'.join(['>=', '==', '>']) + ')'
-            parts = re.split(pat, line, maxsplit=1)
-            parts = [p.strip() for p in parts]
-
-            info = {}
-            info['package'] = parts[0]
-            if len(parts) > 1:
-                op, rest = parts[1:]
-                if ';' in rest:
-                    # Handle platform specific dependencies
-                    # http://setuptools.readthedocs.io/en/latest/setuptools.html#declaring-platform-specific-dependencies
-                    version, platform_deps = map(str.strip, rest.split(';'))
-                    info['platform_deps'] = platform_deps
-                else:
-                    version = rest  # NOQA
-                info['version'] = (op, version)
-            yield info
-
-    def parse_require_file(fpath):
-        with open(fpath, 'r') as f:
-            for line in f.readlines():
-                line = line.strip()
-                if line and not line.startswith('#'):
-                    for info in parse_line(line):
-                        yield info
-
-    # This breaks on pip install, so check that it exists.
-    packages = []
-    if exists(require_fpath):
-        for info in parse_require_file(require_fpath):
-            package = info['package']
-            if not sys.version.startswith('3.4'):
-                # apparently package_deps are broken in 3.4
-                platform_deps = info.get('platform_deps')
-                if platform_deps is not None:
-                    package += ';' + platform_deps
-            packages.append(package)
-    return packages
 
 
 def parse_description():
@@ -125,12 +53,88 @@ def parse_description():
     return ''
 
 
-version = parse_version('vimtk')  # needs to be a global var for git tags
+def parse_requirements(fname='requirements.txt', with_version=False):
+    """
+    Parse the package dependencies listed in a requirements file but strips
+    specific versioning information.
+
+    Args:
+        fname (str): path to requirements file
+        with_version (bool, default=False): if true include version specs
+
+    Returns:
+        List[str]: list of requirements items
+    """
+    from os.path import exists
+    import re
+    require_fpath = fname
+
+    def parse_line(line):
+        """
+        Parse information from a line in a requirements text file
+        """
+        if line.startswith('-r '):
+            # Allow specifying requirements in other files
+            target = line.split(' ')[1]
+            for info in parse_require_file(target):
+                yield info
+        else:
+            info = {'line': line}
+            if line.startswith('-e '):
+                info['package'] = line.split('#egg=')[1]
+            else:
+                # Remove versioning from the package
+                pat = '(' + '|'.join(['>=', '==', '>']) + ')'
+                parts = re.split(pat, line, maxsplit=1)
+                parts = [p.strip() for p in parts]
+
+                info['package'] = parts[0]
+                if len(parts) > 1:
+                    op, rest = parts[1:]
+                    if ';' in rest:
+                        # Handle platform specific dependencies
+                        # setuptools.readthedocs.io/en/latest/setuptools.html
+                        # #declaring-platform-specific-dependencies
+                        version, plat_deps = map(str.strip, rest.split(';'))
+                        info['platform_deps'] = plat_deps
+                    else:
+                        version = rest  # NOQA
+                    info['version'] = (op, version)
+            yield info
+
+    def parse_require_file(fpath):
+        with open(fpath, 'r') as f:
+            for line in f.readlines():
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    for info in parse_line(line):
+                        yield info
+
+    def gen_packages_items():
+        if exists(require_fpath):
+            for info in parse_require_file(require_fpath):
+                parts = [info['package']]
+                if with_version and 'version' in info:
+                    parts.extend(info['version'])
+                if not sys.version.startswith('3.4'):
+                    # apparently package_deps are broken in 3.4
+                    plat_deps = info.get('platform_deps')
+                    if plat_deps is not None:
+                        parts.append(';' + plat_deps)
+                item = ''.join(parts)
+                yield item
+
+    packages = list(gen_packages_items())
+    return packages
+
+
+NAME = 'vimtk'
+VERSION = parse_version('vimtk/__init__.py')
 
 if __name__ == '__main__':
     setup(
-        name='vimtk',
-        version=version,
+        name=NAME,
+        version=VERSION,
         author='Jon Crall',
         description='Python backend for vimtk plugin',
         long_description=parse_description(),
@@ -153,7 +157,7 @@ if __name__ == '__main__':
         url='https://github.com/Erotemic/vimtk',
         license='Apache 2',
         # packages=['vimtk' 'vimtk._demo', 'vimtk._demo.vimmock'],
-        packages=find_packages(include='vimtk.*'),
+        packages=find_packages(include='*'),
         classifiers=[
             # List of classifiers available at:
             # https://pypi.python.org/pypi?%3Aaction=list_classifiers

@@ -1,4 +1,6 @@
 " Location:     autoload/vimtk.vim
+scriptencoding utf-8
+
 
 if !exists("g:loaded_vimtk_autoload")  && !exists('g:loaded_vimtk')
   finish
@@ -26,16 +28,64 @@ try:
 except Exception:
     print('Error using vimtk')
     import sys
-
     import os
-    # Hack to try and install deps
-    print('HACK: VIMTK IS ATTEMPTING TO INSTALL DEPS!')
-    print('HACK: THIS WILL REQUIRE A RESTART OF VIM IF IT WORKS')
-    os.system(sys.prefix + '/bin/python' + str(sys.version_info.major) + ' -m pip install ubelt -U')
-    os.system(sys.prefix + '/bin/python' + str(sys.version_info.major) + ' -m pip install pyperclip -U')
-    print('sys.prefix = {!r}'.format(sys.prefix))
+    def sys_executable():
+        """
+        Find the system executable. For whatever reason, vim messes with it.
+
+        References:
+            https://github.com/ycm-core/YouCompleteMe/blob/ba7a9f07a57c657c684edb5dde1f1f1dda1c0c7a/python/ycm/paths.py
+            https://github.com/davidhalter/jedi-vim/issues/870
+        """
+        import re
+        import os
+        import sys
+        from os.path import join, exists
+        if sys.platform.startswith('win32'):
+            executable = join(sys.exec_prefix, 'python.exe')
+        else:
+            bin_dpath = join(sys.exec_prefix, 'bin')
+            assert exists(bin_dpath)
+            pyexe_re = re.compile(r'python([23](\.[5-9])?)?(.exe)?$', re.IGNORECASE )
+            candiates = os.listdir(bin_dpath)
+            found = []
+            for cand in candiates:
+                if pyexe_re.match(cand):
+                    fpath = join(bin_dpath, cand)
+                    if os.path.isfile(fpath):
+                        if os.access(fpath, os.X_OK):
+                            found.append(fpath)
+            assert len(found) > 0
+            executable = found[0]
+            return executable
+
+    our_executable = sys_executable()
+    print('our_executable = {!r}'.format(our_executable))
+    print('sys.base_exec_prefix = {!r}'.format(sys.base_exec_prefix))
+    print('sys.base_prefix = {!r}'.format(sys.base_prefix))
+    print('sys.exec_prefix = {!r}'.format(sys.exec_prefix))
     print('sys.executable = {!r}'.format(sys.executable))
+    print('sys.implementation = {!r}'.format(sys.implementation))
+    print('sys.prefix = {!r}'.format(sys.prefix))
+    print('sys.version = {!r}'.format(sys.version))
+    print('sys.path = {!r}'.format(sys.path))
     print('sys.version_info = {!r}'.format(sys.version_info))
+    # Hack to try and install deps
+
+    INSTALL_HACK = True
+    if INSTALL_HACK:
+        print('HACK: VIMTK IS ATTEMPTING TO INSTALL DEPS!')
+        print('HACK: THIS WILL REQUIRE A RESTART OF VIM IF IT WORKS')
+        commands = [
+            our_executable + ' -m pip install ubelt -U --user',
+            our_executable + ' -m pip install pyperclip -U --user',
+            our_executable + ' -m pip install pyflakes -U --user',
+        ]
+        for command in commands:
+            print('command = {!r}'.format(command))
+            ret = os.system(command)
+            print('ret = {!r}'.format(ret))
+        print('HACK: ATTEMPTED TO INSTALL DEPS')
     raise
 
 
@@ -51,10 +101,12 @@ print(' * vim.current.buffer.name = {}'.format(vim.current.buffer.name))
 print(' * len(vim.current.buffer) = {}'.format(len(vim.current.buffer)))
 print(' * row, col) = vim.current.window.cursor = {}'.format(vim.current.window.cursor))
 
-print('vim.current.buffer[0] = {!r}'.format(buf[0]))
-print('vim.current.buffer[1] = {!r}'.format(buf[1]))
-print('vim.current.buffer[0:2] = {!r}'.format(buf[0:2]))
-print('vim.current.buffer[-1] = {!r}'.format(buf[-1]))
+if len(buf) > 0:
+    print('vim.current.buffer[0] = {!r}'.format(buf[0]))
+    if len(buf) > 1:
+        print('vim.current.buffer[1] = {!r}'.format(buf[1]))
+    print('vim.current.buffer[0:2] = {!r}'.format(buf[0:2]))
+    print('vim.current.buffer[-1] = {!r}'.format(buf[-1]))
 
 print('buf = {!r}'.format(buf))
 print('buf.mark = {!r}'.format(buf.mark))
