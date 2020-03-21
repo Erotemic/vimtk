@@ -162,11 +162,16 @@ working to resolve these issues. Bug reports and patches are welcome!
     " References: https://github.com/Erotemic/vimtk
     
     """""""""""""""
-    " # Install vim-plug into your autoload directory
+    " # Automatically install vim-plug into your autoload directory
     " " See: https://github.com/junegunn/vim-plug
-    " curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
     """""""""""""""
-
+    if empty(glob('~/.vim/autoload/plug.vim'))
+      " Automatic installation if vim plug does not exist
+      silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+      autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+    endif
+    
     " Enable normal windows hotkeys like: ctrl+c, ctrl+v, ctrl+a, etc...
     source $VIMRUNTIME/mswin.vim
     behave mswin
