@@ -57,7 +57,7 @@ except Exception:
                             found.append(fpath)
             assert len(found) > 0
             executable = found[0]
-            return executable
+        return executable
 
     our_executable = sys_executable()
     print('our_executable = {!r}'.format(our_executable))

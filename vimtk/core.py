@@ -717,7 +717,7 @@ def sys_executable():
                         found.append(fpath)
         assert len(found) > 0
         executable = found[0]
-        return executable
+    return executable
 
 
 def preprocess_executable_text(text):
