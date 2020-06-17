@@ -66,14 +66,74 @@ def windows_in_order():
     CommandLine:
         python -m vimtk.xctrl windows_in_order
 
+    References:
+        https://stackoverflow.com/questions/15638885/linux-how-to-get-a-list-of-all-visible-windows
+
     Example:
         >>> from vimtk.xctrl import *
         >>> result = list(windows_in_order())
         >>> for win in result:
         ...     if win.visible():
         ...         print(win)
+
+    Ignore:
+        # Why is this slow somtimes?
+        import subprocess
+        subprocess.call(['xprop', '-root'])
+
+        proc = subprocess.Popen(['xprop', '-root'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, bufsize=1, text=True)
+        out, err = proc.communicate()
+
+        proc = subprocess.Popen('xprop -root', shell=True, stdout=subprocess.PIPE, bufsize=1)
+        info = ub.cmd('xprop -root | grep "^_NET_CLIENT_LIST_STACKING"', shell=True)
+        info = ub.cmd('xprop -root _NET_CLIENT_LIST_STACKING', shell=True)
+
+        info = ub.cmd('xprop -root _NET_CLIENT_LIST_STACKING')
+
+        # I don't understand why this can be fast sometimes and slow others
+
+        import subprocess
+        import timerit
+        import itertools as it
+        import ubelt as ub
+        options = {
+            'bufsize': [-1, 0],
+            'shell': [True, False],
+            'stdout': [subprocess.PIPE, None],
+            'stderr': [subprocess.PIPE, None],
+            'stdin': [subprocess.PIPE, None],
+            'universal_newlines': [True, False],
+            # 'cwd': [None, '.']
+            # 'env': [None, {}]
+        }
+        ti = timerit.Timerit(3, bestof=1, verbose=3)
+        for vals in it.product(*options.values()):
+            opt = ub.dzip(options.keys(), vals)
+            command = ['xprop', '-root', '_NET_CLIENT_LIST_STACKING']
+            name = ub.repr2(opt, explicit=True, nobr=1, nl=0, itemsep='')
+            if opt['shell']:
+                command = ' '.join(command)
+            for timer in ti.reset(name):
+                with timer:
+                    proc = subprocess.Popen(command, **opt)
+                    out, err = proc.communicate()
+                    assert proc.returncode == 0
+                    # print(out)
+
+        for timer in ti.reset('ubelt'):
+            with timer:
+                print(ub.cmd('xprop -root _NET_CLIENT_LIST_STACKING')['out'])
+
+        print(ub.repr2(ub.sorted_vals(ti.measures['mean']), nl=1, precision=6))
+        proc = subprocess.Popen('xprop -root', shell=True, stdout=subprocess.PIPE, bufsize=0)
+        out, err = proc.communicate()
+        info = ub.cmd('xprop -root', verbose=3, shell=True)
+        ub.cmd('wmctrl -lxp')['out']
+        os.system('wmctrl -lxp')
     """
-    info = XCtrl.cmd('xprop -root')
+    # info = XCtrl.cmd('xprop -root')
+    info = XCtrl.cmd('xprop -root _NET_CLIENT_LIST_STACKING')
+
     lines = [line for line in info['out'].split('\n')
              if line.startswith('_NET_CLIENT_LIST_STACKING')]
     assert len(lines) == 1, str(lines)

@@ -804,7 +804,8 @@ def execute_text_in_terminal(text, return_to_vim=True):
     terminal_pattern = CONFIG.get('vimtk_terminal_pattern', None)
     vimtk_multiline_num_press_enter = CONFIG.get('vimtk_multiline_num_press_enter', 3)
 
-    # Build xdtool script
+    # Currently linux and windows are handled separately. It would be nice to
+    # unify them if possible.
     if sys.platform.startswith('win32'):
         from vimtk import win32_ctrl
         import pywinauto
@@ -835,6 +836,7 @@ def execute_text_in_terminal(text, return_to_vim=True):
     else:
         if terminal_pattern is None:
             terminal_pattern = xctrl._wmctrl_terminal_patterns()
+        # print('terminal_pattern = {!r}'.format(terminal_pattern))
 
         # Sequence of key presses that will trigger a paste event
         paste_keypress = 'ctrl+shift+v'
