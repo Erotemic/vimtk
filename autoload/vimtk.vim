@@ -619,6 +619,7 @@ func! vimtk#remap_all_modes(lhs, rhs)
     " Command Line Mode
     :exec 'cnoremap '.a:lhs.' '.a:rhs
     " Make r<lhs> do the right thing
+    " TODO: i forgot what "the right thing is' and why this is important
     :exec 'noremap r'.a:lhs.' r'.a:rhs
     :exec 'noremap f'.a:lhs.' r'.a:rhs
 endfu

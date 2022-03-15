@@ -168,6 +168,7 @@ func! vimtk_snippets#insert_docstr_commandline()
 Python2or3 << EOF
 import vim
 import vimtk
+import ubelt as ub
 
 if vimtk.Python.is_module_pythonfile():
     modinfo = vimtk.Python.current_module_info()
