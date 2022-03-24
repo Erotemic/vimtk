@@ -203,7 +203,7 @@ import vimtk
 import ubelt as ub
 fpath = vimtk.get_current_fpath()
 if not ub.WIN32:
-    fpath = ub.compressuser(fpath)
+    fpath = ub.shrinkuser(fpath)
 vimtk.Clipboard.copy(fpath)
 vimtk.logger.info('fpath = {!r}'.format(fpath))
 EOF
@@ -262,7 +262,7 @@ if vimtk.Python.is_module_pythonfile():
         #lines.append('import sys')
         #lines.append('sys.path.append(%r)' % (basepath,))
 
-        user_basepath = ub.compressuser(basepath)
+        user_basepath = ub.shrinkuser(basepath)
         if user_basepath != basepath:
             lines.append('import sys, ubelt')
             lines.append('sys.path.append(ubelt.expandpath(%r))' % (user_basepath,))

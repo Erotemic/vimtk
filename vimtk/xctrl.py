@@ -578,7 +578,7 @@ class XCtrl(object):
         CommandLine:
             python -m vimtk.xctrl XCtrl.current_gvim_edit sp ~/.bashrc
         """
-        fpath = ub.compressuser(ub.truepath(fpath))
+        fpath = ub.shrinkuser(ub.truepath(fpath))
         # print('fpath = %r' % (fpath,))
         cplat.copy_text_to_clipboard(fpath)
         doscript = [

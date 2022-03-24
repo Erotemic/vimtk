@@ -14,10 +14,10 @@ if vimtk.Python.is_module_pythonfile():
     modpath = modinfo['modpath']
 
     if ub.WIN32:
-        modpath = ub.compressuser(modpath, home='%HOME%')
+        modpath = ub.shrinkuser(modpath, home='%HOME%')
         cmdline_ = 'python -B ' + modpath.replace('\\', '/')
     else:
-        modpath = ub.compressuser(modpath, home='~')
+        modpath = ub.shrinkuser(modpath, home='~')
         cmdline_ = 'python ' + modpath
 
     test_code = ub.codeblock(
