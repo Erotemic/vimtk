@@ -400,7 +400,17 @@ elif language == 'javascript':
             statement = '\n'.join([header, '  ' + parts[0], '    ' + parts[1], footer])
 elif language == 'py':
     if mode == 'repr':
-        statement = "print('{expr} = {{!r}}'.format({expr}))".format(expr=expr)
+        USE_FORMAT_STRING = sys.version_info[0:2] >= (3, 6)
+        if USE_FORMAT_STRING:
+            statement = "print(f'%s={%s}')" % (expr, expr,)
+            #USE_FORMAT_STRING_EQ = sys.version_info[0:2] >= (3, 8)
+            #if USE_FORMAT_STRING_EQ:
+            #    # TODO: determine when this is safe
+            #    statement = "print(f'%s={%s}')" % (expr, expr,)
+            #    #statement = "print(f'{%s=}')" % (expr,)
+            #    # = {{!r}}'.format({expr}))".format(expr=expr)
+        else:
+            statement = "print('{expr} = {{!r}}'.format({expr}))".format(expr=expr)
     elif mode == 'repr2':
         statement = "print('{expr} = {{}}'.format(ub.repr2({expr}, nl=1)))".format(expr=expr)
     else:

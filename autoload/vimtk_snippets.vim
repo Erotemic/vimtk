@@ -60,10 +60,10 @@ if vimtk.Python.is_module_pythonfile():
     lines = []
     if mode == 'script':
         lines += ['#!/usr/bin/env python']
-    lines += [
-        '# -*- coding: utf-8 -*-',
-        'from __future__ import print_function, division, absolute_import, unicode_literals',
-    ]
+    #lines += [
+    #    '# -*- coding: utf-8 -*-',
+    #    'from __future__ import print_function, division, absolute_import, unicode_literals',
+    #]
     text = '\n'.join(lines)
     vimtk.TextInsertor.insert_above_cursor(text)
 else:
