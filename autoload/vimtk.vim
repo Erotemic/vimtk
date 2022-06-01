@@ -669,6 +669,51 @@ EOF
 endfunc
 
 
+func! vimtk#py_select_and_format_paragraph(...) 
+
+Python2or3 << EOF
+import vim
+import vimtk
+
+import ubelt as ub
+nargs = int(vim.eval('a:0'))
+# Simulate kwargs with cfgdict-like strings
+default_config = {
+    'max_width': 80,
+    'myprefix': True,
+    'sentence_break': True,
+}
+if nargs == 1:
+    import ast
+    cfgstr = vim.eval('a:1')
+    kwargs = ast.literal_eval(cfgstr) if cfgstr else {}
+    #cfgdict = ut.parse_cfgstr3(cfgstr)
+    #kwargs = ut.update_existing(default_kwargs, cfgdict, assert_exists=True)
+else:
+    kwargs = {}
+
+assert not ub.dict_diff(kwargs, default_config), 'unknown args'
+config = ub.dict_union(default_config, kwargs)
+
+# Remember curor location as best as possible
+(row, col) = vim.current.window.cursor
+
+row1, row2 = vimtk.TextSelector.paragraph_range_at_cursor()
+text = vimtk.TextSelector.text_between_lines(row1, row2)
+text = ub.ensure_unicode(text)
+
+from vimtk._dirty import format_multiple_paragraph_sentences
+wrapped_text = format_multiple_paragraph_sentences(text, **kwargs)
+
+vimtk.TextInsertor.insert_between_lines(wrapped_text, row1, row2)
+
+# Reset cursor position as best as possible
+vimtk.Cursor.move(row, col)
+EOF
+
+endfunc
+
+
 
 " Source helpers relative to this file
 "execute 'source ' . expand('<sfile>:p:h') . '/vimtk_snippets.vim'

@@ -291,6 +291,24 @@ class VimMock(object):
         self.tabpages = [self.current.tabpage]  # vim.tabpagelist
 
         self.global_variables = {}
+        self._function_stack = []
+
+    def _push_function_stack(self, name, named={}, positional=[]):
+        """
+        Simulate being inside a vim function
+        """
+        stack_frame = {
+            'func_name': name,
+            # The args is put in a variable named "a"
+            # https://learnvim.irian.to/vimscript/vimscript_functions
+            # TODO: figure out and mock the exact behavior
+            # This it the a: scope
+            'args': {
+                'positional': positional,
+                'named': named,
+            }
+        }
+        self._function_stack.append(stack_frame)
 
     def setup_text(self, text, name=''):
         """
@@ -328,7 +346,7 @@ class VimMock(object):
 
         This only handles very specific commands.
         """
-        print('command = {!r}'.format(command))
+        # print('command = {!r}'.format(command))
         if command == '&ft':
             from os.path import splitext
             return splitext(self.current.buffer.name)[1].lstrip('.')
@@ -354,6 +372,31 @@ class VimMock(object):
         }
         if command in hard_coded_commands:
             return hard_coded_commands[command]
+
+        if command.startswith('a:'):
+            # raise a vim.error if the variable does not exist
+            if not self._function_stack:
+                raise self.error('Vim:E121: Undefined variable: {}'.format(command))
+
+            # Probably trying to grab a function arg
+            # https://learnvimscriptthehardway.stevelosh.com/chapters/24.html
+            # https://learnvim.irian.to/vimscript/vimscript_variable_scopes#variable-scopes
+            suffix = command[2:]
+            try:
+                index = int(suffix)
+            except Exception:
+                index = NotImplemented
+
+            if isinstance(index, int):
+                stack_frame = self._function_stack[-1]
+                argv = stack_frame['args']['positional']
+                if index == 0:
+                    return len(argv)
+                else:
+                    return argv[index - 1]
+            else:
+                raise NotImplementedError('only positional for now')
+
         raise NotImplementedError('eval not generally implemented for {}'.format(command))
         # maybe :e will call open_file?
 

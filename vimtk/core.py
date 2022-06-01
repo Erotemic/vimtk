@@ -413,6 +413,80 @@ class TextSelector(object):
         line = buf[row - 1]
         return line
 
+    @staticmethod
+    def paragraph_range_at_cursor():
+        r"""
+        Get the start and end lines for a paragraph at the cursor
+
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> import ubelt as ub
+            >>> vim = vimmock.patch_vim()
+            >>> text = ub.codeblock(
+                    '''
+                    par1 par1 par1
+                      par1 par1
+                    par1 par1
+
+                    par2
+
+                    par3 par3
+                         par3
+                    ''')
+            >>> vim.setup_text(text)
+            >>> ranges = []
+            >>> for lineno in range(1, text.count(chr(10)) + 1):
+            >>>     vim.move_cursor(lineno)
+            >>>     par_range = TextSelector.paragraph_range_at_cursor()
+            >>>     ranges.append(par_range)
+            >>> print('ranges = {}'.format(ub.repr2(ranges, nl=0)))
+            ranges = [(0, 3), (0, 3), (0, 3), (4, 4), (5, 5), (6, 6), (7, 7)]
+        """
+        import vim
+        import ubelt as ub
+        logger.debug('grabbing text at current line')
+
+        def is_paragraph_end(line_):
+            # Hack, par_marker_list should be an argument
+            striped_line = ub.ensure_unicode(line_.strip())
+            isblank = striped_line == ''
+            if isblank:
+                return True
+            par_marker_list = [
+                #'\\noindent',
+                '\\begin{equation}',
+                '\\end{equation}',
+                '% ---',
+            ]
+            return any(striped_line.startswith(marker)
+                       for marker in par_marker_list)
+
+        def find_paragraph_end(row_, direction=1):
+            """
+            returns the line that a paragraph ends on in some direction
+            """
+            line_list = vim.current.buffer
+            line_ = line_list[row_ - 1]
+            if (row_ == 0 or row_ == len(line_list) - 1):
+                return row_
+            if is_paragraph_end(line_):
+                return row_
+            while True:
+                if (row_ == -1 or row_ == len(line_list)):
+                    break
+                line_ = line_list[row_ - 1]
+                if is_paragraph_end(line_):
+                    break
+                row_ += direction
+            row_ -= direction
+            return row_
+
+        (row, col) = vim.current.window.cursor
+        row1 = find_paragraph_end(row, -1)
+        row2 = find_paragraph_end(row, +1)
+        par_range = (row1, row2)
+        return par_range
+
 
 class CursorContext(object):
     """
@@ -903,6 +977,15 @@ def vim_argv(defaults=None):
                 EOF
             endfunc
 
+    Example:
+        >>> from vimtk._demo import vimmock
+        >>> vim = vimmock.patch_vim()
+        >>> vim._push_function_stack(name='foo', positional=['val1', 'val2'])
+        >>> argv = vim_argv()
+        >>> assert argv == ['val1', 'val2']
+        >>> argv = vim_argv(defaults=['a', 'b', 'c'])
+        >>> assert argv == ['val1', 'val2', 'c']
+        >>> _ = vim._function_stack.pop()
     """
     import vim
     nargs = int(vim.eval('a:0'))
@@ -1153,7 +1236,6 @@ def find_and_open_path(path, mode='split', verbose=0,
             browser = webbrowser.open(url)
             # browser = webbrowser.get('google-chrome')
             browser.open(url)
-            # ut.open_url_in_browser(url, 'google-chrome')
             return
 
     path = expanduser(path)
