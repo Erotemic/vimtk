@@ -154,6 +154,7 @@ def find_windows(proc=None, title=None, visible=True):
         python -m vimtk.xctrl find_windows
 
     Example:
+        >>> from vimtk.xctrl import *  # NOQA
         >>> for win in find_windows('gvim'):
         >>>     print(ub.repr2(win.info()))
         >>> for win in find_windows('terminator'):
@@ -163,11 +164,22 @@ def find_windows(proc=None, title=None, visible=True):
     for win in windows_in_order():
         flag = True
         if proc:
-            flag &= bool(re.match(proc, win.process_name()))
+            try:
+                proc_name = win.process_name()
+                flag &= bool(re.match(proc, proc_name))
+            except Exception:
+                flag = False
         if title:
-            flag &= bool(re.match(title, win.title()))
+            try:
+                win_title = win.title()
+                flag &= bool(re.match(title, win_title))
+            except Exception:
+                flag = False
         if visible:
-            flag &= win.visible()
+            try:
+                flag &= win.visible()
+            except Exception:
+                flag = False
         if flag:
             yield win
 
@@ -224,7 +236,10 @@ class XWindow(ub.NiceRepr):
         return True
 
     def __nice__(self):
-        fname = self.process_name()
+        try:
+            fname = self.process_name()
+        except Exception:
+            fname = '<error: unable to get process name>'
         return str(self.wm_id) + ' ' + fname + ' ' + repr(self.title())
 
     def wm_class(self):
