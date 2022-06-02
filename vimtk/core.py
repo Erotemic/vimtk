@@ -1,4 +1,3 @@
-# bioharn
 import itertools as it
 from os.path import join
 from os.path import isdir

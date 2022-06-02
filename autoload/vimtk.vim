@@ -669,7 +669,7 @@ EOF
 endfunc
 
 
-func! vimtk#py_select_and_format_paragraph(...) 
+func! vimtk#format_paragraph(...) 
 
 Python2or3 << EOF
 import vim
