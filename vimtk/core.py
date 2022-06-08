@@ -367,6 +367,8 @@ class TextSelector(object):
 
     @staticmethod
     def text_between_lines(lnum1, lnum2, col1=0, col2=sys.maxsize - 1):
+        """
+        """
         import vim
         # lines = vim.eval('getline({}, {})'.format(lnum1, lnum2))
         lines = vim.current.buffer[lnum1 - 1:lnum2]
@@ -451,6 +453,7 @@ class TextSelector(object):
             isblank = striped_line == ''
             if isblank:
                 return True
+            # TODO: fixme, move to some configuration file
             par_marker_list = [
                 #'\\noindent',
                 '\\begin{equation}',
@@ -464,6 +467,7 @@ class TextSelector(object):
             """
             returns the line that a paragraph ends on in some direction
             """
+            # TODO: validate logic.
             line_list = vim.current.buffer
             line_ = line_list[row_ - 1]
             if (row_ == 0 or row_ == len(line_list) - 1):
@@ -483,6 +487,7 @@ class TextSelector(object):
         (row, col) = vim.current.window.cursor
         row1 = find_paragraph_end(row, -1)
         row2 = find_paragraph_end(row, +1)
+        # row1 = max(1, row1)
         par_range = (row1, row2)
         return par_range
 
@@ -517,6 +522,7 @@ class Cursor(object):
     def position():
         """ get_cursor_position """
         import vim
+        # This is 1 indexed, should we change that?
         (row, col) = vim.current.window.cursor
         return row, col
 
@@ -525,6 +531,25 @@ class TextInsertor(object):
     """
     Tools for inserting text at various positions
     """
+
+    def overwrite(text):
+        """
+        Overwrites all existing text in the current buffer with new text
+
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> import vimtk
+            >>> import ubelt as ub
+            >>> vim = vimmock.patch_vim()
+            >>> vim.setup_text('foo')
+            >>> vimtk.TextInsertor.overwrite('bar')
+            >>> print(vim.current.buffer._text)
+        """
+        import vim
+        lines = text.split('\n')
+        vim.current.buffer[:] = lines
+        # del (vim.current.buffer[:])
+        # vim.current.buffer.append(lines)
 
     @staticmethod
     def insert_at(text, pos):
@@ -572,6 +597,7 @@ class TextInsertor(object):
         row = row - 1
         TextInsertor.insert_at(text, row)
 
+    @staticmethod
     def insert_over_selection(text):
         import vim
         buf = vim.current.buffer
@@ -580,13 +606,87 @@ class TextInsertor(object):
         (row2, col2) = buf.mark('>')
         TextInsertor.insert_between_lines(text, row1, row2)
 
+    @staticmethod
     def insert_between_lines(text, row1, row2):
         import vim
+        # print(f'text={text}')
+        # print(f'Insert between {row1} {row2}')
+        buffer_head = vim.current.buffer[:row1 - 1]  # Original start of the file
         buffer_tail = vim.current.buffer[row2:]  # Original end of the file
+        # print(f'buffer_tail={buffer_tail}')
         lines = [line.encode('utf-8') for line in text.split('\n')]
-        new_tail  = lines + buffer_tail
-        del(vim.current.buffer[row1 - 1:])  # delete old data
-        vim.current.buffer.append(new_tail)  # append new data
+        new_buffer = buffer_head + lines + buffer_tail
+        vim.current.buffer[:] = new_buffer
+        # del vim.current.buffer[row1 - 1:]  # delete old data
+        # vim.current.buffer.append(new_tail)  # append new data
+
+
+class Mode(object):
+    """
+    Helper for checking / switching modes
+    """
+    vim_mode_codes = {
+        'n'  : 'Normal',
+        'no' : 'NOperatorPending',
+        'v'  : 'Visual',
+        'V'  : 'VLine',
+        #'^V' : 'VBlock',
+        's'  : 'Select',
+        'S'  : 'SLine',
+        #'^S' : 'SBlock',
+        'i'  : 'Insert',
+        'R'  : 'Replace',
+        'Rv' : 'VReplace',
+        'c'  : 'Command',
+        'cv' : 'VimEx',
+        'ce' : 'Ex',
+        'r'  : 'Prompt',
+        'rm' : 'More',
+        'r?' : 'Confirm',
+        '!'  : 'Shell',
+    }
+
+    @staticmethod
+    def current():
+        """
+        Return the current mode
+
+        References:
+            http://stackoverflow.com/questions/14013294/vim-how-to-detect-the-mode-in-which-the-user-is-in-for-statusline
+
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> vim = vimmock.patch_vim()
+            >>> import vimtk
+            >>> vimtk.Mode.current()
+            Normal
+        """
+        import vim
+        current_mode_code = vim.eval('mode()')
+        current_mode = Mode.vim_mode_codes.get(current_mode_code, current_mode_code)
+        return current_mode
+
+    @staticmethod
+    def ensure_normal():
+        """
+        Switch to normal mode
+
+        Example:
+            >>> from vimtk._demo import vimmock
+            >>> vim = vimmock.patch_vim()
+            >>> import vimtk
+            >>> vimtk.Mode.ensure_normal()
+            >>> vimtk.Mode.current()
+            Normal
+        """
+        current_mode = Mode.current()
+        import vim
+        if current_mode == 'Normal':
+            return
+        else:
+            logger.debug('current_mode_code = %r' % current_mode)
+            logger.debug('current_mode = %r' % current_mode)
+        vim.command("ESC")
 
 
 class Python(object):
@@ -1028,38 +1128,12 @@ def get_current_filetype():
 
 def ensure_normalmode():
     """
+    TODO: Deprecated in favor or Mode.ensure_normal()
+
     References:
         http://stackoverflow.com/questions/14013294/vim-how-to-detect-the-mode-in-which-the-user-is-in-for-statusline
     """
-    allmodes = {
-        'n'  : 'Normal',
-        'no' : 'NOperatorPending',
-        'v'  : 'Visual',
-        'V'  : 'VLine',
-        #'^V' : 'VBlock',
-        's'  : 'Select',
-        'S'  : 'SLine',
-        #'^S' : 'SBlock',
-        'i'  : 'Insert',
-        'R'  : 'Replace',
-        'Rv' : 'VReplace',
-        'c'  : 'Command',
-        'cv' : 'VimEx',
-        'ce' : 'Ex',
-        'r'  : 'Prompt',
-        'rm' : 'More',
-        'r?' : 'Confirm',
-        '!'  : 'Shell',
-    }
-    import vim
-    current_mode_code = vim.eval('mode()')
-    current_mode = allmodes.get(current_mode_code, current_mode_code)
-    if current_mode == 'Normal':
-        return
-    else:
-        logger.debug('current_mode_code = %r' % current_mode)
-        logger.debug('current_mode = %r' % current_mode)
-    vim.command("ESC")
+    return Mode.ensure_normal()
 
 
 def autogen_imports(fpath_or_text):

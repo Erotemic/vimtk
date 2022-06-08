@@ -7,7 +7,7 @@ from .mocked import VimMock
 
 
 __all__ = ['VimMock', 'patch_vim']
-__version__ = '0.2.0.dev'
+__version__ = '0.3.1'
 
 
 def patch_vim():

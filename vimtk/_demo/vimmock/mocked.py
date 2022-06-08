@@ -283,6 +283,27 @@ class VimMock(object):
 
     error = VimErrorMock
 
+    vim_mode_codes = {
+        'n'  : 'Normal',
+        'no' : 'NOperatorPending',
+        'v'  : 'Visual',
+        'V'  : 'VLine',
+        #'^V' : 'VBlock',
+        's'  : 'Select',
+        'S'  : 'SLine',
+        #'^S' : 'SBlock',
+        'i'  : 'Insert',
+        'R'  : 'Replace',
+        'Rv' : 'VReplace',
+        'c'  : 'Command',
+        'cv' : 'VimEx',
+        'ce' : 'Ex',
+        'r'  : 'Prompt',
+        'rm' : 'More',
+        'r?' : 'Confirm',
+        '!'  : 'Shell',
+    }
+
     def __init__(self):
         self.current = CurrentMock()
 
@@ -292,6 +313,7 @@ class VimMock(object):
 
         self.global_variables = {}
         self._function_stack = []
+        self._mode = 'n'
 
     def _push_function_stack(self, name, named={}, positional=[]):
         """
@@ -340,6 +362,17 @@ class VimMock(object):
         self.current.buffer = new_buffer
         self.current.window.cursor = cursor or (0, 0)
 
+    def command(self, command):
+        """
+        Hack that pretends to "execute" a vim command
+        """
+
+        if command == 'ESC':
+            # Switch to normal mode
+            self._mode = 'n'
+        else:
+            raise NotImplementedError(command)
+
     def eval(self, command):
         """
         A very hack, and very specific implementation of vim eval for tests.
@@ -350,6 +383,9 @@ class VimMock(object):
         if command == '&ft':
             from os.path import splitext
             return splitext(self.current.buffer.name)[1].lstrip('.')
+
+        if command == 'mode()':
+            return self._mode
 
         if command.startswith('let '):
             return self._eval_assignment(command)
