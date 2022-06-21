@@ -64,12 +64,11 @@ def mockvim(fpath=None, text=None):
             the mock vim module
 
     Example:
-        >>> # xdoctest: +REQUIRES(Python>=3.8)
         >>> import vimtk
         >>> vim = vimtk.mockvim()
         >>> # The mock mirrors the vim module as best as it can
-        >>> print(f'{vim.current.buffer=}')
-        >>> print(f'{vim.current.buffer.name=}')
+        >>> print('vim.current.buffer = {}'.format(vim.current.buffer))
+        >>> print('vim.current.buffer.name = {}'.format(vim.current.buffer.name))
         >>> vim.eval("let g:custom_global = 'custom_val'")
         >>> value = vim.eval('get(g:, "custom_global")')
         >>> assert value == 'custom_val'
