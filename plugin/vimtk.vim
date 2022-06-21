@@ -10,7 +10,7 @@ endif
 
 " TODO ensure _VIMTK_VERSION is synced with the python version
 " which is defined in: ~/code/vimtk/vimtk/__init__.py
-let g:_VIMTK_VERSION = '0.2.9'
+let g:_VIMTK_VERSION = '0.3.0'
 
 "if exists("g:loaded_vimtk") 
 "  finish

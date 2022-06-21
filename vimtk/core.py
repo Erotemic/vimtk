@@ -46,6 +46,46 @@ __setup_logger()
 # logger.setLevel(logging.DEBUG)
 
 
+def mockvim(fpath=None, text=None):
+    """
+    Setup a dummy "vim" module with a specific buffer
+
+    Useful for prototyping new commands and testing
+
+    Args:
+        fpath (PathLike | None):
+            File to mock open. Will read the text if it exists.
+
+        text (str | None):
+            text of the mock buffer. If none, tries to read from the file path.
+
+    Returns:
+        vimtk._demo.vimmock.mocked.VimMock:
+            the mock vim module
+
+    Example:
+        >>> # xdoctest: +REQUIRES(Python>=3.8)
+        >>> import vimtk
+        >>> vim = vimtk.mockvim()
+        >>> # The mock mirrors the vim module as best as it can
+        >>> print(f'{vim.current.buffer=}')
+        >>> print(f'{vim.current.buffer.name=}')
+        >>> vim.eval("let g:custom_global = 'custom_val'")
+        >>> value = vim.eval('get(g:, "custom_global")')
+        >>> assert value == 'custom_val'
+    """
+    import os
+    from vimtk._demo import vimmock
+    vim = vimmock.patch_vim()
+    if text is not None:
+        if fpath is None:
+            fpath = ''
+        vim.setup_text(text, name=os.fspath(fpath))
+    elif fpath is not None:
+        vim.open_file(fpath)
+    return vim
+
+
 def reload_vimtk():
     """
     Used for development
@@ -83,9 +123,8 @@ class Config(object):
     Query the state of the vim variable namespace.
 
     Notes:
-        >>> from vimtk._demo import vimmock
-        >>> vim = vimmock.patch_vim()
         >>> import vimtk
+        >>> vim = vimtk.mockvim()
         >>> vim.eval("let g:vimtk_sys_path = ['$HOME/code/netharn']")
         >>> vimtk.CONFIG.get('vimtk_sys_path')
     """
@@ -157,38 +196,15 @@ class TextSelector(object):
     """
 
     @staticmethod
-    def _demo_vim():
-        """
-        Notes:
-            requires github.com:Erotemic/vimmock.git@dev/refactor
-
-        """
-        from vimtk._demo import vimmock
-        vimmock.patch_vim()
-        import vim
-        import ubelt as ub
-        vim.setup_text(ub.codeblock(
-            '''
-            def foo():
-                return 1
-
-            def bar():
-                return 2
-            '''))
-        vim.move_cursor(1, 0)
-        return vim
-
-    @staticmethod
     def current_indent(url_ok=False):
         """
         Returns the indentation that should be used when inserting new lines.
 
         Example:
-            >>> from vimtk._demo import vimmock
+            >>> import vimtk
             >>> import ubelt as ub
             >>> import vimtk
-            >>> vim = vimmock.patch_vim()
-            >>> vim.setup_text(ub.codeblock(
+            >>> vim = vimtk.mockvim(text=ub.codeblock(
             >>>     '''
             >>>     class Foo:
             >>>         def __init__(self):
@@ -232,9 +248,9 @@ class TextSelector(object):
         returns the word highlighted by the curor
 
         Example:
-            >>> from vimtk._demo import vimmock
+            >>> import vimtk
             >>> import ubelt as ub
-            >>> vim = vimmock.patch_vim()
+            >>> vim = vimtk.mockvim()
             >>> vim.setup_text(ub.codeblock(
             >>>     '''
             >>>     class Foo:
@@ -275,11 +291,12 @@ class TextSelector(object):
             python -m vimtk.core TextSelector.get_word_in_line_at_col
 
         Example:
+            >>> import vimtk
             >>> line = 'myvar.foo = yourvar.foobar'
             >>> line = 'def loadfunc(self):'
             >>> col = 6
             >>> nonword_chars=' \t\n\r[](){}:;.,"\'\\/'
-            >>> word = TextSelector.get_word_in_line_at_col(line, col, nonword_chars)
+            >>> word = vimtk.TextSelector.get_word_in_line_at_col(line, col, nonword_chars)
             >>> result = ('word = %r' % (word,))
             >>> print(result)
         """
@@ -332,9 +349,9 @@ class TextSelector(object):
             xdoctest -m vimtk.core TextSelector.selected_text
 
         Example:
-            >>> from vimtk._demo import vimmock
+            >>> import vimtk
             >>> import ubelt as ub
-            >>> vim = vimmock.patch_vim()
+            >>> vim = vimtk.mockvim()
             >>> vim.setup_text(ub.codeblock(
             >>>     '''
             >>>     line n1
@@ -393,9 +410,9 @@ class TextSelector(object):
     def line_at_cursor():
         """
         Example:
-            >>> from vimtk._demo import vimmock
+            >>> import vimtk
             >>> import ubelt as ub
-            >>> vim = vimmock.patch_vim()
+            >>> vim = vimtk.mockvim()
             >>> vim.setup_text(ub.codeblock(
             >>>     '''
             >>>     def foo():
@@ -404,7 +421,7 @@ class TextSelector(object):
             >>>         return 2
             >>>     '''))
             >>> vim.move_cursor(3)
-            >>> line = TextSelector.line_at_cursor()
+            >>> line = vimtk.TextSelector.line_at_cursor()
             >>> assert line == 'def bar():'
         """
         import vim
@@ -420,9 +437,9 @@ class TextSelector(object):
         Get the start and end lines for a paragraph at the cursor
 
         Example:
-            >>> from vimtk._demo import vimmock
+            >>> import vimtk
             >>> import ubelt as ub
-            >>> vim = vimmock.patch_vim()
+            >>> vim = vimtk.mockvim()
             >>> text = ub.codeblock(
                     '''
                     par1 par1 par1
@@ -438,7 +455,7 @@ class TextSelector(object):
             >>> ranges = []
             >>> for lineno in range(1, text.count(chr(10)) + 1):
             >>>     vim.move_cursor(lineno)
-            >>>     par_range = TextSelector.paragraph_range_at_cursor()
+            >>>     par_range = vimtk.TextSelector.paragraph_range_at_cursor()
             >>>     ranges.append(par_range)
             >>> print('ranges = {}'.format(ub.repr2(ranges, nl=0)))
             ranges = [(0, 3), (0, 3), (0, 3), (4, 4), (5, 5), (6, 6), (7, 7)]
@@ -537,11 +554,9 @@ class TextInsertor(object):
         Overwrites all existing text in the current buffer with new text
 
         Example:
-            >>> from vimtk._demo import vimmock
             >>> import vimtk
             >>> import ubelt as ub
-            >>> vim = vimmock.patch_vim()
-            >>> vim.setup_text('foo')
+            >>> vim = vimtk.mockvim(text='foo')
             >>> vimtk.TextInsertor.overwrite('bar')
             >>> print(vim.current.buffer._text)
         """
@@ -565,11 +580,10 @@ class TextInsertor(object):
     def insert_under_cursor(text):
         """
         Example:
-            >>> from vimtk._demo import vimmock
+            >>> import vimtk
             >>> import ubelt as ub
-            >>> vim = vimmock.patch_vim()
-            >>> vim.setup_text('foo')
-            >>> TextInsertor.insert_under_cursor('bar')
+            >>> vim = vimtk.mockvim(text='foo')
+            >>> vimtk.TextInsertor.insert_under_cursor('bar')
             >>> print(vim.current.buffer._text)
             foo
             bar
@@ -583,11 +597,11 @@ class TextInsertor(object):
     def insert_above_cursor(text):
         """
         Example:
-            >>> from vimtk._demo import vimmock
+            >>> import vimtk
             >>> import ubelt as ub
-            >>> vim = vimmock.patch_vim()
+            >>> vim = vimtk.mockvim()
             >>> vim.setup_text('foo')
-            >>> TextInsertor.insert_above_cursor('bar')
+            >>> vimtk.TextInsertor.insert_above_cursor('bar')
             >>> print(vim.current.buffer._text)
             bar
             foo
@@ -655,9 +669,8 @@ class Mode(object):
             http://stackoverflow.com/questions/14013294/vim-how-to-detect-the-mode-in-which-the-user-is-in-for-statusline
 
         Example:
-            >>> from vimtk._demo import vimmock
-            >>> vim = vimmock.patch_vim()
             >>> import vimtk
+            >>> vim = vimtk.mockvim()
             >>> vimtk.Mode.current()
             Normal
         """
@@ -672,9 +685,8 @@ class Mode(object):
         Switch to normal mode
 
         Example:
-            >>> from vimtk._demo import vimmock
-            >>> vim = vimmock.patch_vim()
             >>> import vimtk
+            >>> vim = vimtk.mockvim()
             >>> vimtk.Mode.ensure_normal()
             >>> vimtk.Mode.current()
             Normal
@@ -700,11 +712,10 @@ class Python(object):
         Returns information about current module
 
         Example:
-            >>> from vimtk._demo import vimmock
+            >>> import vimtk
             >>> import ubelt as ub
-            >>> vim = vimmock.patch_vim()
-            >>> vim.setup_text('', 'foo.py')
-            >>> info = Python.current_module_info()
+            >>> vim = vimtk.mockvim('foo.py', '')
+            >>> info = vimtk.Python.current_module_info()
             >>> print(ub.repr2(info))
         """
         import ubelt as ub
@@ -788,19 +799,21 @@ class Python(object):
         if hackaway_row0:
             del vim.current.buffer[0]
 
+    @staticmethod
     def format_text_as_docstr(text):
         r"""
         CommandLine:
             python  ~/local/vim/rc/pyvim_funcs.py  --test-format_text_as_docstr
 
         Example:
+            >>> import vimtk
             >>> text = ub.codeblock(
                 '''
                 a = 1
                 b = 2
                 ''')
-            >>> formated_text = Python.format_text_as_docstr(text)
-            >>> unformated_text = Python.unformat_text_as_docstr(formated_text)
+            >>> formated_text = vimtk.Python.format_text_as_docstr(text)
+            >>> unformated_text = vimtk.Python.unformat_text_as_docstr(formated_text)
             >>> print(formated_text)
             >>> print(unformated_text)
         """
@@ -812,6 +825,7 @@ class Python(object):
                                flags=re.MULTILINE)
         return formated_text
 
+    @staticmethod
     def unformat_text_as_docstr(formated_text):
         min_indent = get_minimum_indentation(formated_text)
         indent_ =  ' ' * min_indent
@@ -819,13 +833,13 @@ class Python(object):
                                  formated_text, flags=re.MULTILINE)
         return unformated_text
 
+    @staticmethod
     def find_func_above_row(row='current', maxIter=50):
         """
         Example:
-            >>> from vimtk._demo import vimmock
             >>> import ubelt as ub
             >>> import vimtk
-            >>> vim = vimmock.patch_vim()
+            >>> vim = vimtk.mockvim()
             >>> vim.setup_text(ub.codeblock(
             >>>     '''
             >>>     class Foo:
@@ -863,6 +877,80 @@ class Python(object):
             'line': line,
         }
         return info
+
+    @staticmethod
+    def _convert_dicts_to_literals(text):
+        """
+        TODO: where does this belong? This is a Python reformater of sorts.
+
+        Example:
+            import ubelt as ub
+            import vimtk
+            vim = text=ub.codeblock(
+                '''
+                data = dict(
+                    key1=12321321,
+                    key2='24324324',
+                    key3=myfunc(),
+                    key4=[
+                       1, 2, 3, 4, dict(a='b'),
+                    ]
+                )
+                ''')
+            new_text = vimtk.Python._convert_dicts_to_literals(text)
+            print(new_text)
+        """
+        # TODO: probably want a CST transformer instead
+        import ast
+        import astunparse
+        class RewriteDictAsLiteral(ast.NodeTransformer):
+            def visit_Call(self, node):
+                if node.func.id == 'dict':
+                    keys = [ast.Constant(kw.arg) for kw in node.keywords]
+                    values = [kw.value for kw in node.keywords]
+                    literal = ast.Dict(keys=keys, values=values)
+                    return self.visit(literal)
+
+        lvl = get_minimum_indentation(text)
+        orig_ptree = ast.parse(ub.codeblock(text))
+        xform_ptree = RewriteDictAsLiteral().visit(orig_ptree)
+        xform_text = astunparse.unparse(xform_ptree)
+
+        import black
+        xform_text = black.format_str(
+            xform_text, mode=black.Mode(string_normalization=False)
+        )
+        new_text = ub.indent(xform_text, ' ' * lvl)
+        return new_text
+
+    @staticmethod
+    def _convert_selection_to_literal_dict():
+        """
+        Changes the visual selection from a programatic dictionary to a
+        dictionary literal if possible.
+
+        Ignore:
+            import ubelt as ub
+            import vimtk
+            vim = vimtk.mockvim(text=ub.codeblock(
+                '''
+                data = dict(
+                    key1=12321321,
+                    key2='24324324',
+                    key3=myfunc(),
+                    key4=[
+                       1, 2, 3, 4, dict(a='b'),
+                    ]
+                )
+                '''))
+            vim.current.buffer._visual_select(1, 9)
+            vimtk.Python._convert_selection_to_literal_dict()
+            print(vimtk.TextSelector.selected_text())
+        """
+        import vimtk
+        text = vimtk.TextSelector.selected_text()
+        new_text = vimtk.Python._convert_dicts_to_literals(text)
+        vimtk.TextInsertor.insert_over_selection(new_text)
 
 
 def sys_executable():
@@ -1077,12 +1165,12 @@ def vim_argv(defaults=None):
             endfunc
 
     Example:
-        >>> from vimtk._demo import vimmock
-        >>> vim = vimmock.patch_vim()
+        >>> import vimtk
+        >>> vim = vimtk.mockvim()
         >>> vim._push_function_stack(name='foo', positional=['val1', 'val2'])
-        >>> argv = vim_argv()
+        >>> argv = vimtk.vim_argv()
         >>> assert argv == ['val1', 'val2']
-        >>> argv = vim_argv(defaults=['a', 'b', 'c'])
+        >>> argv = vimtk.vim_argv(defaults=['a', 'b', 'c'])
         >>> assert argv == ['val1', 'val2', 'c']
         >>> _ = vim._function_stack.pop()
     """
@@ -1101,10 +1189,9 @@ def vim_argv(defaults=None):
 def get_current_fpath():
     """
     Example:
-        >>> from vimtk._demo import vimmock
-        >>> vim = vimmock.patch_vim()
-        >>> vim.setup_text('', 'foo.txt')
-        >>> fpath = get_current_fpath()
+        >>> import vimtk
+        >>> vim = vimtk.mockvim(fpath='foo.txt', text='')
+        >>> fpath = vimtk.get_current_fpath()
         >>> assert fpath == 'foo.txt'
     """
     import vim
@@ -1115,10 +1202,9 @@ def get_current_fpath():
 def get_current_filetype():
     """
     Example:
-        >>> from vimtk._demo import vimmock
-        >>> vim = vimmock.patch_vim()
-        >>> vim.setup_text('', 'foo.sh')
-        >>> filetype = get_current_filetype()
+        >>> import vimtk
+        >>> vim = vimtk.mockvim(fpath='foo.sh', text='')
+        >>> filetype = vimtk.get_current_filetype()
         >>> assert filetype == 'sh'
     """
     import vim
@@ -1163,6 +1249,7 @@ def autogen_imports(fpath_or_text):
     importable = Importables()
     importable._use_recommended_defaults()
 
+    # TODO: parametarize
     base = {
         'it': 'import itertools as it',
         'nh': 'import netharn as nh',
