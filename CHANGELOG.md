@@ -5,6 +5,21 @@ We are currently working on porting this changelog to the specifications in
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Version 0.3.1] - Unreleased
+
+### Fixed:
+
+* vimtk.CONFIG can now be used to set the config.
+
+
+## [Version 0.3.0] - Unreleased
+
+### Added:
+
+* function `vimtk.mockvim` for easier development
+* POC for python refactoring code
+
+
 ## [Version 0.2.9] - Unreleased
 
 ### Added 
