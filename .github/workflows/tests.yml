@@ -5,11 +5,12 @@
 
 name: Tests
 
-#on: [push]
-on:
-  push:
-  pull_request:
-    branches: [ main ]
+#on:
+#  push:
+#  pull_request:
+#    branches: [ main ]
+
+on: [push, pull_request]
 
 jobs:
   lint_job:
