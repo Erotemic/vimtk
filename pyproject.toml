@@ -8,6 +8,12 @@ ignore_missing_imports = true
 tags = [ "purepy", "erotemic", "github",]
 mod_name = "vimtk"
 repo_name = "vimtk"
+min_python = "3.6"
+dev_status = "beta"
+author = "Jon Crall"
+author_email = "erotemic@gmail.com"
+description = "Python backend for the vimtk plugin"
+url = "https://github.com/Erotemic/vimtk"
 
 [tool.pytest.ini_options]
 addopts = "-p no:doctest --xdoctest --xdoctest-style=google --ignore-glob=setup.py"
