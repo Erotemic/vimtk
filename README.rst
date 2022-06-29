@@ -11,6 +11,9 @@ The tools in this package focus on, but are not exclusive to Python development
 with gVim.  This is both a Vim plugin and a pip installable Python module.
 
 
+.. image:: https://s8.gifyu.com/images/output55bcd47ef8d00b04.gif
+
+
 Usage 
 -----
 
