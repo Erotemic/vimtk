@@ -157,8 +157,11 @@ class Config(object):
         pass
 
     def __getitem__(self, key):
-        self.get(key, default=self.state[key])
-        return self.state[key]
+        value = self.get(key, default=self.state[key])
+        return value
+
+    def __setitem__(self, key, value):
+        self.state[key] = value
 
     def get(self, key, default=None, context='g'):
         """ gets the value of a vim variable and defaults if it does not exist """
