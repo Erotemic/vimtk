@@ -126,6 +126,7 @@ class Config(object):
         >>> vim = vimtk.mockvim()
         >>> vim.eval("let g:vimtk_sys_path = ['$HOME/code/netharn']")
         >>> vimtk.CONFIG.get('vimtk_sys_path')
+        >>> vimtk.CONFIG['vimtk_auto_importable_modules']
     """
     def __init__(self):
         # TODO: use scriptconfig to add helps?
@@ -156,7 +157,7 @@ class Config(object):
         pass
 
     def __getitem__(self, key):
-        self.getvar(key, default=self.state[key])
+        self.get(key, default=self.state[key])
         return self.state[key]
 
     def get(self, key, default=None, context='g'):
