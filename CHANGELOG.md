@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed:
 
 * vimtk.CONFIG can now be used to set the config.
+* autoimport now respects the vimtk_auto_importable_modules config param
 
 
 ## [Version 0.3.0] - Unreleased

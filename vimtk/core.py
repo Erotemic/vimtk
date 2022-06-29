@@ -127,6 +127,9 @@ class Config(object):
         >>> vim.eval("let g:vimtk_sys_path = ['$HOME/code/netharn']")
         >>> vimtk.CONFIG.get('vimtk_sys_path')
         >>> vimtk.CONFIG['vimtk_auto_importable_modules']
+        >>> # Should the vim variable override or update the default config?
+        >>> vim.eval("let g:vimtk_auto_importable_modules = {'spam': 'import spam'}")
+        >>> vimtk.CONFIG['vimtk_auto_importable_modules']
     """
     def __init__(self):
         # TODO: use scriptconfig to add helps?
@@ -171,6 +174,10 @@ class Config(object):
         var_exists = int(vim.eval('exists("{}")'.format(varname)))
         if var_exists:
             value = vim.eval('get({}:, "{}")'.format(context, key))
+            # Hack: for dictionaries, update instead of overriding?
+            # Not sure if this is a good idea
+            if isinstance(value, dict):
+                value = ub.dict_union(default, value)
         else:
             value = default
         return value
@@ -1251,27 +1258,9 @@ def autogen_imports(fpath_or_text):
     from xinspect.autogen import Importables
     importable = Importables()
     importable._use_recommended_defaults()
-
-    # TODO: parametarize
-    base = {
-        'it': 'import itertools as it',
-        'nh': 'import netharn as nh',
-        'np': 'import numpy as np',
-        'pd': 'import pandas as pd',
-        'ub': 'import ubelt as ub',
-        'nx': 'import networkx as nx',
-        'Image': 'from PIL import Image',
-        'mpl': 'import matplotlib as mpl',
-        'nn': 'from torch import nn',
-        'torch_data': 'import torch.utils.data as torch_data',
-        'F': 'import torch.nn.functional as F',
-        'math': 'import math',
-    }
-    importable.known.update(base)
-
     user_importable = None
     try:
-        user_importable = CONFIG.get('vimtk_auto_importable_modules')
+        user_importable = CONFIG['vimtk_auto_importable_modules']
         importable.known.update(user_importable)
     except Exception as ex:
         logger.info('ex = {!r}'.format(ex))
