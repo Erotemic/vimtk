@@ -77,6 +77,7 @@ class Win32Window(ub.NiceRepr):
 
         Example:
             >>> # xdoc: +REQUIRES(win32)
+            >>> # xdoc: +REQUIRES(--has-display)
             >>> win = find_window('gvim.exe')
             >>> win.focus()
         """
@@ -117,6 +118,7 @@ def find_window(proc=None, title=None, visible=True):
 
     Example:
         >>> # xdoc: +REQUIRES(win32)
+        >>> # xdoc: +REQUIRES(--has-display)
         >>> from vimtk.win32_ctrl import *  # NOQA
         >>> win = find_window('gvim.exe')
         >>> print(win.info())
@@ -135,6 +137,7 @@ def find_windows(proc=None, title=None, visible=True):
 
     Example:
         >>> # xdoc: +REQUIRES(win32)
+        >>> # xdoc: +REQUIRES(--has-display)
         >>> from vimtk.win32_ctrl import *  # NOQA
         >>> for win in find_windows('gvim.exe'):
         >>>     print(ub.repr2(win.info()))
@@ -162,6 +165,7 @@ def current_window_name():
 
     Example:
         >>> # xdoc: +REQUIRES(win32)
+        >>> # xdoc: +REQUIRES(--has-display)
         >>> from vimtk.win32_ctrl import *  # NOQA
         >>> result = current_window_name()
         >>> print(result)
@@ -185,6 +189,7 @@ def windows_in_order():
 
     Example:
         >>> # xdoc: +REQUIRES(win32)
+        >>> # xdoc: +REQUIRES(--has-display)
         >>> from vimtk.win32_ctrl import *  # NOQA
         >>> result = list(windows_in_order())
         >>> for win in result:
@@ -206,6 +211,7 @@ def findall_window_ids():
 
     Example:
         >>> # xdoc: +REQUIRES(win32)
+        >>> # xdoc: +REQUIRES(--has-display)
         >>> from vimtk.win32_ctrl import *  # NOQA
         >>> result = findall_window_ids()
         >>> print(result)

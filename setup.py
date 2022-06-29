@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Installation:
+    You shouldnt need to install the python package if you are using this as a
+    vim plugin. Is should find it via the path.
+
+Developing:
+    git clone https://github.com/Erotemic/vimtk.git
+    pip install -e vimtk
+"""
 import sys
 from os.path import exists
 from setuptools import find_packages
@@ -215,11 +226,6 @@ VERSION = parse_version("vimtk/__init__.py")
 if __name__ == "__main__":
     setupkw = {}
 
-    if 0:
-        setupkw["entry_points"] = {
-            # the console_scripts entry point creates the package CLI
-            "console_scripts": ["xcookie = xcookie.__main__:main"]
-        }
     setupkw["install_requires"] = parse_requirements("requirements/runtime.txt")
     setupkw["extras_require"] = {
         "all": parse_requirements("requirements.txt"),
@@ -248,12 +254,16 @@ if __name__ == "__main__":
         license="Apache 2",
         include_package_data=True,
         package_data={
-            'vim': [
-                'plugin',
-                'autoload',
-            ],
+            # '': ['autoload/*.vim', 'plugin/*.vim'],
+            'vimtk': ['autoload/*.vim', 'plugin/*.vim'],
+            # 'vimtk': ['../autoload/*.vim', '../plugin/*.vim'],
+            # 'vim': [
+            #     'plugin',
+            #     'autoload',
+            # ],
         },
-        packages=find_packages("."),
+        # packages=['vimtk' 'vimtk._demo', 'vimtk._demo.vimmock'],
+        packages=find_packages(include='*'),
         python_requires=">=3.6",
         classifiers=[
             'Development Status :: 4 - Beta',
