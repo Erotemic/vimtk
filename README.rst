@@ -1,7 +1,7 @@
 VimTk - The (mostly) Python (g)Vim toolkit 
 ==========================================
 
-|CircleCI| |Codecov| |Pypi| |Downloads| |ReadTheDocs|
+|GithubActions| |Codecov| |Pypi| |PypiDownloads| |ReadTheDocs|
 
 
 Description 
@@ -280,15 +280,17 @@ working to resolve these issues. Bug reports and patches are welcome!
 
 .. |CircleCI| image:: https://circleci.com/gh/Erotemic/vimtk.svg?style=svg
     :target: https://circleci.com/gh/Erotemic/vimtk
-.. |Travis| image:: https://img.shields.io/travis/Erotemic/vimtk/master.svg?label=Travis%20CI
-   :target: https://travis-ci.org/Erotemic/vimtk?branch=master
-.. |Appveyor| image:: https://ci.appveyor.com/api/projects/status/github/Erotemic/vimtk?branch=master&svg=True
-   :target: https://ci.appveyor.com/project/Erotemic/vimtk/branch/master
-.. |Codecov| image:: https://codecov.io/github/Erotemic/vimtk/badge.svg?branch=master&service=github
-   :target: https://codecov.io/github/Erotemic/vimtk?branch=master
+.. |Travis| image:: https://img.shields.io/travis/Erotemic/vimtk/main.svg?label=Travis%20CI
+   :target: https://travis-ci.org/Erotemic/vimtk?branch=main
+.. |Appveyor| image:: https://ci.appveyor.com/api/projects/status/github/Erotemic/vimtk?branch=main&svg=True
+   :target: https://ci.appveyor.com/project/Erotemic/vimtk/branch/main
+.. |Codecov| image:: https://codecov.io/github/Erotemic/vimtk/badge.svg?branch=main&service=github
+   :target: https://codecov.io/github/Erotemic/vimtk?branch=main
 .. |Pypi| image:: https://img.shields.io/pypi/v/vimtk.svg
    :target: https://pypi.python.org/pypi/vimtk
-.. |Downloads| image:: https://img.shields.io/pypi/dm/vimtk.svg
-   :target: https://pypistats.org/packages/vimtk
 .. |ReadTheDocs| image:: https://readthedocs.org/projects/vimtk/badge/?version=latest
     :target: http://vimtk.readthedocs.io/en/latest/
+.. |PypiDownloads| image:: https://img.shields.io/pypi/dm/vimtk.svg
+    :target: https://pypistats.org/packages/vimtk
+.. |GithubActions| image:: https://github.com/Erotemic/vimtk/actions/workflows/tests.yml/badge.svg?branch=main
+    :target: https://github.com/Erotemic/vimtk/actions?query=branch%3Amain
