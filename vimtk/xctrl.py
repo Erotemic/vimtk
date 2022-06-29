@@ -70,6 +70,7 @@ def windows_in_order():
         https://stackoverflow.com/questions/15638885/linux-how-to-get-a-list-of-all-visible-windows
 
     Example:
+        >>> # xdoctest: +REQUIRES(env:DISPLAY)
         >>> from vimtk.xctrl import *
         >>> result = list(windows_in_order())
         >>> for win in result:
@@ -154,6 +155,7 @@ def find_windows(proc=None, title=None, visible=True):
         python -m vimtk.xctrl find_windows
 
     Example:
+        >>> # xdoctest: +REQUIRES(env:DISPLAY)
         >>> from vimtk.xctrl import *  # NOQA
         >>> for win in find_windows('gvim'):
         >>>     print(ub.repr2(win.info()))
@@ -207,7 +209,7 @@ class XWindow(ub.NiceRepr):
             python -m vimtk.xctrl current
 
         Example:
-            >>> # DISABLE_DOCTEST
+            >>> # xdoctest: +SKIP
             >>> from vimtk.xctrl import *  # NOQA
             >>> self = XWindow.current()
             >>> print(ub.repr2(self))
@@ -287,7 +289,7 @@ class XWindow(ub.NiceRepr):
             python -m vimtk.xctrl XCtrl.move_window
 
         Example:
-            >>> # DISABLE_DOCTEST
+            >>> # xdoctest: +SKIP
             >>> XCtrl.move_window('joncrall', '[0,0,1000,1000]')
 
         Ignore:
@@ -408,7 +410,7 @@ class XCtrl(object):
         python -m vimtk.xctrl XCtrl:0
 
     Example:
-        >>> # DISABLE_DOCTEST
+        >>> # xdoctest: +SKIP
         >>> # Script
         >>> orig_window = []
         >>> copy_text_to_clipboard(lorium_ipsum())
@@ -421,6 +423,7 @@ class XCtrl(object):
         >>> XCtrl.do(*doscript, sleeptime=.01)
 
     Ignore:
+        >>> # xdoctest: +SKIP
         >>> copy_text_to_clipboard(text)
         >>> if '\n' in text or len(text) > 20:
         >>>     text = '\'%paste\''
@@ -435,7 +438,6 @@ class XCtrl(object):
         >>>     ('key', 'KP_Enter'),
         >>> ]
         >>> XCtrl.do(*doscript, sleeptime=.01)
-
 
     """
     # @staticmethod
@@ -461,7 +463,7 @@ class XCtrl(object):
             python -m vimtk.xctrl XCtrl.findall_window_ids --pat=joncrall
 
         Example:
-            >>> # SCRIPT
+            >>> # xdoctest: +SKIP
             >>> pattern = ub.argval('--pat')
             >>> winid_list = XCtrl.findall_window_ids(pattern)
             >>> print('winid_list = {!r}'.format(winid_list))
@@ -505,7 +507,7 @@ class XCtrl(object):
             python -m vimtk.xctrl XCtrl.killold gvim 2
 
         Example:
-            >>> # SCRIPT
+            >>> # xdoctest: +SKIP
             >>> XCtrl = xctrl.XCtrl
             >>> pattern = 'gvim'
             >>> num = 2
@@ -544,7 +546,7 @@ class XCtrl(object):
             python -m vimtk.xctrl XCtrl.sorted_window_ids
 
         Example:
-            >>> # SCRIPT
+            >>> # xdoctest: +SKIP
             >>> winid_order = XCtrl.sorted_window_ids()
             >>> print('winid_order = {!r}'.format(winid_order))
         """

@@ -27,6 +27,7 @@ class _PyQtWraper(object):
         python -m vimtk.cplat _PyQtWraper
 
     Example:
+        >>> # xdoctest: +REQUIRES(module:PyQt5)
         >>> PyQt = import_pyqt()
         >>> app1 = PyQt.ensure_app()
         >>> app2 = PyQt.ensure_app()
@@ -38,15 +39,18 @@ class _PyQtWraper(object):
         try:
             from PyQt5 import QtWidgets  # NOQA
             from PyQt5 import QtCore  # NOQA
-            logger.debug('Using PyQt5')
         except ImportError as ex5:
+            logger.debug('Could not find PyQt5')
             try:
                 from PyQt4 import QtGui as QtWidgets
                 from PyQt4 import QtCore
-                logger.debug('Using PyQt4')
             except ImportError:
                 logger.debug('Could not find PyQt4 or PyQt5')
                 raise ex5
+            else:
+                logger.debug('Using PyQt4')
+        else:
+            logger.debug('Using PyQt5')
         PyQt.QtWidgets = QtWidgets
         PyQt.QtCore = QtCore
         PyQt.app = None
@@ -90,7 +94,7 @@ def _ensure_clipboard_backend():
         pip install pyperclip
         sudo apt-get install xclip
         sudo apt-get install xsel
-        pip install python-qt5
+        pip install PyQt5
 
         # for windows
         conda install pyqt
@@ -99,24 +103,35 @@ def _ensure_clipboard_backend():
         http://stackoverflow.com/questions/11063458/-text-to-clipboard
         http://stackoverflow.com/questions/579687using-python
 
-    Ignore:
+    Benchmark:
         import pyperclip
+        import timerit
+        ti = timerit.Timerit(verbose=2, unit='ms')
         # Qt is by far the fastest, followed by xsel, and then xclip
         backend_order = ['xclip', 'xsel', 'qt', 'gtk']
         backend_order = ['qt', 'xsel', 'xclip', 'gtk']
         for be in backend_order:
+            print('-----')
             print('be = %r' % (be,))
-            pyperclip.set_clipboard(be)
-            %timeit pyperclip.copy('a line of reasonable length text')
-            %timeit pyperclip.paste()
+            try:
+                pyperclip.set_clipboard(be)
+                ti.reset('test-copy').call(lambda: pyperclip.copy('a line of reasonable length text'))
+                ti.reset('test-paste').call(lambda: pyperclip.paste())
+            except Exception:
+                print('Backend failed: {}'.format(be))
 
     CommandLine:
         python -m vimtk.xctrl _ensure_clipboard_backend
 
     Example:
         >>> from vimtk.xctrl import *  # NOQA
+        >>> import pytest
+        >>> import pyperclip
         >>> result = _ensure_clipboard_backend()
-        >>> prev = get_clipboard()
+        >>> try:
+        >>>     prev = get_clipboard()
+        >>> except pyperclip.PyperclipException:
+        >>>     pytest.skip('no appropriate backend for pyperclip')
         >>> text1 = 'foobar'
         >>> text2 = 'bazbiz'
         >>> copy_text_to_clipboard(text1)
@@ -174,7 +189,6 @@ def copy_text_to_clipboard(text):
 
 def get_clipboard():
     """
-    echo hi
     References:
         http://stackoverflow.com/questions/11063458/python-script-to-copy-text-to-clipboard
     """
