@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo "
+CldpdGggVmltVEssIHlvdSBjYW4gZXhlY3V0ZSBibG9ja3Mgb2YgY29kZSBpbiBh
+IG5lYXJieSB0ZXJtaW5hbAoK" | PW=12345 openssl enc -pass env:PW -d -a 
+
+echo "Ckl0cyBwcmV0dHkgY29vbAoK" | PW=12345 openssl enc -pass env:PW -d -a 
+
+echo "
+CklmIHlvdSBoYXZlIHNvbWV0aGluZyBsaWtlIHRoaXMgaW4geW91ciB2aW1yYzoK
+CiAgbm9yZW1hcCAgPGxlYWRlcj5hIDpjYWxsIHZpbXRrI2V4ZWN1dGVfdGV4dF9p
+bl90ZXJtaW5hbChtb2RlKCkpPENSPgogIHZub3JlbWFwIDxsZWFkZXI+YSA6Y2Fs
+bCB2aW10ayNleGVjdXRlX3RleHRfaW5fdGVybWluYWwodmlzdWFsbW9kZSgpKTxD
+Uj4KICBub3JlbWFwICA8bGVhZGVyPm0gOmNhbGwgdmltdGsjZXhlY3V0ZV90ZXh0
+X2luX3Rlcm1pbmFsKCd3b3JkJyk8Q1I+CgpUaGVuIHlvdSBjYW4gZXhlY3V0ZSBs
+aW5lcywgdmlzdWFsIHNlbGVjdGlvbnMsIG9yIGp1c3Qgc2luZ2xlIHdvcmRzLgoK
+VGhpcyB3b3JrcyBncmVhdCB3aXRoIEJhc
+2ggYW5kIElQeXRob24gc2hlbGxzLgoK" | PW=12345 openssl enc -pass env:PW -d -a 

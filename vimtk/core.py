@@ -1107,48 +1107,27 @@ def execute_text_in_terminal(text, return_to_vim=True):
     else:
         if terminal_pattern is None:
             terminal_pattern = xctrl._wmctrl_terminal_patterns()
-        # print('terminal_pattern = {!r}'.format(terminal_pattern))
 
         # Sequence of key presses that will trigger a paste event
         paste_keypress = 'ctrl+shift+v'
 
-        if True:
-            sleeptime = .01
-            import time
-            time.sleep(.05)
+        sleeptime = .01
+        import time
+        time.sleep(.05)
 
-            xctrl.XCtrl.cmd('xset r off')
+        xctrl.XCtrl.cmd('xset r off')
+        active_gvim = xctrl.XWindow.current()
+        xctrl.XWindow.find(terminal_pattern).focus(sleeptime)
+        xctrl.XCtrl.send_keys(paste_keypress, sleeptime)
+        xctrl.XCtrl.send_keys('KP_Enter', sleeptime)
+        if '\n' in text:
+            # Press enter multiple times for multiline texts
+            for _ in range(vimtk_multiline_num_press_enter - 1):
+                xctrl.XCtrl.send_keys('KP_Enter', sleeptime)
+        if return_to_vim:
+            active_gvim.focus(sleeptime)
 
-            active_gvim = xctrl.XWindow.current()
-            xctrl.XWindow.find(terminal_pattern).focus(sleeptime)
-            xctrl.XCtrl.send_keys(paste_keypress, sleeptime)
-            xctrl.XCtrl.send_keys('KP_Enter', sleeptime)
-            if '\n' in text:
-                # Press enter multiple times for multiline texts
-                for _ in range(vimtk_multiline_num_press_enter - 1):
-                    xctrl.XCtrl.send_keys('KP_Enter', sleeptime)
-            if return_to_vim:
-                active_gvim.focus(sleeptime)
-
-            xctrl.XCtrl.cmd('xset r on')
-        else:
-            doscript = [
-                ('remember_window_id', 'ACTIVE_GVIM'),
-                ('focus', terminal_pattern),
-                ('key', paste_keypress),
-                ('key', 'KP_Enter'),
-            ]
-            if '\n' in text:
-                # Press enter twice for multiline texts
-                doscript += [
-                    ('key', 'KP_Enter'),
-                ]
-            if return_to_vim:
-                doscript += [
-                    ('focus_id', '$ACTIVE_GVIM'),
-                ]
-            # execute script
-            xctrl.XCtrl.do(*doscript, sleeptime=.01)
+        xctrl.XCtrl.cmd('xset r on')
 
 
 def vim_argv(defaults=None):

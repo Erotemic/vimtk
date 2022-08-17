@@ -205,7 +205,34 @@ fpath = vimtk.get_current_fpath()
 if not ub.WIN32:
     fpath = ub.shrinkuser(fpath)
 vimtk.Clipboard.copy(fpath)
-vimtk.logger.info('fpath = {!r}'.format(fpath))
+vimtk.logger.info('copied fpath = {!r} to the clipboard'.format(fpath))
+EOF
+endfunc
+
+
+
+func! vimtk#copy_current_module()
+Python2or3 << EOF
+"""
+Assuming the current file is a Python module, this attempts to introspect the
+module name and copy it to your clipboard.
+
+Suggested Binding:
+    noremap <leader>f :call vimtk#copy_current_module()<Esc>
+"""
+import vimtk
+import ubelt as ub
+fpath = vimtk.get_current_fpath()
+if vimtk.Python.is_module_pythonfile():
+    import vim
+    modpath = vim.current.buffer.name
+    modname = ub.modpath_to_modname(modpath)
+    vimtk.Clipboard.copy(modname)
+    vimtk.logger.info('copied modname = {!r} to the clipboard'.format(modname))
+else:
+    vimtk.logger.warn('file is not a python file. Copy the path instead')
+    vimtk.Clipboard.copy(fpath)
+    vimtk.logger.info('copied filepath = {!r} to the clipboard'.format(modname))
 EOF
 endfunc
 
@@ -241,15 +268,6 @@ if vimtk.Python.is_module_pythonfile():
     import vim
     modpath = vim.current.buffer.name
     modname = ub.modpath_to_modname(modpath)
-
-    # HACK to add symlinks back into the paths for system uniformity
-    special_symlinks = [
-        # ('/media/joncrall/raid/code', expanduser('~/code')),
-    ]
-    # Abstract via symlinks
-    for real, link in special_symlinks:
-        if modpath.startswith(real):
-            modpath = join(link, relpath(modpath, real))
 
     lines = []
     if not pyinspect.in_pythonpath(modname):

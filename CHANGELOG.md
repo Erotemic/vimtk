@@ -7,10 +7,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Version 0.3.1] - Unreleased
 
+### Added
+
+* New function `vimtk#copy_current_module` similar to
+  `vimtk#copy_current_fpath`, but copies a python module name instead.
+
 ### Fixed:
 
 * vimtk.CONFIG can now be used to set the config.
-* autoimport now respects the vimtk_auto_importable_modules config param
+* autoimport now respects the `vimtk_auto_importable_modules` config param
 
 
 ## [Version 0.3.0] - Unreleased
