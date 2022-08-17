@@ -9,7 +9,10 @@ import logging
 try:
     import ubelt as ub
 except Exception:
+    print('Note: vim has inconsistent interactions with which python it chooses')
     print('\nsys.prefix = {}\n'.format(sys.prefix))
+    print('\nsys.executable = {}\n'.format(sys.executable))
+    print('\nsys.path = {}\n'.format(sys.path))
     raise
 from vimtk import xctrl
 from vimtk import cplat
