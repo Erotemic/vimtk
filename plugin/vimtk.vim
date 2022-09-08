@@ -45,7 +45,7 @@ function! VimTK_default_remap()
   vnoremap <leader>a :call vimtk#execute_text_in_terminal(visualmode())<CR>
   noremap  <leader>m :call vimtk#execute_text_in_terminal('word')<CR>
 
-  "noremap <leader>C :call vimtk#copy_current_fpath()<Esc>
+  noremap <leader>C :call vimtk#copy_current_fpath()<Esc>
   noremap <leader>f :call vimtk#copy_current_module()<Esc>
 
   noremap <leader>M :call vimtk#ipython_import_all()<CR>

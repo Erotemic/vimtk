@@ -281,6 +281,12 @@ working to resolve these issues. Bug reports and patches are welcome!
     :call vimtk#quickopen(',', '~/.vimrc')
     :call vimtk#quickopen('5', '~/.bashrc')
 
+
+Related Work
+------------
+
+* https://github.com/voldikss/vim-floaterm
+
 .. |CircleCI| image:: https://circleci.com/gh/Erotemic/vimtk.svg?style=svg
     :target: https://circleci.com/gh/Erotemic/vimtk
 .. |Travis| image:: https://img.shields.io/travis/Erotemic/vimtk/main.svg?label=Travis%20CI
