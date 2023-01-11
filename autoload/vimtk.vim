@@ -2,13 +2,18 @@
 scriptencoding utf-8
 
 
-if !exists("g:loaded_vimtk_autoload")  && !exists('g:loaded_vimtk')
+if !exists("g:loaded_vimtk_autoload") && !exists('g:loaded_vimtk')
   finish
 endif
 let g:loaded_vimtk_autoload = 1
 
 let s:cpo_save = &cpo
 set cpo&vim
+
+
+" Save the path to this file
+" Reference: https://stackoverflow.com/questions/4976776/how-to-get-path-to-the-current-vimscript-being-executed
+let g:vimtk_autoload_fpath=expand("<sfile>")
 
 
 func! vimtk#helloworld()
@@ -130,6 +135,7 @@ print('sys.version_info = {!r}'.format(sys.version_info))
 # Hack to try and install deps
 
 print('vimtk.__version__ = {!r}'.format(vimtk.__version__))
+print('vimtk.__file__ = {!r}'.format(vimtk.__file__))
 
 EOF
 endfunc
@@ -735,6 +741,47 @@ EOF
 endfunc
 
 
+""" For unit tests
+func! vimtk#internal_test_reload_state()
+    :echo "I am in the VIMTK_TEST_INITIAL_STATE"
+endfunc
+"""
+
 
 " Source helpers relative to this file
 "execute 'source ' . expand('<sfile>:p:h') . '/vimtk_snippets.vim'
+" Secondary guard flags that we never unset
+if exists("g:loaded_vimtk_autoload_final")
+  finish
+endif
+let g:loaded_vimtk_autoload_final = 1
+
+
+func! vimtk#reload()
+let __doc__ =<< trim __DOC__
+
+Reloads the functions in this file and your VIMRC.
+
+The one exception is that this function is not reloaded, due to
+the issue described in [ReloadIssue]_.
+
+Refrences:
+
+  .. [ReloadIssue] https://vi.stackexchange.com/questions/26479/refreshing-vim-file-from-within-a-function
+__DOC__
+
+" Unset the guard flags
+let g:loaded_vimtk_autoload = 0
+let g:loaded_vimtk = 0
+
+Python2or3 << EOF
+import vimtk
+vimtk.reload()
+EOF
+
+" NOTE: this does not work!
+" Resource this file.
+:source $MYVIMRC
+:exec "source " . g:vimtk_autoload_fpath
+
+endfunc

@@ -192,6 +192,69 @@ EOF
 endfu 
 
 
+func! vimtk_snippets#insert_python_scriptconfig_template() 
+    " Imports a python __main__ block 
+Python2or3 << EOF
+import vim
+import vimtk
+import ubelt as ub
+
+vimtk.ensure_normalmode()
+if vimtk.Python.is_module_pythonfile():
+
+    modinfo = vimtk.Python.current_module_info()
+    modpath = modinfo['modpath']
+    modname = ub.modpath_to_modname(modpath)
+
+    if ub.WIN32:
+        modpath = ub.shrinkuser(modpath, home='%HOME%')
+        cmdline1 = 'python -B ' + modpath.replace('\\', '/')
+    else:
+        modpath = ub.shrinkuser(modpath, home='~')
+        cmdline1 = 'python ' + modpath
+    
+    if modname:
+        cmdline2 = 'python -m ' + modname
+
+    text = ub.codeblock(
+        r'''
+        import scriptconfig as scfg
+        import ubelt as ub
+
+        class MyNewConfig(scfg.DataConfig):
+            ...
+
+        def main(cmdline=1, **kwargs):
+            """
+            Example:
+                >>> # xdoctest: +SKIP
+                >>> cmdline = 0
+                >>> kwargs = {
+                >>> }
+                >>> main(cmdline=cmdline, **kwargs)
+            """
+            config = MyNewConfig.legacy(cmdline=cmdline, data=kwargs)
+            print('config = {}'.format(ub.urepr(dict(config), nl=1)))
+
+        if __name__ == '__main__':
+            {rr}"""
+            CommandLine:
+                {cmdline1}
+                {cmdline2}
+            """
+            main()
+        '''
+    ).format(cmdline_=cmdline_, rr='{r}')
+    text = text.format(r='r' if '\\' in text else '')
+
+    vimtk.TextInsertor.insert_under_cursor(text)
+else:
+    print('current file is not a pythonfile')
+#L______________
+EOF
+endfu 
+
+
 """ TODO: requires pyvim_funcs ports
 
 

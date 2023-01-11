@@ -139,6 +139,25 @@ endfu
 ""lockvar g:_VIMTK_VERSION
 
 
+func! Vimtk_Reload()
+let __doc__ =<< trim __DOC__
+FIXME: broken, is there any way to do this?
+
+A workaround is to define this function in your vimrc
+
+Reloads vimtk after changes are made or it is updated
+__DOC__
+
+" Unset the guard flags
+let g:loaded_vimtk_autoload = 0
+let g:loaded_vimtk = 0
+
+":source $MYVIMRC
+:exec "source " . g:vimtk_autoload_fpath
+
+endfunc
+
+
 
 " Reload user's settings
 let &cpo = s:cpo_save

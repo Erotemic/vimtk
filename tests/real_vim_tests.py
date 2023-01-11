@@ -11,7 +11,19 @@ vim_sleep_seq = '''
 vim_sleep_seq
 
 
+def is_interactive():
+    import os
+    return bool(os.environ.get('VIMTK_TEST_INTERACTIVE', ''))
+
+
 def execute_vim_script(fpath, commands=None, interactive=False):
+    """
+    Notes:
+        how to write logs to a file [SU_201090]_.
+
+    References:
+        [SU_201090] https://superuser.com/questions/201090/write-vim-log-to-a-file
+    """
     vim_exe = ub.find_exe('vim')
     args = [vim_exe]
     script_fpath = None
@@ -39,17 +51,35 @@ def execute_vim_script(fpath, commands=None, interactive=False):
         script_fpath.write_text(commands)
         args += ['-c', 'source {}'.format(script_fpath)]
 
+    # Write logs to a file
+    import tempfile
+    temp_fpath = ub.Path(tempfile.mktemp())
+    args += [f'-V0{temp_fpath}']
+
     if not interactive:
         args += ['-c', 'wqa!']
     # command = ' '.join(args)
     print(commands)
     ub.cmd(args, verbose=3, system=True)
+
+    logs = temp_fpath.read_text()
+
+    print('------')
     print('Result')
     print('------')
     print(fpath.read_text())
     print('------')
+    print('======')
+    print('----')
+    print('Logs')
+    print('----')
+    print(logs)
+    print('----')
+    print('======')
     print('Finished vim execution. If there is an error, try running in '
-          'interactive mode to see what it is.')
+          'interactive mode via setting the environ VIMTK_TEST_INTERACTIVE=1 '
+          'to see what it is.')
+    return logs
 
 
 def test_vim_config():
@@ -61,11 +91,20 @@ def test_vim_config():
         '''
         Python2or3 << EOF
         import vimtk
-        print(vimtk.CONFIG.state)
+        import ubelt as ub
+        print('<START_CONFIG>')
+        print(ub.repr2(vimtk.CONFIG.state, nl=2))
+        print('<END_CONFIG>')
         EOF
         ''')
-    interactive = 0
-    execute_vim_script(fpath, commands=commands, interactive=interactive)
+    interactive = is_interactive()
+    logs = execute_vim_script(fpath, commands=commands, interactive=interactive)
+
+    startx = logs.find('<START_CONFIG>') + len('<START_CONFIG>')
+    stopx = logs.find('<STOP_CONFIG>')
+    relevant = logs[startx:stopx]
+    print(f'relevant={relevant}')
+    # TODO: assert something
 
 
 def test_auto_import():
@@ -89,18 +128,22 @@ def test_auto_import():
         let g:vimtk_auto_importable_modules = {'spam': 'import spam'}
         :call vimtk#insert_auto_import()
         ''')
-    interactive = 0
+    interactive = is_interactive()
     execute_vim_script(fpath, commands=commands, interactive=interactive)
+    assert 'import math' in fpath.read_text()
 
 
 def test_format_paragraph():
+    """
+    xdoctest ~/code/vimtk/tests/real_vim_tests.py test_format_paragraph
+    """
     fpath = demo_fpath()
     commands = ub.codeblock(
         '''
         :1
         :call vimtk#format_paragraph()
         ''')
-    interactive = 0
+    interactive = is_interactive()
     execute_vim_script(fpath, commands=commands, interactive=interactive)
 
     commands = ub.codeblock(
@@ -108,8 +151,10 @@ def test_format_paragraph():
         :12
         :call vimtk#format_paragraph()
         ''')
-    interactive = 0
+    interactive = is_interactive()
     execute_vim_script(fpath, commands=commands, interactive=interactive)
+
+    assert ('  fugit') in fpath.read_text()
 
 
 def test_vim_buffer_indexing():
@@ -154,7 +199,7 @@ def test_vim_buffer_indexing():
         debug_fpath.write_text(debug_text)
         EOF
         ''')
-    interactive = 0
+    interactive = is_interactive()
     fpath = demo_fpath()
     dpath = ub.Path.appdir('vimtk/test').ensuredir()
     debug_fpath = dpath / 'buffer_index_result.txt'
@@ -166,6 +211,41 @@ def test_vim_buffer_indexing():
         print(debug_fpath.read_text())
     else:
         print('debug_fpath not written')
+
+
+def test_vimtk_reload():
+    """
+    VIMTK_TEST_INTERACTIVE=1 xdoctest ~/code/vimtk/tests/real_vim_tests.py test_vimtk_reload
+    xdoctest ~/code/vimtk/tests/real_vim_tests.py test_vimtk_reload
+    """
+    # fpath = demo_fpath()
+
+    # TODO: robust pathing
+    fpath = ub.Path('~/code/vimtk/autoload/vimtk.vim').expand()
+
+    # Call the internal_test_reload_state function, note the output
+    # modify the function itself, the output should be unchanged
+    # call the reload function, now the output should change
+    # revert the change
+    commands = ub.codeblock(
+        '''
+        :1
+        :call vimtk#internal_test_reload_state()
+        :%s/VIMTK_TEST_INITIAL_STATE/VIMTK_TEST_MODIFIED_STATE
+        :w
+        :call vimtk#internal_test_reload_state()
+        :call vimtk#reload()
+        :call vimtk#internal_test_reload_state()
+        :%s/VIMTK_TEST_MODIFIED_STATE/VIMTK_TEST_INITIAL_STATE
+        :w
+        :call vimtk#internal_test_reload_state()
+        :call vimtk#reload()
+        :call vimtk#internal_test_reload_state()
+        ''')
+    interactive = is_interactive()
+    logs = execute_vim_script(fpath, commands=commands, interactive=interactive)
+    assert logs.count('VIMTK_TEST_INITIAL_STATE') == 3
+    assert logs.count('VIMTK_TEST_MODIFIED_STATE') == 2
 
 
 def demo_fpath(text=None, fname=None):

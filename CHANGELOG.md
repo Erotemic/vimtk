@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+* New function `vimtk#reload` which reloads this module and the vimrc for development.
 * New function `vimtk#copy_current_module` similar to
   `vimtk#copy_current_fpath`, but copies a python module name instead.
 
