@@ -53,7 +53,7 @@ function! VimTK_default_remap()
   command! AutoImport call vimtk#insert_auto_import()
 
   noremap <leader>pv :call vimtk#insert_print_var_at_cursor("repr")<CR>
-  noremap <leader>ps :call vimtk#insert_print_var_at_cursor("repr2")<CR>
+  noremap <leader>ps :call vimtk#insert_print_var_at_cursor("urepr")<CR>
 
   noremap  <c-M-B> :call vimtk#insert_timerit(mode())<CR><Esc>
   vnoremap <c-M-B> :call vimtk#insert_timerit(visualmode())<CR><Esc>
@@ -74,23 +74,27 @@ function! VimTK_default_remap()
 endfunction
 
 
-function! VimTK_suggested_remap() 
-  let mapleader = ","
-  let maplocalleader = ","
-  noremap \ ,
+" This is a good idea, but ultimately unused.
+" and the user should probably do it themselves.
+"function! VimTK_suggested_remap() 
+"  let mapleader = ","
+"  let maplocalleader = ","
+"  noremap \ ,
 
-  call VimTK_default_remap()
+"  call VimTK_default_remap()
 
-  call vimtk#quickopen(',', '~/.vimrc')
-  call vimtk#quickopen('5', '~/.bashrc')
+"  call vimtk#quickopen(',', '~/.vimrc')
+"  call vimtk#quickopen('5', '~/.bashrc')
 
-endfunction
+"endfunction
 
 
 " Define top-level API commands
 "command! AutoImport call vimtk#insert_auto_import()
 
 
+" We may want to discourage this in favor of explicitly defining the mappings.
+" Not sure.
 if exists("g:vimtk_default_mappings") && g:vimtk_default_mappings
   :call VimTK_default_remap()
 endif
