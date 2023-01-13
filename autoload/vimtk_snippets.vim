@@ -1,3 +1,4 @@
+let g:vimtk_autoload_snippet_fpath=expand("<sfile>")
 
 
 func! vimtk_snippets#insert_python_main() 
@@ -205,6 +206,8 @@ if vimtk.Python.is_module_pythonfile():
     modinfo = vimtk.Python.current_module_info()
     modpath = modinfo['modpath']
     modname = ub.modpath_to_modname(modpath)
+        
+    cmdline_parts = ['CommandLine:']
 
     if ub.WIN32:
         modpath = ub.shrinkuser(modpath, home='%HOME%')
@@ -212,39 +215,47 @@ if vimtk.Python.is_module_pythonfile():
     else:
         modpath = ub.shrinkuser(modpath, home='~')
         cmdline1 = 'python ' + modpath
+
+    cmdline_parts.append('    ' + cmdline1)
     
     if modname:
         cmdline2 = 'python -m ' + modname
+        cmdline_parts.append('    ' + cmdline2)
+
+    cmdline_block = ub.indent('\n'.join(cmdline_parts))
 
     text = ub.codeblock(
         r'''
+        #!/usr/bin/env python3
         import scriptconfig as scfg
         import ubelt as ub
 
+
         class MyNewConfig(scfg.DataConfig):
+            # src = scfg.Value(None, position=1, help='input')
             ...
+
 
         def main(cmdline=1, **kwargs):
             """
             Example:
                 >>> # xdoctest: +SKIP
                 >>> cmdline = 0
-                >>> kwargs = {
-                >>> }
+                >>> kwargs = dict(
+                >>> )
                 >>> main(cmdline=cmdline, **kwargs)
             """
             config = MyNewConfig.legacy(cmdline=cmdline, data=kwargs)
-            print('config = {}'.format(ub.urepr(dict(config), nl=1)))
+            print('config = ' + ub.urepr(dict(config), nl=1))
 
         if __name__ == '__main__':
             {rr}"""
-            CommandLine:
-                {cmdline1}
-                {cmdline2}
+
+        {cmdline_block}
             """
             main()
         '''
-    ).format(cmdline_=cmdline_, rr='{r}')
+    ).format(cmdline_block=cmdline_block, rr='{r}')
     text = text.format(r='r' if '\\' in text else '')
 
     vimtk.TextInsertor.insert_under_cursor(text)

@@ -58,7 +58,9 @@ function! VimTK_default_remap()
   noremap  <c-M-B> :call vimtk#insert_timerit(mode())<CR><Esc>
   vnoremap <c-M-B> :call vimtk#insert_timerit(visualmode())<CR><Esc>
 
-  noremap <leader>es :call vimtk#smart_search_word_at_cursor()<CR>
+  " This is cool, but dont use it by default
+  "noremap <leader>es :call vimtk#smart_search_word_at_cursor()<CR>
+
   noremap <leader>go :call vimtk#open_path_at_cursor("e")<CR>
   noremap <leader>gf :call vimtk#open_path_at_cursor("e")<CR>
   noremap <leader>gi :call vimtk#open_path_at_cursor("split")<CR>
@@ -139,23 +141,18 @@ endfu
 ""lockvar g:_VIMTK_VERSION
 
 
-func! Vimtk_Reload()
-let __doc__ =<< trim __DOC__
-FIXME: broken, is there any way to do this?
-
-A workaround is to define this function in your vimrc
-
-Reloads vimtk after changes are made or it is updated
-__DOC__
-
-" Unset the guard flags
-let g:loaded_vimtk_autoload = 0
-let g:loaded_vimtk = 0
-
-":source $MYVIMRC
-:exec "source " . g:vimtk_autoload_fpath
-
-endfunc
+"func! Vimtk_Reload()
+"let __doc__ =<< trim __DOC__
+"FIXME: broken, is there any way to do this?
+"A workaround is to define this function in your vimrc
+"Reloads vimtk after changes are made or it is updated
+"__DOC__
+"" Unset the guard flags
+"let g:loaded_vimtk_autoload = 0
+"let g:loaded_vimtk = 0
+"":source $MYVIMRC
+":exec "source " . g:vimtk_autoload_fpath
+"endfunc
 
 
 

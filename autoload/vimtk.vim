@@ -13,7 +13,7 @@ set cpo&vim
 
 " Save the path to this file
 " Reference: https://stackoverflow.com/questions/4976776/how-to-get-path-to-the-current-vimscript-being-executed
-let g:vimtk_autoload_fpath=expand("<sfile>")
+let g:vimtk_autoload_core_fpath=expand("<sfile>")
 
 
 func! vimtk#helloworld()
@@ -782,6 +782,7 @@ EOF
 " NOTE: this does not work!
 " Resource this file.
 :source $MYVIMRC
-:exec "source " . g:vimtk_autoload_fpath
+:exec "source " . g:vimtk_autoload_core_fpath
+:exec "source " . g:vimtk_autoload_snippet_fpath
 
 endfunc
