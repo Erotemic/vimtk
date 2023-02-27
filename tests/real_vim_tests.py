@@ -89,7 +89,7 @@ def test_vim_config():
     fpath = demo_fpath()
     commands = ub.codeblock(
         '''
-        Python2or3 << EOF
+        python3 << EOF
         import vimtk
         import ubelt as ub
         print('<START_CONFIG>')
@@ -119,7 +119,7 @@ def test_auto_import():
         '''))
     commands = ub.codeblock(
         '''
-        Python2or3 << EOF
+        python3 << EOF
         import vimtk
         vimtk.CONFIG['vimtk_auto_importable_modules'].update({
             'blarblar': 'import blarblar',
@@ -167,15 +167,15 @@ def test_vim_buffer_indexing():
     commands = ub.codeblock(
         r'''
         if has('python3')
-            command! -nargs=1 Python2or3 python3 <args>
+            command! -nargs=1 python3 python3 <args>
         elseif has('python')
-            command! -nargs=1 Python2or3 python <args>
+            command! -nargs=1 python3 python <args>
         else
             echo "Error: Requires Vim compiled with +python or +python3"
             finish
         endif
 
-        Python2or3 << EOF
+        python3 << EOF
         import ubelt as ub
         import vim
         dpath = ub.Path.appdir('vimtk/test').ensuredir()

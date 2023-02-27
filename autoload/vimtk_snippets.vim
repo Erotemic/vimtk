@@ -3,7 +3,7 @@ let g:vimtk_autoload_snippet_fpath=expand("<sfile>")
 
 func! vimtk_snippets#insert_python_main() 
     " Imports a python __main__ block 
-Python2or3 << EOF
+python3 << EOF
 import vim
 import vimtk
 import ubelt as ub
@@ -49,7 +49,7 @@ endfu
 
 func! vimtk_snippets#insert_python_header(...) 
     " Imports a standard python header
-Python2or3 << EOF
+python3 << EOF
 mode = vim.eval('(a:0 >= 1) ? a:1 : 0')
 import ubelt as ub
 import vim
@@ -76,7 +76,7 @@ endfu
 
 
 func! vimtk_snippets#insert_timerit(...) range
-Python2or3 << EOF
+python3 << EOF
 import vim
 import vimtk
 import ubelt as ub
@@ -101,7 +101,7 @@ endfunc
 
 
 func! vimtk_snippets#insert_xdev_embed() 
-Python2or3 << EOF
+python3 << EOF
 import vim
 import vimtk
 import ubelt as ub
@@ -119,7 +119,7 @@ endfunc
 
 
 func! vimtk_snippets#insert_xdev_embed_on_exception_context(...) range
-Python2or3 << EOF
+python3 << EOF
 import vim
 import vimtk
 import ubelt as ub
@@ -147,7 +147,7 @@ endfunc
 
 
 func! vimtk_snippets#insert_xdev_global_kwargs() 
-Python2or3 << EOF
+python3 << EOF
 import vim
 import vimtk
 import ubelt as ub
@@ -166,7 +166,7 @@ endfunc
 
 
 func! vimtk_snippets#insert_docstr_commandline() 
-Python2or3 << EOF
+python3 << EOF
 import vim
 import vimtk
 import ubelt as ub
@@ -175,15 +175,18 @@ if vimtk.Python.is_module_pythonfile():
     modinfo = vimtk.Python.current_module_info()
     funcinfo = vimtk.Python.find_func_above_row(row='current')
     callname = funcinfo['callname']
+    modname = modinfo['modname']
+    modpath = modinfo['modpath']
     if modinfo['importable']:
         modname_or_path = modinfo['modname']
     else:
         modname_or_path = modinfo['modpath']
     snippet = ub.codeblock(
-        '''
+        f'''
         CommandLine:
-            xdoctest -m {modname_or_path} {callname}
-        ''').format(callname=callname, modname_or_path=modname_or_path)
+            xdoctest -m {modpath} {callname}
+            xdoctest -m {modname} {callname}
+        ''')
     indent = vimtk.TextSelector.current_indent()
     newtext = ub.indent(snippet, indent)
     vimtk.TextInsertor.insert_under_cursor(newtext)
@@ -195,7 +198,7 @@ endfu
 
 func! vimtk_snippets#insert_python_scriptconfig_template() 
     " Imports a python __main__ block 
-Python2or3 << EOF
+python3 << EOF
 import vim
 import vimtk
 import ubelt as ub
@@ -232,7 +235,7 @@ if vimtk.Python.is_module_pythonfile():
 
 
         class MyNewConfig(scfg.DataConfig):
-            # src = scfg.Value(None, position=1, help='input')
+            # src = scfg.Value(None, help='input')
             ...
 
 
@@ -245,7 +248,7 @@ if vimtk.Python.is_module_pythonfile():
                 >>> )
                 >>> main(cmdline=cmdline, **kwargs)
             """
-            config = MyNewConfig.legacy(cmdline=cmdline, data=kwargs)
+            config = MyNewConfig.cli(cmdline=cmdline, data=kwargs, strict=True)
             print('config = ' + ub.urepr(dict(config), nl=1))
 
         if __name__ == '__main__':
@@ -270,7 +273,7 @@ endfu
 
 
 "func! vimtk#InsertDocstr() 
-"Python2or3 << EOF
+"python3 << EOF
 "import vim
 "import vimtk
 
@@ -286,7 +289,7 @@ endfu
 
 
 "func! vimtk#InsertKWargsDoc() 
-"Python2or3 << EOF
+"python3 << EOF
 "import vim
 "import vimtk
 "#vim.command(':echom %r' % ('dbmsg: ' + dbgmsg,))
@@ -302,7 +305,7 @@ endfu
 
 
 "func! vimtk#InsertDocstrOnlyArgs() 
-"Python2or3 << EOF
+"python3 << EOF
 "import vim
 "import vimtk
 

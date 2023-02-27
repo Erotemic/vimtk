@@ -18,7 +18,7 @@ let g:vimtk_autoload_core_fpath=expand("<sfile>")
 
 func! vimtk#helloworld()
 echo "hello world from vim!"
-Python2or3 << EOF
+python3 << EOF
 """
 Hello world example. 
 
@@ -142,7 +142,7 @@ endfunc
 
 
 func! vimtk#execute_text_in_terminal(...) range
-Python2or3 << EOF
+python3 << EOF
 """
 Interactive scripting function. Takes part of the file you are editing
 and pastes it into a terminal and then returns the editor to focus.
@@ -197,7 +197,7 @@ endfunc
 
 
 func! vimtk#copy_current_fpath()
-Python2or3 << EOF
+python3 << EOF
 """
 Copies the absolute path to the current file into your clipboard
 
@@ -218,7 +218,7 @@ endfunc
 
 
 func! vimtk#copy_current_module()
-Python2or3 << EOF
+python3 << EOF
 """
 Assuming the current file is a Python module, this attempts to introspect the
 module name and copy it to your clipboard.
@@ -245,7 +245,7 @@ endfunc
 
 
 func! vimtk#ipython_import_all()
-Python2or3 << EOF
+python3 << EOF
 """
 Imports global variables from current module into IPython session
 
@@ -334,7 +334,7 @@ endfunc
 
 
 func! vimtk#insert_auto_import() 
-Python2or3 << EOF
+python3 << EOF
 """
 Introspects the current Python file, and attempts to automatically insert
 missing import statements.
@@ -364,7 +364,7 @@ endfunc
 
 
 func! vimtk#insert_print_var_at_cursor(...)
-Python2or3 << EOF
+python3 << EOF
 """
 Inserts a line of code that prints the current variable under the cursor
 
@@ -481,7 +481,7 @@ endfunc
 
 
 func! vimtk#insert_timerit(...) range
-Python2or3 << EOF
+python3 << EOF
 """
 Suggested Bindings:
     noremap  <c-M-B> :call vimtk#insert_timerit(mode())<CR><Esc>
@@ -509,7 +509,7 @@ endfunc
 
 
 func! vimtk#smart_search_word_at_cursor()
-Python2or3 << EOF
+python3 << EOF
 """
 Determines if the word at the cursor is a url and opens it in a webbrowser
 
@@ -529,7 +529,7 @@ endfunc
 
 
 func! vimtk#open_path_at_cursor(...) 
-Python2or3 << EOF
+python3 << EOF
 """
 Does a fancy open of a path at the current cursor position in vim
 
@@ -588,7 +588,7 @@ endfunc
 
 
 func! vimtk#quickopen(...)
-Python2or3 << EOF
+python3 << EOF
 """
 This is a shortcut for opening commonly used files
 
@@ -670,7 +670,7 @@ endfu
 
 
 func! vimtk#py_format_doctest() range
-Python2or3 << EOF
+python3 << EOF
 """
 Inserts docstring chevrons
 """
@@ -684,7 +684,7 @@ endfunc
 
 
 func! vimtk#py_unformat_doctest() range
-Python2or3 << EOF
+python3 << EOF
 """
 Removes docstring chevrons
 """
@@ -698,7 +698,7 @@ endfunc
 
 func! vimtk#format_paragraph(...) 
 
-Python2or3 << EOF
+python3 << EOF
 import vim
 import vimtk
 
@@ -774,7 +774,7 @@ __DOC__
 let g:loaded_vimtk_autoload = 0
 let g:loaded_vimtk = 0
 
-Python2or3 << EOF
+python3 << EOF
 import vimtk
 vimtk.reload()
 EOF

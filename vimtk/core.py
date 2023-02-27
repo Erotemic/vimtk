@@ -171,7 +171,10 @@ class Config(object):
 
     def get(self, key, default=None, context='g'):
         """ gets the value of a vim variable and defaults if it does not exist """
-        import vim
+        try:
+            import vim
+        except ImportError:
+            return default
         assert key in self.default
         varname = '{}:{}'.format(context, key)
         var_exists = int(vim.eval('exists("{}")'.format(varname)))
@@ -860,26 +863,72 @@ class Python(object):
             >>>             self.foo = 1
             >>>             self.foo = 2
             >>>     def foo():
-            >>>         pass
+            >>>         ...
             >>>     def bar():
-            >>>         pass
+            >>>         ...
             >>>     def baz():
-            >>>         pass
+            >>>         ...
+            >>>     class Biz:
+            >>>         def __init__(self):
+            >>>             self.foo = 1
+            >>>             self.foo = 2
+            >>>         def buzz(self):
+            >>>             ...
             >>>     '''))
             >>> vim.move_cursor(8)
             >>> info = vimtk.Python.find_func_above_row()
             >>> print(ub.repr2(info))
+            {
+                'callname': 'bar',
+                'line': 'def bar():',
+                'pos': 6,
+            }
             >>> vim.move_cursor(4)
             >>> info = vimtk.Python.find_func_above_row()
             >>> print(ub.repr2(info))
+            {
+                'callname': 'Foo.__init__',
+                'line': '    def __init__(self):',
+                'pos': 1,
+            }
+            >>> vim.move_cursor(16)
+            >>> info = vimtk.Python.find_func_above_row()
+            >>> print(ub.repr2(info))
+            {
+                'callname': 'Biz.buzz',
+                'line': '    def buzz(self):',
+                'pos': 14,
+            }
+
+        Ignore:
+            import xdev
+            b = xdev.RegexBuilder.coerce('python')
+            parts = [
+                b.named_field(b.whitespace, 'indent'),
+                b.named_field('def|class', 'type'),
+                b.whitespace,
+                b.named_field(b.identifier, 'callname'),
+            ]
+            pattern = ''.join(parts)
+            print(f"pattern = r'{pattern}'")
         """
-        pattern = r' *(def|class) *(?P<callname>[A-Za-z0-0_]*)\('
-        result = find_pattern_above_row(pattern, maxIter=maxIter)
-        print('result = {!r}'.format(result))
+        import vim
+        pattern = r'(?P<indent>\s*)(?P<type>def|class)\s*(?P<callname>[A-Za-z_][A-Za-z_0-9]*)'
+        row = vim.current.window.cursor[0] - 1
+        line_list = vim.current.buffer
+        result = find_pattern_above_row(pattern, line_list, row, maxIter=maxIter)
         if result is not None:
-            line, pos = result
-            match = re.match(pattern, line)
-            callname = match.groupdict()['callname']
+            line, pos, found = result
+            groups = found.groupdict()
+            callname = groups['callname']
+            if len(groups['indent']) > 0:
+                # Probably part of a class. Try to find the class name.
+                pattern = r'(?P<indent>\s*)(?P<type>class)\s*(?P<callname>[A-Za-z_][A-Za-z_0-9]*)'
+                result2 = find_pattern_above_row(pattern, line_list, pos, maxIter=maxIter * 100)
+                if result2 is not None:
+                    found2 = result2[-1]
+                    groups2 = found2.groupdict()
+                    callname = groups2['callname'] + '.' + callname
         else:
             line = None
             pos = None
@@ -1070,6 +1119,10 @@ def execute_text_in_terminal(text, return_to_vim=True):
              register our window as the active vim, and then paste into
              the second mru terminal)
 
+    Ignore:
+        from vimtk.core import execute_text_in_terminal
+        execute_text_in_terminal('print("hello")')
+
     """
     logger.debug('execute_text_in_terminal')
     # Copy the text to the clipboard
@@ -1122,6 +1175,10 @@ def execute_text_in_terminal(text, return_to_vim=True):
         active_gvim = xctrl.XWindow.current()
         xctrl.XWindow.find(terminal_pattern).focus(sleeptime)
         xctrl.XCtrl.send_keys(paste_keypress, sleeptime)
+        xctrl.XCtrl.send_keys('KP_Enter', sleeptime)
+        # Need to time the enter key press correctly.
+        # TODO: is there a better method to do this?
+        time.sleep(0.1)
         xctrl.XCtrl.send_keys('KP_Enter', sleeptime)
         if '\n' in text:
             # Press enter multiple times for multiline texts
@@ -1588,6 +1645,7 @@ def find_pattern_above_row(pattern, line_list='current', row='current', maxIter=
     searches a few lines above the curror until it **matches** a pattern
 
     TODO: move to some class? Perhaps somethig like Finder?
+    TODO: refactor
     """
     import re
     if row == 'current':
@@ -1603,8 +1661,9 @@ def find_pattern_above_row(pattern, line_list='current', row='current', maxIter=
         if pos < 0:
             break
         searchline = line_list[pos]
-        if re.match(pattern, searchline) is not None:
-            return searchline, pos
+        found = re.match(pattern, searchline)
+        if found is not None:
+            return searchline, pos, found
     return None
 
 

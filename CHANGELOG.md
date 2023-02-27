@@ -5,6 +5,12 @@ We are currently working on porting this changelog to the specifications in
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Version 0.4.0] - Unreleased
+
+### Changes
+* Transition to Python3 only
+
+
 ## [Version 0.3.1] - Unreleased
 
 ### Added
@@ -17,6 +23,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 * vimtk.CONFIG can now be used to set the config.
 * autoimport now respects the `vimtk_auto_importable_modules` config param
+* `find_func_above_row` fails in less cases (still not very robust though)
 
 
 ## [Version 0.3.0] - Unreleased

@@ -9,7 +9,7 @@ def apply_monkey_patch_jedi():
     To use, modify your vimrc to execute this code:
 
     Usage:
-        Python2or3 << EOF
+        python3 << EOF
         from vimtk import jedi_monkeypatch
         jedi_monkeypatch.apply_monkey_patch_jedi()
         EOF

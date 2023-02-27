@@ -206,13 +206,14 @@ class XWindow(ub.NiceRepr):
     def current(XWindow):
         r"""
         CommandLine:
-            python -m vimtk.xctrl current
+            VIMTK_TEST=1 xdoctest -m vimtk.xctrl XWindow.current
 
         Example:
-            >>> # xdoctest: +SKIP
+            >>> # xdoctest: +REQUIRES(env:VIMTK_TEST)
             >>> from vimtk.xctrl import *  # NOQA
             >>> self = XWindow.current()
-            >>> print(ub.repr2(self))
+            >>> print('self: XWindow = {}'.format(ub.urepr(self, nl=1)))
+            >>> print('info = ' + ub.repr2(self.wininfo()))
         """
         wm_id = int(ub.cmd('xdotool getwindowfocus')['out'].strip())
         win = XWindow(wm_id)
@@ -252,6 +253,56 @@ class XWindow(ub.NiceRepr):
         pid = self._wmquery('pid')
         proc = psutil.Process(pid)
         return proc
+
+    def size(self):
+        # Get the current size
+        info = self.wininfo()
+        w, h = int(info['Width']), int(info['Height'])
+        dsize = (w, h)
+        return dsize
+
+    def resize(self, width, height):
+        """
+
+        CommandLine:
+            VIMTK_TEST=1 xdoctest -m vimtk.xctrl XWindow.resize
+
+        Example:
+            >>> # xdoctest: +REQUIRES(env:VIMTK_TEST)
+            >>> from vimtk.xctrl import *  # NOQA
+            >>> self = XWindow.current()
+            >>> w, h = self.size()
+            >>> self.resize(w + 10, h + 10)
+        """
+        command = f'xdotool windowsize {self.wm_id} {width} {height}'
+        ub.cmd(command, verbose=3)
+
+    def wininfo(self):
+        """
+        """
+        cmdinfo = ub.cmd('xwininfo -id {}'.format(self.wm_id))
+        if cmdinfo['ret'] != 0:
+            print('info = {}'.format(ub.urepr(cmdinfo, nl=1)))
+            raise Exception(cmdinfo['ret'])
+        out = cmdinfo['out']
+        info = {}
+        curr_key = None
+        val_accum = []
+        # Parse key/val lines
+        def accept(info, curr_key, val_accum):
+            if curr_key is not None:
+                info[curr_key] = (' '.join(val_accum)).strip()
+            val_accum.clear()
+        for line in out.split('\n'):
+            if ':' in line:
+                accept(info, curr_key, val_accum)
+                key, val = line.split(':', 1)
+                val_accum.append(val)
+                curr_key = key.strip()
+            else:
+                val_accum.append(line)
+        accept(info, curr_key, val_accum)
+        return info
 
     def process_name(self):
         proc = self.process()

@@ -10,7 +10,7 @@ endif
 
 " TODO ensure _VIMTK_VERSION is synced with the python version
 " which is defined in: ~/code/vimtk/vimtk/__init__.py
-let g:_VIMTK_VERSION = '0.3.0'
+let g:_VIMTK_VERSION = '0.4.0'
 
 "if exists("g:loaded_vimtk") 
 "  finish
@@ -102,7 +102,7 @@ if exists("g:vimtk_default_mappings") && g:vimtk_default_mappings
 endif
 
 " Setup the PYTHONPATH for the vimtk python module
-Python2or3 << ENDPYTHON
+python3 << ENDPYTHON
 # --------------
 import sys
 from os.path import dirname 
@@ -129,7 +129,7 @@ func! QUICKOPEN_leader_tvio(...)
 endfu
 
 
-"Python2or3 << ENDPYTHON
+"python3 << ENDPYTHON
 "# ensure _VIMTK_VERSION is synced with the python version
 "import vimtk
 "import vim
