@@ -11,6 +11,46 @@ vim_sleep_seq = '''
 vim_sleep_seq
 
 
+def demo_fpath(text=None, fname=None):
+    import ubelt as ub
+    dpath = ub.Path.appdir('vimtk/tests/').ensuredir()
+    if text is None:
+        text = ub.codeblock(
+            '''
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
+            minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+            ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+            voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur
+            sint occaecat cupidatat non proident, sunt in culpa qui officia
+            deserunt mollit anim id est laborum.
+
+            Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+            accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae
+            ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt
+            explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut
+            odit aut fugit, sed quia consequuntur magni dolores eos qui ratione
+            voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum
+            quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam
+            eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat
+            voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam
+            corporis suscipit laboriosam, nisi ut aliquid ex ea commodi
+            consequatur?
+
+            Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse
+            quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo
+            voluptas nulla pariatur?"
+            ''')
+        if fname is None:
+            fname = 'lorium.txt'
+    else:
+        if fname is None:
+            fname = ub.hash_data(text)[0:8] + '.txt'
+    fpath = dpath / fname
+    fpath.write_text(text)
+    return fpath
+
+
 def is_interactive():
     import os
     return bool(os.environ.get('VIMTK_TEST_INTERACTIVE', ''))
@@ -67,13 +107,15 @@ def execute_vim_script(fpath, commands=None, interactive=False):
     print('------')
     print('Result')
     print('------')
-    print(fpath.read_text())
+    _print_file_state(fpath)
+    # print(fpath.read_text())
     print('------')
     print('======')
     print('----')
     print('Logs')
     print('----')
-    print(logs)
+    _print_file_state(temp_fpath)
+    # print(logs)
     print('----')
     print('======')
     print('Finished vim execution. If there is an error, try running in '
@@ -248,41 +290,117 @@ def test_vimtk_reload():
     assert logs.count('VIMTK_TEST_MODIFIED_STATE') == 2
 
 
-def demo_fpath(text=None, fname=None):
-    import ubelt as ub
-    dpath = ub.Path.appdir('vimtk/tests/').ensuredir()
-    if text is None:
-        text = ub.codeblock(
-            '''
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-            minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-            ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
-            voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur
-            sint occaecat cupidatat non proident, sunt in culpa qui officia
-            deserunt mollit anim id est laborum.
+def test_open_path_at_cursor_normal():
+    """
+    xdoctest ~/code/vimtk/tests/real_vim_tests.py test_open_path_at_cursor
+    """
+    dpath = ub.Path.appdir('vimtk/tests/open_path').ensuredir()
+    fpath1 = dpath / 'path1.rst'
+    fpath2 = dpath / 'path2.rst'
 
-            Sed ut perspiciatis unde omnis iste natus error sit voluptatem
-            accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae
-            ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt
-            explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut
-            odit aut fugit, sed quia consequuntur magni dolores eos qui ratione
-            voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum
-            quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam
-            eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat
-            voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam
-            corporis suscipit laboriosam, nisi ut aliquid ex ea commodi
-            consequatur?
+    fpath1.write_text('welcome to fpath1')
+    fpath2.write_text('welcome to fpath2')
 
-            Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse
-            quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo
-            voluptas nulla pariatur?"
-            ''')
-        if fname is None:
-            fname = 'lorium.txt'
+    orig_text = ub.codeblock(
+        f'''
+        See:
+
+            * {fpath1}
+
+            * {fpath2}
+        ''')
+    fpath = demo_fpath(fname='foo.rst', text=orig_text)
+    commands = ub.codeblock(
+        '''
+        python3 << END_PYTHON3
+        import vimtk
+        vimtk.Cursor.move(3, 10)
+        END_PYTHON3
+
+        :call vimtk#open_path_at_cursor('e')
+
+        python3 << END_PYTHON3
+        import vimtk
+        vimtk.TextInsertor.insert_above_cursor('we modified this path')
+        END_PYTHON3
+
+        :w
+        ''')
+    interactive = is_interactive()
+    execute_vim_script(fpath, commands=commands, interactive=interactive)
+
+    print('FINAL')
+    print('\n\n')
+    # _print_file_state(fpath)
+    _print_file_state(fpath1)
+    _print_file_state(fpath2)
+
+    assert fpath.read_text() == orig_text
+    assert 'modified' in fpath1.read_text()
+
+
+def test_open_path_at_cursor_with_special():
+    """
+    xdoctest ~/code/vimtk/tests/real_vim_tests.py test_open_path_at_cursor_with_special
+    """
+    dpath = ub.Path.appdir('vimtk/tests/open_path').ensuredir()
+    fpath1 = dpath / 'path1.rst'
+    fpath1.write_text('welcome to fpath1')
+
+    orig_text = ub.codeblock(
+        f'''
+        * `{fpath1}>`
+        ''')
+    fpath = demo_fpath(fname='foo.rst', text=orig_text)
+    commands = ub.codeblock(
+        '''
+        python3 << END_PYTHON3
+        import vimtk
+        vimtk.Cursor.move(3, 10)
+        END_PYTHON3
+
+        :call vimtk#open_path_at_cursor('e')
+
+        python3 << END_PYTHON3
+        import vimtk
+        vimtk.TextInsertor.insert_above_cursor('we modified this path')
+        END_PYTHON3
+
+        :w
+        ''')
+    interactive = is_interactive()
+    execute_vim_script(fpath, commands=commands, interactive=interactive)
+    print('FINAL')
+    print('\n\n')
+    # _print_file_state(fpath)
+    _print_file_state(fpath1)
+    assert fpath.read_text() == orig_text
+    assert 'modified' in fpath1.read_text()
+
+
+def _detect_lang(fpath):
+    lang = None
+    if fpath.suffix == '.sh':
+        lang = 'bash'
+    elif fpath.suffix == '.py':
+        lang = 'python'
+    elif fpath.suffix == '.rst':
+        lang = 'rst'
+    return lang
+
+
+def _print_file_state(fpath):
+    USE_RICH = 1
+    lang = _detect_lang(fpath)
+    text = fpath.read_text()
+    if USE_RICH:
+        from rich.panel import Panel
+        from rich.syntax import Syntax
+        from rich.console import Console
+        console = Console(width=80)
+        if lang is not None:
+            text = Syntax(text, lang)
+        console.print(Panel(text, title=str(fpath)))
     else:
-        if fname is None:
-            fname = ub.hash_data(text)[0:8] + '.txt'
-    fpath = dpath / fname
-    fpath.write_text(text)
-    return fpath
+        print(ub.highlight_code('# --- ' + str(fpath), 'bash'))
+        print(ub.highlight_code(text, lang or 'python'))

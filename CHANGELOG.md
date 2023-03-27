@@ -10,6 +10,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changes
 * Transition to Python3 only
 
+### Fixes
+* Fixed issue with open-path-at-cursor
+
 
 ## [Version 0.3.1] - Unreleased
 

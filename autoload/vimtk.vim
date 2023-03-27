@@ -571,7 +571,7 @@ import vimtk
 
 argv = vimtk.vim_argv(defaults=['split'])
 mode = argv[0]
-print('argv = {!r}'.format(argv))
+#print('argv = {!r}'.format(argv))
 
 if len(argv) >= 2:
     path = argv[1]
@@ -579,10 +579,10 @@ else:
     path = vimtk.TextSelector.word_at_cursor(url_ok=True)
 
 #print = vimtk.logger.info
-print('vimtk#open_path_at_cursor path = {!r}'.format(path))
-print('exists = {!r}'.format(exists(path)))
+#print('vimtk#open_path_at_cursor path = {!r}'.format(path))
+#print('exists = {!r}'.format(exists(path)))
 
-vimtk.find_and_open_path(path, mode=mode, verbose=1)
+vimtk.find_and_open_path(path, mode=mode, verbose=0)
 EOF
 endfunc
 
