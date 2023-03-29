@@ -783,6 +783,6 @@ EOF
 " Resource this file.
 :source $MYVIMRC
 :exec "source " . g:vimtk_autoload_core_fpath
-:exec "source " . g:vimtk_autoload_snippet_fpath
+#:exec "source " . g:vimtk_autoload_snippet_fpath
 
 endfunc

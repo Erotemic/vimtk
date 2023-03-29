@@ -1454,6 +1454,9 @@ def find_and_open_path(path, mode='split', verbose=0,
     if path.startswith('`') and path.endswith('`'):
         path = path[1:-1]
 
+    if path.endswith('>`_'):
+        path = path[:-3]
+
     IGNORE_START_CHARS = tuple('<`')
     IGNORE_END_CHARS = tuple('>`')
     while path.startswith(IGNORE_START_CHARS):
