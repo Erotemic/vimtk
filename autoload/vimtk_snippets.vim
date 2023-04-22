@@ -234,7 +234,7 @@ if vimtk.Python.is_module_pythonfile():
         import ubelt as ub
 
 
-        class MyNewConfig(scfg.DataConfig):
+        class _StubConfig(scfg.DataConfig):
             # src = scfg.Value(None, help='input')
             ...
 
@@ -244,12 +244,12 @@ if vimtk.Python.is_module_pythonfile():
             Example:
                 >>> # xdoctest: +SKIP
                 >>> cmdline = 0
-                >>> kwargs = dict(
-                >>> )
+                >>> kwargs = dict()
                 >>> main(cmdline=cmdline, **kwargs)
             """
-            config = MyNewConfig.cli(cmdline=cmdline, data=kwargs, strict=True)
-            print('config = ' + ub.urepr(dict(config), nl=1))
+            import rich
+            config = _StubConfig.cli(cmdline=cmdline, data=kwargs, strict=True)
+            rich.print('config = ' + ub.urepr(config, nl=1))
 
         if __name__ == '__main__':
             {rr}"""

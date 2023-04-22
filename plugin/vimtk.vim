@@ -41,9 +41,12 @@ function! VimTK_default_remap()
   " ~/code/vimtk/autoload/vimtk.vim
   noremap <leader>H :call vimtk#helloworld()<Esc>
 
-  noremap  <leader>a :call vimtk#execute_text_in_terminal(mode())<CR>
-  vnoremap <leader>a :call vimtk#execute_text_in_terminal(visualmode())<CR>
-  noremap  <leader>m :call vimtk#execute_text_in_terminal('word')<CR>
+  " Only do this for Gvim
+  if has('gui_running')
+    noremap  <leader>a :call vimtk#execute_text_in_terminal(mode())<CR>
+    vnoremap <leader>a :call vimtk#execute_text_in_terminal(visualmode())<CR>
+    noremap  <leader>m :call vimtk#execute_text_in_terminal('word')<CR>
+  endif
 
   noremap <leader>C :call vimtk#copy_current_fpath()<Esc>
   noremap <leader>f :call vimtk#copy_current_module()<Esc>
