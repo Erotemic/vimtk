@@ -1366,7 +1366,7 @@ def find_and_open_path(path, mode='split', verbose=0,
     """
     import os
 
-    def try_open(path):
+    def try_open(path, step=''):
         # base = '/home/joncrall/code/VIAME/packages/kwiver/sprokit/src/bindings/python/sprokit/pipeline'
         # base = '/home'
         if path and exists(path):
@@ -1374,6 +1374,8 @@ def find_and_open_path(path, mode='split', verbose=0,
                 print('EXISTS path = {!r}\n'.format(path))
             open_path(path, mode=mode, verbose=verbose)
             return True
+        else:
+            print(f'Tried {step}, but failed: path={path}')
 
     def expand_module(path):
         # TODO: use ubelt util_import instead
@@ -1427,16 +1429,16 @@ def find_and_open_path(path, mode='split', verbose=0,
         url = extract_url_embeding(path)
         if is_url(url):
             import webbrowser
-            browser = webbrowser.open(url)
+            webbrowser.open(url)
             # browser = webbrowser.get('google-chrome')
-            browser.open(url)
+            # browser.open(url)
             return
 
     path = expanduser(path)
-    if try_open(path):
+    if try_open(path, 'after expand'):
         return
 
-    if try_open(os.path.expandvars(path)):
+    if try_open(os.path.expandvars(path), 'after expandvars'):
         return
 
     if enable_cli:
@@ -1465,9 +1467,15 @@ def find_and_open_path(path, mode='split', verbose=0,
         path = path[:-1]
     if path.endswith(':'):
         path = path[:-1]
+    if path.endswith('>`_'):
+        path = path[:-3]
+    if path.endswith('>`_.'):
+        path = path[:-4]
+    if path.endswith('>`_,'):
+        path = path[:-4]
     path = os.path.expandvars(path)
     path = expanduser(path)  # expand again in case a prefix was removed
-    if try_open(path):
+    if try_open(path, 'after rst hacks'):
         return
 
     def ancestor_paths(start=None, limit={}):
