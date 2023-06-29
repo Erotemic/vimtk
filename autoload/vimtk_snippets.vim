@@ -220,6 +220,10 @@ if vimtk.Python.is_module_pythonfile():
         cmdline1 = 'python ' + modpath
 
     cmdline_parts.append('    ' + cmdline1)
+
+    rel_modname = modname.split('.')[-1]
+
+    clsname = ''.join([p.capitalize() for p in rel_modname.split('_')]) + 'CLI'
     
     if modname:
         cmdline2 = 'python -m ' + modname
@@ -234,22 +238,26 @@ if vimtk.Python.is_module_pythonfile():
         import ubelt as ub
 
 
-        class _StubConfig(scfg.DataConfig):
-            # src = scfg.Value(None, help='input')
-            ...
+        class {clsname}(scfg.DataConfig):
+            # param1 = scfg.Value(None, help='param1')
 
+            @classmethod
+            def main(cls, cmdline=1, **kwargs):
+                """
+                Example:
+                    >>> # xdoctest: +SKIP
+                    >>> from {modname} import *  # NOQA
+                    >>> cmdline = 0
+                    >>> kwargs = dict()
+                    >>> cls = {clsname}
+                    >>> cls.main(cmdline=cmdline, **kwargs)
+                """
+                import rich
+                config = cls.cli(cmdline=cmdline, data=kwargs, strict=True)
+                rich.print('config = ' + ub.urepr(config, nl=1))
 
-        def main(cmdline=1, **kwargs):
-            """
-            Example:
-                >>> # xdoctest: +SKIP
-                >>> cmdline = 0
-                >>> kwargs = dict()
-                >>> main(cmdline=cmdline, **kwargs)
-            """
-            import rich
-            config = _StubConfig.cli(cmdline=cmdline, data=kwargs, strict=True)
-            rich.print('config = ' + ub.urepr(config, nl=1))
+        __cli__ = {clsname}
+        main = __cli__.main
 
         if __name__ == '__main__':
             {rr}"""
@@ -258,7 +266,7 @@ if vimtk.Python.is_module_pythonfile():
             """
             main()
         '''
-    ).format(cmdline_block=cmdline_block, rr='{r}')
+    ).format(clsname=clsname, modname=modname, cmdline_block=cmdline_block, rr='{r}')
     text = text.format(r='r' if '\\' in text else '')
 
     vimtk.TextInsertor.insert_under_cursor(text)
