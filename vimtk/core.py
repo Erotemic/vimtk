@@ -1478,6 +1478,13 @@ def find_and_open_path(path, mode='split', verbose=0,
     if try_open(path, 'after rst hacks'):
         return
 
+    # Handle the case where the path is a bash environ
+    assignment_pat = re.compile(r'^[^\d\W]\w*=')
+    path = assignment_pat.sub('', path, count=1)
+    path = expanduser(path)  # expand again in case a prefix was removed
+    if try_open(path, 'after varname= hacks'):
+        return
+
     def ancestor_paths(start=None, limit={}):
         """
         All paths above you
