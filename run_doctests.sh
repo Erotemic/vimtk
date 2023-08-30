@@ -1,2 +1,2 @@
-#!/bin/bash
-xdoctest vimtk --style=google all
+#!/usr/bin/env bash
+xdoctest vimtk --style=google all "$@"

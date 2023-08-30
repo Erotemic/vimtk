@@ -3,10 +3,10 @@ if __name__ == '__main__':
     import pytest
     import sys
     package_name = 'vimtk'
-    mod_dpath = package_name
+    mod_dpath = 'vimtk'
     test_dpath = 'tests'
     pytest_args = [
-        '--cov-config', '.coveragerc',
+        '--cov-config', 'pyproject.toml',
         '--cov-report', 'html',
         '--cov-report', 'term',
         '--xdoctest',
