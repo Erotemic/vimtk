@@ -48,6 +48,10 @@ __setup_logger()
 # logger.setLevel(logging.INFO)
 # logger.setLevel(logging.DEBUG)
 
+__docstubs__ = """
+import vimtk._demo.vimmock
+"""
+
 
 def mockvim(fpath=None, text=None):
     """
