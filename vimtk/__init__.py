@@ -1,4 +1,8 @@
 """
+The VimTK module
+"""
+
+__mkinit__ = """
 python -c "import ubelt._internal as a; a.autogen_init('vimtk', attrs=True)"
 
 TODO: exclude backends like win32 and xctrl
