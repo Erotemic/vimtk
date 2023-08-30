@@ -1,7 +1,7 @@
-vimtk.cplat module
-==================
+vimtk.\_dirty module
+====================
 
-.. automodule:: vimtk.cplat
+.. automodule:: vimtk._dirty
    :members:
    :undoc-members:
    :show-inheritance:

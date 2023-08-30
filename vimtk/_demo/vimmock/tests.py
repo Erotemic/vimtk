@@ -3,15 +3,15 @@ try:
 except ImportError:
     import unittest
 
-from mock import Mock
-from vimmock.mocked import BufferMock
-from vimmock.mocked import CurrentMock
-from vimmock.mocked import LineMock
-from vimmock.mocked import RangeMock
-from vimmock.mocked import VimMock
-from vimmock.mocked import WindowMock
+from unittest.mock import Mock
+from vimtk._demo.vimmock.mocked import BufferMock
+from vimtk._demo.vimmock.mocked import CurrentMock
+from vimtk._demo.vimmock.mocked import LineMock
+from vimtk._demo.vimmock.mocked import RangeMock
+from vimtk._demo.vimmock.mocked import VimMock
+from vimtk._demo.vimmock.mocked import WindowMock
 import sys
-import vimmock
+from vimtk._demo import vimmock
 
 
 class TestVimMock(unittest.TestCase):

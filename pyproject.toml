@@ -14,6 +14,17 @@ author = "Jon Crall"
 author_email = "erotemic@gmail.com"
 description = "Python backend for the vimtk plugin"
 url = "https://github.com/Erotemic/vimtk"
+classifiers = [
+    "Topic :: Text Editors",
+]
+
+
+[tool.xcookie.setuptools]
+keywords = "vim, gvim, python"
+include_package_data = true
+
+[tool.xcookie.setuptools.package_data]
+vimtk = ['autoload/*.vim', 'plugin/*.vim']
 
 [tool.pytest.ini_options]
 addopts = "-p no:doctest --xdoctest --xdoctest-style=google --ignore-glob=setup.py"

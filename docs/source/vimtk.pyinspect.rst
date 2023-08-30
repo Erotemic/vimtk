@@ -5,3 +5,4 @@ vimtk.pyinspect module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

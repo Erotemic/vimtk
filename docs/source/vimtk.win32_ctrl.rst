@@ -5,3 +5,4 @@ vimtk.win32\_ctrl module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
