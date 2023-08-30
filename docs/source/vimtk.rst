@@ -1,11 +1,21 @@
 vimtk package
 =============
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   vimtk._demo
+
 Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
+   vimtk._dirty
    vimtk.core
    vimtk.cplat
    vimtk.jedi_monkeypatch
@@ -20,3 +30,4 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
