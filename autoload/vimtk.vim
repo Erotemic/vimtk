@@ -439,7 +439,11 @@ elif language == 'py':
         statement = "print('{expr} = {{}}'.format(ub.repr2({expr}, nl=1)))".format(expr=expr)
         statement = "print('{expr} = {{}}'.format(ub.urepr({expr}, nl=1)))".format(expr=expr)
     elif mode == 'urepr':
-        statement = "print('{expr} = {{}}'.format(ub.urepr({expr}, nl=1)))".format(expr=expr)
+        USE_F_STRING = sys.version_info[0:2] >= (3, 6)
+        if USE_F_STRING:
+            statement = "print(f'{expr} = {{ub.urepr({expr}, nl=1)}}')".format(expr=expr)
+        else:
+            statement = "print('{expr} = {{}}'.format(ub.urepr({expr}, nl=1)))".format(expr=expr)
     else:
         raise KeyError(mode)
 elif language == 'cpp':
