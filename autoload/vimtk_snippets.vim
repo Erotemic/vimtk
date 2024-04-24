@@ -253,18 +253,18 @@ if vimtk.Python.is_module_pythonfile():
                     >>> cls.main(cmdline=cmdline, **kwargs)
                 """
                 import rich
+                from rich.markup import escape
                 config = cls.cli(cmdline=cmdline, data=kwargs, strict=True)
-                rich.print('config = ' + ub.urepr(config, nl=1))
+                rich.print('config = ' + escape(ub.urepr(config, nl=1)))
 
         __cli__ = {clsname}
-        main = __cli__.main
 
         if __name__ == '__main__':
             {rr}"""
 
         {cmdline_block}
             """
-            main()
+            __cli__.main()
         '''
     ).format(clsname=clsname, modname=modname, cmdline_block=cmdline_block, rr='{r}')
     text = text.format(r='r' if '\\' in text else '')

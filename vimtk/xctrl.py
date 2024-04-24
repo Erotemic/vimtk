@@ -203,6 +203,12 @@ class XWindow(ub.NiceRepr):
         return self
 
     @classmethod
+    def findall(XWindow, pattern):
+        wm_ids = XCtrl.findall_window_ids(pattern)
+        result = [XWindow(wm_id) for wm_id in wm_ids]
+        return result
+
+    @classmethod
     def current(XWindow):
         r"""
         CommandLine:
@@ -420,6 +426,7 @@ def _wmctrl_terminal_patterns():
         'xterm',
         'tilda',
         'Yakuake',
+        'kitty.kitty',
     ])
     return terminal_pattern
 
@@ -506,15 +513,19 @@ class XCtrl(object):
         return info
 
     @classmethod
-    def findall_window_ids(XCtrl, pattern):
+    def findall_window_ids(XCtrl, pattern=None):
         """
+        Returns:
+            List[int]: wmctl ids for the matching windows
+
         CommandLine:
-            python -m vimtk.xctrl XCtrl.findall_window_ids --pat=gvim
+            python -m vimtk.xctrl XCtrl.findall_window_ids --pat=gvim --noskip
             python -m vimtk.xctrl XCtrl.findall_window_ids --pat=gvim
             python -m vimtk.xctrl XCtrl.findall_window_ids --pat=joncrall
 
         Example:
-            >>> # xdoctest: +SKIP
+            >>> # xdoctest: +REQUIRES(--noskip)
+            >>> from vimtk.xctrl import *  # NOQA
             >>> pattern = ub.argval('--pat')
             >>> winid_list = XCtrl.findall_window_ids(pattern)
             >>> print('winid_list = {!r}'.format(winid_list))
@@ -528,8 +539,9 @@ class XCtrl(object):
         # List all windows and their identifiers
         info = XCtrl.cmd('wmctrl -lx')
         lines = info['out'].split('\n')
-        # Find windows with identifiers matching the pattern
-        lines = [line for line in lines if re.search(pattern, line)]
+        if pattern is not None:
+            # Find windows with identifiers matching the pattern
+            lines = [line for line in lines if re.search(pattern, line)]
         # Get the hex-id portion of the output
         winid_list = [line.split()[0] for line in lines]
         winid_list = [int(h, 16) for h in winid_list if h]
