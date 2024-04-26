@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
-import ubelt as ub
+try:
+    import ubelt as ub
+except Exception:
+    ub = None
 import sys
 import logging
 logger = logging.getLogger(__name__)
@@ -9,7 +12,7 @@ logger = logging.getLogger(__name__)
 try:
     import pyperclip
 except (ImportError, Exception) as ex:
-    msg = ('Python cannot import pyperclip: '
+    msg = ('Warning: Python cannot import pyperclip: '
            'python version={}, prefix={}, ex={!r}').format(
                sys.version_info, sys.prefix, ex)
     logger.warn(msg)

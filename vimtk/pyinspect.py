@@ -1,10 +1,9 @@
 """
 TODO: use the closer to ensure these functions are synced with xdoctest
 """
-import ubelt as ub
 import ast
 import os
-import six
+from vimtk.util import split_modpath, modname_to_modpath
 
 
 def check_module_installed(modname):
@@ -24,6 +23,7 @@ def check_module_installed(modname):
 
     Example:
         >>> import sys
+        >>> import ubelt as ub
         >>> modname = ub.argval('--modname', default='this')
         >>> is_installed = check_module_installed(modname)
         >>> is_imported = modname in sys.modules
@@ -53,7 +53,7 @@ def in_pythonpath(modname):
     except Exception:
         flag = False
     if flag:
-        modpath = ub.modname_to_modpath(modname)
+        modpath = modname_to_modpath(modname)
         if modpath is None:
             flag = False
     return flag
@@ -74,20 +74,15 @@ def parse_import_names(sourcecode, top_level=True, fpath=None, branch=False):
 
     Example:
         >>> from vimtk import pyinspect
-        >>> fpath = pyinspect.__file__.replace('.pyc', '.py')
-        >>> sourcecode = ub.readfrom(fpath)
+        >>> import pathlib
+        >>> fpath = pathlib.Path(pyinspect.__file__.replace('.pyc', '.py'))
+        >>> sourcecode = fpath.read_text()
         >>> func_names = parse_import_names(sourcecode)
-        >>> result = ('func_names = %s' % (ub.repr2(func_names),))
+        >>> result = (f'func_names = {func_names}')
         >>> print(result)
     """
     import_names = []
-    if six.PY2:
-        sourcecode = ub.ensure_unicode(sourcecode)
-        encoded = sourcecode.encode('utf8')
-        pt = ast.parse(encoded)
-    else:
-        pt = ast.parse(sourcecode)
-
+    pt = ast.parse(sourcecode)
     modules = []
 
     class ImportVisitor(ast.NodeVisitor):
@@ -115,15 +110,11 @@ def parse_import_names(sourcecode, top_level=True, fpath=None, branch=False):
                 prefix = ''
                 if node.level:
                     if fpath is not None:
-                        modparts = ub.split_modpath(os.path.abspath(fpath))[1].replace('\\', '/').split('/')
+                        modparts = split_modpath(os.path.abspath(fpath))[1].replace('\\', '/').split('/')
                         parts = modparts[:-node.level]
-                        # parts = os.path.split(ub.split_modpath(os.path.abspath(fpath))[1])[:-node.level]
                         prefix = '.'.join(parts) + '.'
-                        # prefix = '.'.join(os.path.split(fpath)[-node.level:]) + '.'
                     else:
                         prefix = '.' * node.level
-                # modules.append(node.level * '.' + node.module + '.' + alias.name)
-                # modules.append(prefix + node.module + '.' + alias.name)
                 modules.append(prefix + node.module)
 
         def visit_FunctionDef(self, node):
@@ -176,19 +167,15 @@ def parse_function_names(sourcecode, top_level=True, ignore_condition=1):
 
     Example:
         >>> from vimtk import pyinspect
+        >>> import ubelt as ub
         >>> fpath = pyinspect.__file__.replace('.pyc', '.py')
         >>> sourcecode = ub.readfrom(fpath)
         >>> func_names = parse_function_names(sourcecode)
-        >>> result = ('func_names = %s' % (ub.repr2(func_names),))
+        >>> result = (f'func_names = {func_names}')
         >>> print(result)
     """
     func_names = []
-    if six.PY2:
-        sourcecode = ub.ensure_unicode(sourcecode)
-        encoded = sourcecode.encode('utf8')
-        pt = ast.parse(encoded)
-    else:
-        pt = ast.parse(sourcecode)
+    pt = ast.parse(sourcecode)
 
     class FuncVisitor(ast.NodeVisitor):
 
@@ -201,48 +188,11 @@ def parse_function_names(sourcecode, top_level=True, ignore_condition=1):
         def visit_If(self, node):
             if ignore_condition:
                 return
-            # if ignore_conditional:
-            #     return
-            # Ignore the main statement
-            # print('----')
-            # print('node.test = {!r}'.format(node.test))
-            # print('node.orelse = {!r}'.format(node.orelse))
             if _node_is_main_if(node):
                 return
-
-            # if isinstance(node.orelse, ast.If):
-            #     # THIS IS AN ELIF
-            #     self.condition_id += 1
-            #     self.in_condition_chain = True
-            #     ast.NodeVisitor.generic_visit(self, node)
-            #     self.in_condition_chain = False
-            #     pass
-            # # TODO: where does else get parsed exactly?
-
-            # Reset the set of conditionals
-            # self.condition_id = 0
-            # self.condition_names = ub.ddict(list)
-
-            # self.in_condition_chain = True
             ast.NodeVisitor.generic_visit(self, node)
-            # self.in_condition_chain = False
-
-            # if False:
-            #     # IF THIS WAS AN ELSE:
-            #     if self.condition_names is not None:
-            #         # anything defined in all conditions is kosher
-            #         from six.moves import reduce
-            #         common_names = reduce(set.intersection,
-            #                               map(set, self.condition_names.values()))
-            #         self.func_names.extend(common_names)
-            #         self.condition_names = None
 
         def visit_FunctionDef(self, node):
-            # if self.in_condition_chain and self.condition_names is not None:
-            #     # dont immediately add things in conditions. Wait until we can
-            #     # ensure which definitions are common in all conditions.
-            #     self.condition_names[self.condition_id].append(node.name)
-            # else:
             func_names.append(node.name)
             if not top_level:
                 ast.NodeVisitor.generic_visit(self, node)

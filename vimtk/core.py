@@ -1,3 +1,11 @@
+"""
+The core API to the vimtk Python module
+
+SeeAlso:
+    ./__init__.py
+    ../autoload/vimtk.vim
+
+"""
 import itertools as it
 from os.path import join
 from os.path import isdir
@@ -5,19 +13,36 @@ from os.path import exists
 from os.path import expanduser
 import re
 import sys
+import pathlib
 import logging
+from vimtk import util
+from vimtk.util import (
+    dict_union, ensure_unicode, indent, codeblock, group_items, expandpath)
+
 try:
     import ubelt as ub
 except Exception:
+    print('Warning: Unable to import ubelt')
     print('Note: vim has inconsistent interactions with which python it chooses')
     print('\nsys.prefix = {}\n'.format(sys.prefix))
-    print('\nsys.executable = {}\n'.format(sys.executable))
+    _sys_exe = pathlib.Path(sys.executable)
+    _real_exe = _sys_exe.resolve()
+    if _sys_exe == _real_exe:
+        print('\nsys.executable = {}  # not a symlink\n'.format(_sys_exe))
+    else:
+        print('\nsys.executable = {} -> {}\n'.format(_sys_exe, _real_exe))
     print('\nsys.path = {}\n'.format(sys.path))
-    raise
+    ub = None
+    # raise
+
 from vimtk import xctrl
 from vimtk import cplat
+import sys
 
 logger = logging.getLogger(__name__)
+
+
+WIN32   = sys.platform == 'win32'  # type: bool
 
 
 def __setup_logger():
@@ -115,8 +140,7 @@ def reload_vimtk():
     reload(vimtk.xctrl)
     reload(vimtk)
 
-    import ubelt as ub
-    if ub.WIN32:
+    if WIN32:
         import vimtk.win32_ctrl
         reload(vimtk.win32_ctrl)
 
@@ -187,7 +211,7 @@ class Config(object):
             # Hack: for dictionaries, update instead of overriding?
             # Not sure if this is a good idea
             if isinstance(value, dict):
-                value = ub.dict_union(default, value)
+                value = dict_union(default, value)
         else:
             value = default
         return value
@@ -222,9 +246,7 @@ class TextSelector(object):
 
         Example:
             >>> import vimtk
-            >>> import ubelt as ub
-            >>> import vimtk
-            >>> vim = vimtk.mockvim(text=ub.codeblock(
+            >>> vim = vimtk.mockvim(text=codeblock(
             >>>     '''
             >>>     class Foo:
             >>>         def __init__(self):
@@ -269,9 +291,8 @@ class TextSelector(object):
 
         Example:
             >>> import vimtk
-            >>> import ubelt as ub
             >>> vim = vimtk.mockvim()
-            >>> vim.setup_text(ub.codeblock(
+            >>> vim.setup_text(codeblock(
             >>>     '''
             >>>     class Foo:
             >>>         def __init__(self):
@@ -370,9 +391,8 @@ class TextSelector(object):
 
         Example:
             >>> import vimtk
-            >>> import ubelt as ub
             >>> vim = vimtk.mockvim()
-            >>> vim.setup_text(ub.codeblock(
+            >>> vim.setup_text(codeblock(
             >>>     '''
             >>>     line n1
             >>>     line n2
@@ -409,7 +429,7 @@ class TextSelector(object):
         import vim
         # lines = vim.eval('getline({}, {})'.format(lnum1, lnum2))
         lines = vim.current.buffer[lnum1 - 1:lnum2]
-        lines = [ub.ensure_unicode(line) for line in lines]
+        lines = [ensure_unicode(line) for line in lines]
         try:
             if len(lines) == 0:
                 pass
@@ -422,7 +442,7 @@ class TextSelector(object):
                     lines[i] = lines[i][col1:col2 + 1]
             text = '\n'.join(lines)
         except Exception:
-            print(ub.repr2(lines))
+            print(repr(lines))
             raise
         return text
 
@@ -431,9 +451,8 @@ class TextSelector(object):
         """
         Example:
             >>> import vimtk
-            >>> import ubelt as ub
             >>> vim = vimtk.mockvim()
-            >>> vim.setup_text(ub.codeblock(
+            >>> vim.setup_text(codeblock(
             >>>     '''
             >>>     def foo():
             >>>         return 1
@@ -458,9 +477,8 @@ class TextSelector(object):
 
         Example:
             >>> import vimtk
-            >>> import ubelt as ub
             >>> vim = vimtk.mockvim()
-            >>> text = ub.codeblock(
+            >>> text = codeblock(
                     '''
                     par1 par1 par1
                       par1 par1
@@ -477,16 +495,16 @@ class TextSelector(object):
             >>>     vim.move_cursor(lineno)
             >>>     par_range = vimtk.TextSelector.paragraph_range_at_cursor()
             >>>     ranges.append(par_range)
-            >>> print('ranges = {}'.format(ub.repr2(ranges, nl=0)))
+            >>> import ubelt as ub
+            >>> print('ranges = {}'.format(ub.urepr(ranges, nl=0)))
             ranges = [(0, 3), (0, 3), (0, 3), (4, 4), (5, 5), (6, 6), (7, 7)]
         """
         import vim
-        import ubelt as ub
         logger.debug('grabbing text at current line')
 
         def is_paragraph_end(line_):
             # Hack, par_marker_list should be an argument
-            striped_line = ub.ensure_unicode(line_.strip())
+            striped_line = ensure_unicode(line_.strip())
             isblank = striped_line == ''
             if isblank:
                 return True
@@ -575,7 +593,6 @@ class TextInsertor(object):
 
         Example:
             >>> import vimtk
-            >>> import ubelt as ub
             >>> vim = vimtk.mockvim(text='foo')
             >>> vimtk.TextInsertor.overwrite('bar')
             >>> print(vim.current.buffer._text)
@@ -593,7 +610,7 @@ class TextInsertor(object):
         lines = [line for line in text.split('\n')]
         buffer_tail = vim.current.buffer[pos:]  # Original end of the file
         new_tail = lines + buffer_tail  # Prepend our data
-        del(vim.current.buffer[pos:])  # delete old data
+        del vim.current.buffer[pos:]  # delete old data
         vim.current.buffer.append(new_tail)  # extend new data
 
     @staticmethod
@@ -601,7 +618,6 @@ class TextInsertor(object):
         """
         Example:
             >>> import vimtk
-            >>> import ubelt as ub
             >>> vim = vimtk.mockvim(text='foo')
             >>> vimtk.TextInsertor.insert_under_cursor('bar')
             >>> print(vim.current.buffer._text)
@@ -618,7 +634,6 @@ class TextInsertor(object):
         """
         Example:
             >>> import vimtk
-            >>> import ubelt as ub
             >>> vim = vimtk.mockvim()
             >>> vim.setup_text('foo')
             >>> vimtk.TextInsertor.insert_above_cursor('bar')
@@ -733,17 +748,15 @@ class Python(object):
 
         Example:
             >>> import vimtk
-            >>> import ubelt as ub
             >>> vim = vimtk.mockvim('foo.py', '')
             >>> info = vimtk.Python.current_module_info()
-            >>> print(ub.repr2(info))
+            >>> print(info)
         """
-        import ubelt as ub
         import vim
 
         modpath = vim.current.buffer.name
-        modname = ub.modpath_to_modname(modpath, check=False)
-        moddir, rel_modpath = ub.split_modpath(modpath, check=False)
+        modname = util.modpath_to_modname(modpath, check=False)
+        moddir, rel_modpath = util.split_modpath(modpath, check=False)
 
         from ubelt.util_import import is_modname_importable
         importable = is_modname_importable(modname, exclude=['.'])
@@ -808,7 +821,7 @@ class Python(object):
 
         logger.info('lines = {!r}'.format(lines))
         new_tail  = lines + buffer_tail
-        del(vim.current.buffer[row:])  # delete old data
+        del vim.current.buffer[row:]  # delete old data
         # vim's buffer __del__ method seems to not work when the slice is 0:None.
         # It should remove everything, but it seems that one item still exists
         # It seems we can never remove that last item, so we have to hack.
@@ -827,7 +840,7 @@ class Python(object):
 
         Example:
             >>> import vimtk
-            >>> text = ub.codeblock(
+            >>> text = codeblock(
                 '''
                 a = 1
                 b = 2
@@ -857,10 +870,9 @@ class Python(object):
     def find_func_above_row(row='current', maxIter=50):
         """
         Example:
-            >>> import ubelt as ub
             >>> import vimtk
             >>> vim = vimtk.mockvim()
-            >>> vim.setup_text(ub.codeblock(
+            >>> vim.setup_text(codeblock(
             >>>     '''
             >>>     class Foo:
             >>>         def __init__(self):
@@ -881,27 +893,28 @@ class Python(object):
             >>>     '''))
             >>> vim.move_cursor(8)
             >>> info = vimtk.Python.find_func_above_row()
-            >>> print(ub.repr2(info))
+            >>> import ubelt as ub
+            >>> print(ub.urepr(info))
             {
                 'callname': 'bar',
-                'line': 'def bar():',
                 'pos': 6,
+                'line': 'def bar():',
             }
             >>> vim.move_cursor(4)
             >>> info = vimtk.Python.find_func_above_row()
-            >>> print(ub.repr2(info))
+            >>> print(ub.urepr(info))
             {
                 'callname': 'Foo.__init__',
-                'line': '    def __init__(self):',
                 'pos': 1,
+                'line': '    def __init__(self):',
             }
             >>> vim.move_cursor(16)
             >>> info = vimtk.Python.find_func_above_row()
-            >>> print(ub.repr2(info))
+            >>> print(ub.urepr(info))
             {
                 'callname': 'Biz.buzz',
-                'line': '    def buzz(self):',
                 'pos': 14,
+                'line': '    def buzz(self):',
             }
 
         Ignore:
@@ -950,9 +963,8 @@ class Python(object):
         TODO: where does this belong? This is a Python reformater of sorts.
 
         Example:
-            import ubelt as ub
             import vimtk
-            vim = text=ub.codeblock(
+            vim = text=codeblock(
                 '''
                 data = dict(
                     key1=12321321,
@@ -978,7 +990,7 @@ class Python(object):
                     return self.visit(literal)
 
         lvl = get_minimum_indentation(text)
-        orig_ptree = ast.parse(ub.codeblock(text))
+        orig_ptree = ast.parse(codeblock(text))
         xform_ptree = RewriteDictAsLiteral().visit(orig_ptree)
         xform_text = astunparse.unparse(xform_ptree)
 
@@ -986,7 +998,7 @@ class Python(object):
         xform_text = black.format_str(
             xform_text, mode=black.Mode(string_normalization=False)
         )
-        new_text = ub.indent(xform_text, ' ' * lvl)
+        new_text = indent(xform_text, ' ' * lvl)
         return new_text
 
     @staticmethod
@@ -996,9 +1008,8 @@ class Python(object):
         dictionary literal if possible.
 
         Ignore:
-            import ubelt as ub
             import vimtk
-            vim = vimtk.mockvim(text=ub.codeblock(
+            vim = vimtk.mockvim(text=codeblock(
                 '''
                 data = dict(
                     key1=12321321,
@@ -1283,7 +1294,7 @@ def autogen_imports(fpath_or_text):
         >>> # xdoctest: +SKIP
         >>> # This test is broken on the windows CI and I dont understand why
         >>> import vimtk
-        >>> source = ub.codeblock(
+        >>> source = codeblock(
             '''
             math
             it
@@ -1319,7 +1330,7 @@ def autogen_imports(fpath_or_text):
         kw['source'] = fpath_or_text
     lines = xinspect.autogen_imports(**kw)
 
-    x = ub.group_items(lines, [x.startswith('from ') for x in lines])
+    x = group_items(lines, [x.startswith('from ') for x in lines])
     ordered_lines = []
     ordered_lines += sorted(x.get(False, []))
     ordered_lines += sorted(x.get(True, []))
@@ -1383,7 +1394,6 @@ def find_and_open_path(path, mode='split', verbose=0,
 
     def expand_module(path):
         # TODO: use ubelt util_import instead
-        import ubelt as ub
         _debug = 0
         if _debug:
             import sys
@@ -1398,13 +1408,13 @@ def find_and_open_path(path, mode='split', verbose=0,
 
         import sys
         extra_path = CONFIG.get('vimtk_sys_path')
-        sys_path = sys.path + [ub.expandpath(p) for p in extra_path]
+        sys_path = sys.path + [expandpath(p) for p in extra_path]
         print('expand path = {!r}'.format(path))
         modparts = path.split('.')
         for i in reversed(range(1, len(modparts) + 1)):
             candidate = '.'.join(modparts[0:i])
             print('candidate = {!r}'.format(candidate))
-            path = ub.modname_to_modpath(candidate, sys_path=sys_path)
+            path = util.modname_to_modpath(candidate, sys_path=sys_path)
             if path is not None:
                 break
         print('expanded modname-to-path = {!r}'.format(path))
@@ -1417,11 +1427,11 @@ def find_and_open_path(path, mode='split', verbose=0,
         # attribute accessors.
         if re.match(r'^[\w\d_.]*$', path):
             extra_path = CONFIG.get('vimtk_sys_path')
-            sys_path = sys.path + [ub.expandpath(p) for p in extra_path]
+            sys_path = sys.path + [expandpath(p) for p in extra_path]
             parts = path.split('.')
             for i in reversed(range(len(parts))):
                 prefix = '.'.join(parts[:i])
-                path = ub.modname_to_modpath(prefix, sys_path=sys_path)
+                path = util.modname_to_modpath(prefix, sys_path=sys_path)
                 if path is not None:
                     print('expanded prefix = {!r}'.format(path))
                     return path
@@ -1529,8 +1539,8 @@ def find_and_open_path(path, mode='split', verbose=0,
         Example:
             >>> # DISABLE_DOCTEST
             >>> from utool.util_path import *  # NOQA
-            >>> candidate_path_list = [ub.truepath('~/RPI/code/utool'),
-            >>>                        ub.truepath('~/code/utool')]
+            >>> import pathlib
+            >>> candidate_path_list = [pathlib.Path('~/code/ubelt').expanduser()]
             >>> candidate_name_list = None
             >>> required_subpaths = []
             >>> verbose = True

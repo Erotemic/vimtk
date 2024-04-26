@@ -206,10 +206,13 @@ Suggested Binding:
 """
 
 import vimtk
-import ubelt as ub
+import sys
+from os.path import normpath
+from vimtk.util import shrinkuser
+WIN32   = sys.platform == 'win32'  # type: bool
 fpath = vimtk.get_current_fpath()
-if not ub.WIN32:
-    fpath = ub.shrinkuser(fpath)
+if not WIN32:
+    fpath = shrinkuser(fpath)
 vimtk.Clipboard.copy(fpath)
 vimtk.logger.info('copied fpath = {!r} to the clipboard'.format(fpath))
 EOF
@@ -227,12 +230,12 @@ Suggested Binding:
     noremap <leader>f :call vimtk#copy_current_module()<Esc>
 """
 import vimtk
-import ubelt as ub
+from vimtk.util import modpath_to_modname
 fpath = vimtk.get_current_fpath()
 if vimtk.Python.is_module_pythonfile():
     import vim
     modpath = vim.current.buffer.name
-    modname = ub.modpath_to_modname(modpath)
+    modname = modpath_to_modname(modpath)
     vimtk.Clipboard.copy(modname)
     vimtk.logger.info('copied modname = {!r} to the clipboard'.format(modname))
 else:
@@ -257,9 +260,11 @@ Suggested Binding:
 """
 import vimtk
 from vimtk import pyinspect
+from vimtk import util
+from vimtk.util import modpath_to_modname
+from vimtk.util import split_modpath
 from os.path import dirname, expanduser
 from os.path import basename, splitext
-import ubelt as ub
 import textwrap
 
 #import logging
@@ -273,7 +278,7 @@ import textwrap
 if vimtk.Python.is_module_pythonfile():
     import vim
     modpath = vim.current.buffer.name
-    modname = ub.modpath_to_modname(modpath)
+    modname = modpath_to_modname(modpath)
 
     lines = []
     if not pyinspect.in_pythonpath(modname):
@@ -282,11 +287,11 @@ if vimtk.Python.is_module_pythonfile():
         #  this check might not always work)
         # 
         # TODO: allow user to force adding to the pythonpath 
-        basepath = ub.split_modpath(modpath)[0]
+        basepath = split_modpath(modpath)[0]
         #lines.append('import sys')
         #lines.append('sys.path.append(%r)' % (basepath,))
 
-        user_basepath = ub.shrinkuser(basepath)
+        user_basepath = util.shrinkuser(basepath)
         if user_basepath != basepath:
             lines.append('import sys, ubelt')
             lines.append('sys.path.append(ubelt.expandpath(%r))' % (user_basepath,))
@@ -343,7 +348,6 @@ Suggested Binding:
     command! AutoImport call vimtk#insert_auto_import()
 """
 import vim
-import ubelt as ub
 import vimtk
 
 fpath = vimtk.get_current_fpath()
@@ -376,7 +380,7 @@ Suggested Binding:
 """
 import vim
 import vimtk
-import ubelt as ub
+from vimtk import util
 
 argv = vimtk.vim_argv(defaults=['repr'])
 
@@ -456,14 +460,14 @@ elif language == 'cpp':
     if any(n in current_fpath for n in REGISTRED_CPP_LOGGING_MODULES):
         if vimtk.find_pattern_above_row(
             '\s*auto logger = kwiver::vital::get_logger.*') is None:
-            statement = ub.codeblock(
+            statement = util.codeblock(
                 '''
                 auto logger = kwiver::vital::get_logger("temp.logger");
                 LOG_INFO(logger, "{expr} = " << {expr} );
                 '''
             ).format(expr=expr)
         else:
-            statement = ub.codeblock(
+            statement = util.codeblock(
                 '''
                 LOG_INFO(logger, "{expr} = " << {expr} );
                 '''
@@ -492,7 +496,7 @@ Suggested Bindings:
     vnoremap <c-M-B> :call vimtk#insert_timerit(visualmode())<CR><Esc>
 """
 import vim
-import ubelt as ub
+from vimtk import util
 mode = vim.eval('a:1')
 indent = vimtk.TextSelector.current_indent()
 newtext = '\n'.join([
@@ -503,7 +507,7 @@ newtext = '\n'.join([
 ])
 if 'v' in mode.lower():
     selected = vimtk.TextSelector.selected_text()
-    newtext += '\n' + ub.indent(selected, ' ' * 8)
+    newtext += '\n' + util.indent(selected, ' ' * 8)
     vimtk.TextInsertor.insert_over_selection(newtext)
 else:
     vimtk.TextInsertor.insert_under_cursor(newtext)
@@ -592,30 +596,31 @@ endfunc
 
 
 func! vimtk#quickopen(...)
-python3 << EOF
-"""
-This is a shortcut for opening commonly used files
+    " TODO: better heredoc
+"python3 << EOF
+""""
+"This is a shortcut for opening commonly used files
 
-Use <leader> -> t, v, i, or o -> your key to quickly open a file
+"Use <leader> -> t, v, i, or o -> your key to quickly open a file
 
-Previously called QUICKOPEN_leader_tvio
+"Previously called QUICKOPEN_leader_tvio
 
 
-Maps <leader>t<key> to tab open a filename
-Maps <leader>s<key> to vsplit open a filename
-Maps <leader>i<key> to split open a filename
+"Maps <leader>t<key> to tab open a filename
+"Maps <leader>s<key> to vsplit open a filename
+"Maps <leader>i<key> to split open a filename
 
-Suggested Bindings:
-    " Map leader key to comma (in all contexts)
-    let mapleader = ","
-    let maplocalleader = ","
-    noremap \ ,
+"Suggested Bindings:
+"    " Map leader key to comma (in all contexts)
+"    let mapleader = ","
+"    let maplocalleader = ","
+"    noremap \ ,
 
-    call vimtk#quickopen(',', '~/.vimrc')
-    call vimtk#quickopen(',', '~/.vimrc')
+"    call vimtk#quickopen(',', '~/.vimrc')
+"    call vimtk#quickopen(',', '~/.vimrc')
 
-"""
-EOF
+""""
+"EOF
     let key = a:1
     let fname = a:2
     :exec 'noremap <leader>t'.key.' :tabe '.fname.'<CR>'
@@ -705,8 +710,8 @@ func! vimtk#format_paragraph(...)
 python3 << EOF
 import vim
 import vimtk
+from vimtk import util
 
-import ubelt as ub
 nargs = int(vim.eval('a:0'))
 # Simulate kwargs with cfgdict-like strings
 default_config = {
@@ -723,15 +728,15 @@ if nargs == 1:
 else:
     kwargs = {}
 
-assert not ub.dict_diff(kwargs, default_config), 'unknown args'
-config = ub.dict_union(default_config, kwargs)
+assert not util.dict_diff(kwargs, default_config), 'unknown args'
+config = util.dict_union(default_config, kwargs)
 
 # Remember curor location as best as possible
 (row, col) = vim.current.window.cursor
 
 row1, row2 = vimtk.TextSelector.paragraph_range_at_cursor()
 text = vimtk.TextSelector.text_between_lines(row1, row2)
-text = ub.ensure_unicode(text)
+text = util.ensure_unicode(text)
 
 from vimtk._dirty import format_multiple_paragraph_sentences
 wrapped_text = format_multiple_paragraph_sentences(text, **kwargs)

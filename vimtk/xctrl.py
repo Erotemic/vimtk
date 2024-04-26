@@ -6,9 +6,12 @@ Notes:
     sudo apt install python-nautilus
     mkdir -p ~/.local/share/nautilus-python/extensions
 """
-import ubelt as ub
+try:
+    import ubelt as ub
+except Exception:
+    ub = None
+
 import time
-import six
 import re
 import pipes
 import logging
@@ -111,7 +114,7 @@ def windows_in_order():
         for vals in it.product(*options.values()):
             opt = ub.dzip(options.keys(), vals)
             command = ['xprop', '-root', '_NET_CLIENT_LIST_STACKING']
-            name = ub.repr2(opt, explicit=True, nobr=1, nl=0, itemsep='')
+            name = ub.urepr(opt, explicit=True, nobr=1, nl=0, itemsep='')
             if opt['shell']:
                 command = ' '.join(command)
             for timer in ti.reset(name):
@@ -125,7 +128,7 @@ def windows_in_order():
             with timer:
                 print(ub.cmd('xprop -root _NET_CLIENT_LIST_STACKING')['out'])
 
-        print(ub.repr2(ub.sorted_vals(ti.measures['mean']), nl=1, precision=6))
+        print(ub.urepr(ub.sorted_vals(ti.measures['mean']), nl=1, precision=6))
         proc = subprocess.Popen('xprop -root', shell=True, stdout=subprocess.PIPE, bufsize=0)
         out, err = proc.communicate()
         info = ub.cmd('xprop -root', verbose=3, shell=True)
@@ -158,9 +161,9 @@ def find_windows(proc=None, title=None, visible=True):
         >>> # xdoctest: +REQUIRES(env:DISPLAY)
         >>> from vimtk.xctrl import *  # NOQA
         >>> for win in find_windows('gvim'):
-        >>>     print(ub.repr2(win.info()))
+        >>>     print(ub.urepr(win.info()))
         >>> for win in find_windows('terminator'):
-        >>>     print(ub.repr2(win.info()))
+        >>>     print(ub.urepr(win.info()))
     """
     import re
     for win in windows_in_order():
@@ -186,7 +189,7 @@ def find_windows(proc=None, title=None, visible=True):
             yield win
 
 
-class XWindow(ub.NiceRepr):
+class XWindow(object):
     """
     TODO: make API consistent with the win32 version
     """
@@ -219,7 +222,7 @@ class XWindow(ub.NiceRepr):
             >>> from vimtk.xctrl import *  # NOQA
             >>> self = XWindow.current()
             >>> print('self: XWindow = {}'.format(ub.urepr(self, nl=1)))
-            >>> print('info = ' + ub.repr2(self.wininfo()))
+            >>> print('info = ' + ub.urepr(self.wininfo()))
         """
         wm_id = int(ub.cmd('xdotool getwindowfocus')['out'].strip())
         win = XWindow(wm_id)
@@ -368,7 +371,7 @@ class XWindow(ub.NiceRepr):
         def rel_to_abs_bbox(m, x, y, w, h):
             """ monitor_num, relative x, y, w, h """
             minfo = monitor_infos[m]
-            # print('minfo(%d) = %s' % (m, ub.repr2(minfo),))
+            # print('minfo(%d) = %s' % (m, ub.urepr(minfo),))
             mx, my = minfo['off_x'], minfo['off_y']
             mw, mh = minfo['pixels_w'], minfo['pixels_h']
             # Transform to the absolution position
@@ -509,7 +512,7 @@ class XCtrl(object):
         logging.debug('[cmd] {}'.format(command))
         info = ub.cmd(command)
         if info['ret'] != 0:
-            logging.warn('Something went wrong {}'.format(ub.repr2(info)))
+            logging.warn('Something went wrong {}'.format(ub.urepr(info)))
         return info
 
     @classmethod
@@ -728,7 +731,7 @@ class XCtrl(object):
         else:
             print = logger.debug
 
-        print('Executing x do: %s' % (ub.repr2(cmd_list),))
+        print('Executing x do: %s' % (ub.urepr(cmd_list),))
 
         # http://askubuntu.com/questions/455762/xbindkeys-wont-work-properly
         # Make things work even if other keys are pressed
@@ -747,7 +750,7 @@ class XCtrl(object):
             assert len(item) >= 2
             xcmd, key_ = item[0:2]
             if len(item) >= 3:
-                if isinstance(item[2], six.string_types) and item[2].endswith('?'):
+                if isinstance(item[2], str) and item[2].endswith('?'):
                     sleeptime = float(item[2][:-1])
                     print('special command sleep')
                     print('sleeptime = %r' % (sleeptime,))

@@ -1,9 +1,9 @@
 """
 https://pywinauto.github.io/docs/code/pywinauto.findwindows.html
 """
-import ubelt as ub
 import logging
 import psutil
+from vimtk import util
 logger = logging.getLogger(__name__)
 
 # logging.basicConfig()
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # logging.getLogger('parso').setLevel(logging.INFO)
 
 
-if ub.WIN32:
+if util.WIN32:
     import win32gui
     import win32process
     # import win32api
@@ -19,7 +19,7 @@ if ub.WIN32:
     import ctypes
 
 
-class Win32Window(ub.NiceRepr):
+class Win32Window:
     def __init__(self, hwnd):
         self.hwnd = hwnd
 
@@ -139,10 +139,11 @@ def find_windows(proc=None, title=None, visible=True):
         >>> # xdoc: +REQUIRES(win32)
         >>> # xdoc: +REQUIRES(--has-display)
         >>> from vimtk.win32_ctrl import *  # NOQA
+        >>> import ubelt as ub
         >>> for win in find_windows('gvim.exe'):
-        >>>     print(ub.repr2(win.info()))
+        >>>     print(ub.urepr(win.info()))
         >>> for win in find_windows('cmd.exe'):
-        >>>     print(ub.repr2(win.info()))
+        >>>     print(ub.urepr(win.info()))
     """
     import re
     flags = re.IGNORECASE

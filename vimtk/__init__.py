@@ -14,7 +14,7 @@ Also change version in: ~/code/vimtk/plugin/vimtk.vim
 And make notes in : ~/code/vimtk/CHANGELOG.md
 """
 # flake8: noqa
-__version__ = '0.4.0'
+__version__ = '0.5.0'
 
 __submodules__ = ['core']
 

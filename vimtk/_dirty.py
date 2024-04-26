@@ -243,7 +243,7 @@ def format_single_paragraph_sentences(text, debug=False, myprefix=True,
         # ******* #
         # put the newline before or after the sep depending on if it is
         # supposed to prefix or suffix the sentence.
-        from six.moves import zip_longest
+        from itertools import zip_longest
         # FIXME: Place the separators either before or after a sentence
         sentence_list2 = ['']
         _iter = zip_longest(sentence_list, sep_list)
