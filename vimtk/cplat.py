@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
-try:
-    import ubelt as ub
-except Exception:
-    ub = None
+from collections import OrderedDict
+from vimtk import util
 import sys
 import logging
 logger = logging.getLogger(__name__)
@@ -152,14 +150,14 @@ def _ensure_clipboard_backend():
         if backend == 'windows':
             return sys.platform.startswith('win32')
         if backend == 'qt':
-            return (ub.modname_to_modpath('PyQt5') or
-                    ub.modname_to_modpath('PyQt4'))
+            return (util.modname_to_modpath('PyQt5') or
+                    util.modname_to_modpath('PyQt4'))
         elif backend == 'gtk':
-            return ub.modname_to_modpath('gtk')
+            return util.modname_to_modpath('gtk')
         else:
             return pyperclip._executable_exists(backend)
 
-    if ub.WIN32:
+    if util.WIN32:
         backend_order = ['windows', 'qt']
     else:
         backend_order = ['xclip', 'xsel', 'qt', 'gtk']
@@ -227,10 +225,11 @@ def get_resolution_info(monitor_num=0):
 
     Example:
         >>> # xdoctest: +REQUIRES(module:PyQt5)
+        >>> import ubelt as ub
         >>> monitor_num = 1
         >>> for monitor_num in range(_get_number_of_monitors()):
         >>>     info = get_resolution_info(monitor_num)
-        >>>     print('monitor(%d).info = %s' % (monitor_num, ub.repr2(info, precision=3)))
+        >>>     print('monitor(%d).info = %s' % (monitor_num, ub.urepr(info, precision=3)))
     """
     # screen_resolution = app.desktop().screenGeometry()
     # width, height = screen_resolution.width(), screen_resolution.height()
@@ -315,7 +314,7 @@ def get_resolution_info(monitor_num=0):
     ratio = min(mm_w, mm_h) / max(mm_w, mm_h)
 
     #pixel_density = dpi_x / ppi_x
-    info = ub.odict([
+    info = OrderedDict([
         ('monitor_num', monitor_num),
         ('off_x', off_x),
         ('off_y', off_y),
