@@ -65,6 +65,17 @@ def userhome(username=None):
     return userhome_dpath
 
 
+def dict_diff(*args):
+    if not args:
+        return {}
+    else:
+        first_dict = args[0]
+        dictclass = OrderedDict if isinstance(first_dict, OrderedDict) else dict
+        remove_keys = set.union(*map(set, args[1:]))
+        new = dictclass((k, first_dict[k]) for k in first_dict.keys() if k not in remove_keys)
+        return new
+
+
 def dict_union(*args):
     if not args:
         return {}
