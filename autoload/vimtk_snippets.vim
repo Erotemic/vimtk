@@ -250,7 +250,8 @@ if vimtk.Python.is_module_pythonfile():
                     >>> cmdline = 0
                     >>> kwargs = dict()
                     >>> cls = {clsname}
-                    >>> cls.main(cmdline=cmdline, **kwargs)
+                    >>> config = cls(**kwargs)
+                    >>> cls.main(cmdline=cmdline, **config)
                 """
                 import rich
                 from rich.markup import escape

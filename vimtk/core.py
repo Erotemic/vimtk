@@ -1394,7 +1394,7 @@ def find_and_open_path(path, mode='split', verbose=0,
 
     def expand_module(path):
         # TODO: use ubelt util_import instead
-        _debug = 0
+        _debug = 1
         if _debug:
             import sys
             print('sys.base_exec_prefix = {!r}'.format(sys.base_exec_prefix))
