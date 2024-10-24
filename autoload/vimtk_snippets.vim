@@ -242,20 +242,20 @@ if vimtk.Python.is_module_pythonfile():
             # param1 = scfg.Value(None, help='param1')
 
             @classmethod
-            def main(cls, cmdline=1, **kwargs):
+            def main(cls, argv=1, **kwargs):
                 """
                 Example:
                     >>> # xdoctest: +SKIP
                     >>> from {modname} import *  # NOQA
-                    >>> cmdline = 0
+                    >>> argv = 0
                     >>> kwargs = dict()
                     >>> cls = {clsname}
                     >>> config = cls(**kwargs)
-                    >>> cls.main(cmdline=cmdline, **config)
+                    >>> cls.main(argv=argv, **config)
                 """
                 import rich
                 from rich.markup import escape
-                config = cls.cli(cmdline=cmdline, data=kwargs, strict=True)
+                config = cls.cli(argv=argv, data=kwargs, strict=True)
                 rich.print('config = ' + escape(ub.urepr(config, nl=1)))
 
         __cli__ = {clsname}
