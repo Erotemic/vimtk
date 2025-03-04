@@ -13,9 +13,12 @@ except Exception:
 
 import time
 import re
-import pipes
 import logging
 from vimtk import cplat
+try:
+    from shlex import quote as cmd_quote
+except ImportError:
+    from pipes import quote as cmd_quote
 
 logger = logging.getLogger(__name__)
 
@@ -489,8 +492,7 @@ class XCtrl(object):
         >>> if '\n' in text or len(text) > 20:
         >>>     text = '\'%paste\''
         >>> else:
-        >>>     import pipes
-        >>>     text = pipes.quote(text.lstrip(' '))
+        >>>     text = cmd_quote(text.lstrip(' '))
         >>>     ('focus', 'GVIM'),
         >>> #
         >>> doscript = [
@@ -792,7 +794,7 @@ class XCtrl(object):
                 ]
             elif xcmd == 'type2':
                 args = [
-                    'xdotool', 'type', pipes.quote(str(key_))
+                    'xdotool', 'type', cmd_quote(str(key_))
                 ]
             elif xcmd == 'xset-r-on':
                 args = ['xset', 'r', 'on']
@@ -821,7 +823,7 @@ class XCtrl(object):
     def current_window_name():
         logging.debug('Get current window name')
         info = XCtrl.cmd('xdotool getwindowfocus getwindowname')
-        value = pipes.quote(info['out'].strip())
+        value = cmd_quote(info['out'].strip())
         logging.debug('... current window name = {}'.format(value))
         return value
 
