@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 
 * Removed pipes to support Python 3.13
+* Fix issue with escape sequence for 3.12
 
 
 ## [Version 0.5.1] - Unreleased

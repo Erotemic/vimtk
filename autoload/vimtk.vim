@@ -459,7 +459,7 @@ elif language == 'cpp':
 
     if any(n in current_fpath for n in REGISTRED_CPP_LOGGING_MODULES):
         if vimtk.find_pattern_above_row(
-            '\s*auto logger = kwiver::vital::get_logger.*') is None:
+            '\\s*auto logger = kwiver::vital::get_logger.*') is None:
             statement = util.codeblock(
                 '''
                 auto logger = kwiver::vital::get_logger("temp.logger");
