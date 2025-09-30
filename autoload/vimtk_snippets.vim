@@ -253,10 +253,7 @@ if vimtk.Python.is_module_pythonfile():
                     >>> config = cls(**kwargs)
                     >>> cls.main(argv=argv, **config)
                 """
-                import rich
-                from rich.markup import escape
-                config = cls.cli(argv=argv, data=kwargs, strict=True)
-                rich.print('config = ' + escape(ub.urepr(config, nl=1)))
+                config = cls.cli(argv=argv, data=kwargs, strict=True, verbose='auto')
 
         __cli__ = {clsname}
 

@@ -5,6 +5,18 @@ Notes:
     # https://stackoverflow.com/questions/51070465/is-it-possible-to-get-the-directory-of-a-specific-nautilus-window-in-a-script?noredirect=1#comment95427874_51070465
     sudo apt install python-nautilus
     mkdir -p ~/.local/share/nautilus-python/extensions
+
+TODO:
+    need to handle wayland.
+
+    To replace xdootool, look at
+    wtype,
+    river,
+    xmonad,
+    xmobar
+    dmenu,
+    xlock
+
 """
 try:
     import ubelt as ub
