@@ -129,7 +129,8 @@ class BufferMock(ub.NiceRepr):
 
     def setup_text(self, text=None, name=''):
         text = text or ''
-        self._lines = text.splitlines()
+        assert isinstance(text, str)
+        self._lines = text.splitlines()  # type: ignore
         self.valid = True
         self.name = name
 
