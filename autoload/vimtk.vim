@@ -440,7 +440,6 @@ elif language == 'py':
         else:
             statement = "print('{expr} = {{!r}}'.format({expr}))".format(expr=expr)
     elif mode == 'repr2':
-        statement = "print('{expr} = {{}}'.format(ub.repr2({expr}, nl=1)))".format(expr=expr)
         statement = "print('{expr} = {{}}'.format(ub.urepr({expr}, nl=1)))".format(expr=expr)
     elif mode == 'urepr':
         USE_F_STRING = sys.version_info[0:2] >= (3, 6)

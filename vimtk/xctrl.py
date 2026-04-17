@@ -792,7 +792,8 @@ class XCtrl(object):
                 key_ = str(key_)
                 if key_.startswith('$'):
                     key_ = memory[key_[1:]]
-                args = ['wmctrl', '-ia', hex(key_)]
+                assert isinstance(key_, str)
+                args = ['wmctrl', '-ia', hex(key_)]  # type: ignore
             elif xcmd == 'remember_window_id':
                 memory[key_] = XCtrl.current_window_id()
                 continue
@@ -852,7 +853,7 @@ class XCtrl(object):
         """
         print('focus: ' + winhandle)
         args = ['wmctrl', '-xa', winhandle]
-        XCtrl.cmd(*args, verbose=False)
+        XCtrl.cmd(args)
         time.sleep(sleeptime)
 
     @classmethod

@@ -98,7 +98,7 @@ def interleave(args):
     Example:
         >>> args = ([1, 2, 3, 4, 5], ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
         >>> genresult = interleave(args)
-        >>> result = ub.repr2(list(genresult), nl=False)
+        >>> result = ub.urepr(list(genresult), nl=False)
         >>> print(result)
         [1, 'A', 2, 'B', 3, 'C', 4, 'D', 5, 'E']
     """
@@ -203,7 +203,7 @@ def format_single_paragraph_sentences(text, debug=False, myprefix=True,
             #print('len(sep_list_group2) = %r' % (len(sep_list_group2),))
             print('full_pattern = %s' % (full_pattern,))
             #print('split_list = %r' % (split_list,))
-            print('sentence_list = %s' % (ub.repr2(sentence_list),))
+            print('sentence_list = %s' % (ub.urepr(sentence_list),))
             print('sep_list = %s' % ((sep_list),))
             print('</SPLIT DBG>')
         return sentence_list, sep_list
@@ -391,7 +391,7 @@ def format_multiple_paragraph_sentences(text, debug=False, **kwargs):
 
     if debug:
         colorprint('[fmt] tofmt_block_list = ' +
-                      ub.repr2(tofmt_block_list), 'white')
+                      ub.urepr(tofmt_block_list), 'white')
 
     # apply formatting
     formated_block_list = []
@@ -402,6 +402,6 @@ def format_multiple_paragraph_sentences(text, debug=False, **kwargs):
     rejoined_list = list(interleave((formated_block_list, separators)))
     if debug:
         colorprint('[fmt] formated_block_list = ' +
-                      ub.repr2(formated_block_list), 'turquoise')
+                      ub.urepr(formated_block_list), 'turquoise')
     formated_text = ''.join(rejoined_list)
     return formated_text
