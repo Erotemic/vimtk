@@ -148,7 +148,7 @@ def reload_vimtk():
 reload = reload_vimtk
 
 
-class Config(object):
+class Config:
     """
     Query the state of the vim variable namespace.
 
@@ -217,7 +217,7 @@ class Config(object):
         return value
 
 
-class Clipboard(object):
+class Clipboard:
     @staticmethod
     def copy(text):
         return cplat.copy_text_to_clipboard(text)
@@ -234,7 +234,7 @@ class Clipboard(object):
         return text
 
 
-class TextSelector(object):
+class TextSelector:
     r"""
     Tools for selecting and reading text from Vim
     """
@@ -547,7 +547,7 @@ class TextSelector(object):
         return par_range
 
 
-class CursorContext(object):
+class CursorContext:
     """
     moves back to original position after context is done
     """
@@ -565,7 +565,7 @@ class CursorContext(object):
         Cursor.move(row, col)
 
 
-class Cursor(object):
+class Cursor:
 
     @staticmethod
     def move(row, col=0):
@@ -582,7 +582,7 @@ class Cursor(object):
         return row, col
 
 
-class TextInsertor(object):
+class TextInsertor:
     """
     Tools for inserting text at various positions
     """
@@ -670,7 +670,7 @@ class TextInsertor(object):
         # vim.current.buffer.append(new_tail)  # append new data
 
 
-class Mode(object):
+class Mode:
     """
     Helper for checking / switching modes
     """
@@ -736,7 +736,7 @@ class Mode(object):
         vim.command("ESC")
 
 
-class Python(object):
+class Python:
     """
     Tools for handling python-specific functions
     """

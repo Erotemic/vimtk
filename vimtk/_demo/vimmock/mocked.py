@@ -44,7 +44,7 @@ class VimErrorMock(Exception):
     pass
 
 
-class LineMock(object):
+class LineMock:
     pass
 
 
@@ -144,7 +144,7 @@ class BufferMock(ub.NiceRepr):
         self._lines.extend(other)  # type: ignore
 
 
-class WindowMock(object):
+class WindowMock:
     """"
     RealObjectInfo:
         vim.current.window: <window 0>
@@ -158,7 +158,7 @@ class WindowMock(object):
         self.cursor = cursor or (1, 0)
 
 
-class RangeMock(object):
+class RangeMock:
     """
     RealObjectInfo:
         vim.current.range: <range  (1:1)>
@@ -168,7 +168,7 @@ class RangeMock(object):
     pass
 
 
-class TabPageMock(object):
+class TabPageMock:
     """
     RealObjectInfo:
         vim.current.tabpage: <tabpage 0>
@@ -179,7 +179,7 @@ class TabPageMock(object):
     pass
 
 
-class CurrentMock(object):
+class CurrentMock:
     """
     RealObjectInfo:
         vim.current: <vim.currentdata object at 0x8718a0>
@@ -194,7 +194,7 @@ class CurrentMock(object):
         self.tabpage = TabPageMock()
 
 
-class VimMock(object):
+class VimMock:
     """
 
     The real vim module is defined in the c source code (if_python.c,
