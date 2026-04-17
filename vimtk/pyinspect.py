@@ -39,12 +39,12 @@ def check_module_installed(modname):
             parts = modname.split('.')
             base = parts[0]
             submods = parts[1:]
-            loader = pkgutil.find_loader(base)
+            loader = pkgutil.find_loader(base)  # type: ignore
             if loader is not None:
                 # TODO: check to see if path to the submod exists
                 submods
                 return True
-        loader = pkgutil.find_loader(modname)
+        loader = pkgutil.find_loader(modname)  # type: ignore
         is_installed = loader is not None
         return is_installed
     except Exception:

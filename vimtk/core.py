@@ -560,7 +560,7 @@ class CursorContext(object):
         return self
 
     def __exit__(self, *exc_info):
-        row, col = self.pos
+        row, col = self.pos  # type: ignore
         row += self.offset
         Cursor.move(row, col)
 
@@ -598,7 +598,7 @@ class TextInsertor(object):
             >>> print(vim.current.buffer._text)
         """
         import vim
-        lines = text.split('\n')
+        lines = text.split('\n')  # type: ignore
         vim.current.buffer[:] = lines
         # del (vim.current.buffer[:])
         # vim.current.buffer.append(lines)
@@ -986,7 +986,7 @@ class Python(object):
                 if node.func.id == 'dict':
                     keys = [ast.Constant(kw.arg) for kw in node.keywords]
                     values = [kw.value for kw in node.keywords]
-                    literal = ast.Dict(keys=keys, values=values)
+                    literal = ast.Dict(keys=keys, values=values)  # type: ignore
                     return self.visit(literal)
 
         lvl = get_minimum_indentation(text)

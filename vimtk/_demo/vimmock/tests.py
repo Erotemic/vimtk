@@ -91,10 +91,10 @@ class TestCurrentMock(unittest.TestCase):
 class TestPatch(unittest.TestCase):
 
     def test_patch_vim(self):
-        sys.modules['vim'] = object()
+        sys.modules['vim'] = object()  # type: ignore
 
         vimmock.patch_vim()
-        self.assertIsInstance(sys.modules['vim'], VimMock)
+        self.assertIsInstance(sys.modules['vim'], VimMock)  # type: ignore
 
 
 if __name__ == '__main__':

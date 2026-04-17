@@ -228,7 +228,7 @@ def format_single_paragraph_sentences(text, debug=False, myprefix=True,
             #                      for line in sentence_list]
             wrapped_lines_list = []
             for count, line in enumerate(sentence_list):
-                wrapped_lines = textwrap.wrap(line, **wrapkw)
+                wrapped_lines = textwrap.wrap(line, **wrapkw)  # type: ignore
                 wrapped_lines = [line_ if count == 0 else sentence_prefix + line_
                                  for count, line_ in enumerate(wrapped_lines)]
                 wrapped_lines_list.append(wrapped_lines)
@@ -276,7 +276,7 @@ def format_single_paragraph_sentences(text, debug=False, myprefix=True,
         width = max_width - min_indent
         wrapkw = dict(width=width, break_on_hyphens=False,
                       break_long_words=False)
-        wrapped_block = '\n'.join(textwrap.wrap(text_, **wrapkw))
+        wrapped_block = '\n'.join(textwrap.wrap(text_, **wrapkw))  # type: ignore
 
     # HACK for last nl (seems to only happen if nl follows a seperator)
     last_is_nl = text.endswith('\n') and  not wrapped_block.endswith('\n')

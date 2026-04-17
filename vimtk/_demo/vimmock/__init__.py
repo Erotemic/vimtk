@@ -15,5 +15,5 @@ def patch_vim():
     Sets new ``VimMock`` instance under ``vim`` key within ``sys.modules``.
     """
     import sys
-    vim = sys.modules['vim'] = VimMock()
+    vim = sys.modules['vim'] = VimMock()  # type: ignore
     return vim

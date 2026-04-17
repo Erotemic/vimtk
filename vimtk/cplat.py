@@ -13,8 +13,8 @@ except (ImportError, Exception) as ex:
     msg = ('Warning: Python cannot import pyperclip: '
            'python version={}, prefix={}, ex={!r}').format(
                sys.version_info, sys.prefix, ex)
-    logger.warn(msg)
-    pyperclip = None
+    logger.warning(msg)
+    pyperclip = None  # type: ignore
     # raise
 
 __PyQt__ = None
@@ -170,7 +170,7 @@ def _ensure_clipboard_backend():
                     'pyperclip is not appear to be installed. '
                     'See also: https://github.com/Erotemic/vimtk/issues/5')
             pyperclip.set_clipboard(backend)
-            pyperclip._vimtk_monkey_backend = backend
+            pyperclip._vimtk_monkey_backend = backend  # type: ignore
             return
         else:
             print('warning %r not installed' % (backend,))

@@ -71,7 +71,7 @@ def apply_monkey_patch_jedi():
                       'Possible this may not work'.format(jedi_version))
 
     # This is the module we are going to monkey patch
-    module = jedi.evaluate.docstrings
+    module = jedi.evaluate.docstrings  # type: ignore
 
     # These are the functions we will inject into the module
     def _search_param_in_googledocstr(docstr, param_str):
