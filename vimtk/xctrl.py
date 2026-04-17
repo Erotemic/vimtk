@@ -22,10 +22,7 @@ import time
 import re
 import logging
 from vimtk import cplat
-try:
-    from shlex import quote as cmd_quote
-except ImportError:
-    from pipes import quote as cmd_quote
+from shlex import quote as cmd_quote
 
 logger = logging.getLogger(__name__)
 

@@ -32,6 +32,7 @@ print(source)
 """
 import re
 import ubelt as ub
+import textwrap
 
 
 def regex_reconstruct_split(pattern, text):
@@ -116,9 +117,9 @@ def colorprint(text, color):
     print(ub.color_text(text, color))
 
 
-def format_single_paragraph_sentences(text, debug=False, myprefix=True,
-                                      sentence_break=True, max_width=73,
-                                      sepcolon=True):
+def format_single_paragraph_sentences_orig(text, debug=False, myprefix=True,
+                                           sentence_break=True, max_width=73,
+                                           sepcolon=True):
     r"""
     helps me separatate sentences grouped in paragraphs that I have a
     difficult time reading due to dyslexia
@@ -138,7 +139,7 @@ def format_single_paragraph_sentences(text, debug=False, myprefix=True,
         >>> #text = '? ? . lorium. ipsum? dolar erat. saultum. fds.fd...  fd oob fd. ? '  # causes breakdown
         >>> print('text = %r' % (text,))
         >>> sentence_break = not ub.argflag('--nobreak')
-        >>> wrapped_text = format_single_paragraph_sentences(text, debug=True, sentence_break=sentence_break)
+        >>> wrapped_text = format_single_paragraph_sentences_orig(text, debug=True, sentence_break=sentence_break)
         >>> result = ('wrapped_text =\n%s' % (str(wrapped_text),))
         >>> print(result)
     """
@@ -405,3 +406,136 @@ def format_multiple_paragraph_sentences(text, debug=False, **kwargs):
                       ub.urepr(formated_block_list), 'turquoise')
     formated_text = ''.join(rejoined_list)
     return formated_text
+
+
+_ABBREVIATIONS = {
+    'mr.', 'mrs.', 'ms.', 'dr.', 'prof.', 'sr.', 'jr.',
+    'vs.', 'etc.', 'e.g.', 'i.e.', 'fig.', 'eq.', 'cf.',
+    'no.', 'st.', 'al.',
+}
+
+_CLOSERS = '\'"”’)]}'
+
+
+def _normalize_paragraph(text):
+    text = re.sub(r'[ \t]{2,}', ' ', text)
+    text = re.sub(r'[ \t]*\n[ \t]*', ' ', text)
+    return text.strip()
+
+
+def _token_before(text, idx):
+    m = re.search(r'([A-Za-z](?:\.[A-Za-z])+\.|[A-Za-z]+\.?)\s*$', text[:idx + 1])
+    return m.group(1).lower() if m else ''
+
+
+def _should_break(text, i, sepcolon=True):
+    ch = text[i]
+    if ch not in '.?!:':
+        return False
+
+    j = i + 1
+    while j < len(text) and text[j] in _CLOSERS:
+        j += 1
+
+    if ch == ':':
+        if not sepcolon:
+            return False
+        # Only treat colon as a break before a list-ish continuation
+        return bool(re.match(r'\s*(\(\d+\)\s+|[-*]\s+)', text[j:]))
+
+    if j >= len(text) or not text[j].isspace():
+        return False
+
+    prev = _token_before(text, i)
+    if prev in _ABBREVIATIONS:
+        return False
+    if re.fullmatch(r'(?:[A-Za-z]\.){2,}', prev):
+        return False
+
+    # Don't split decimals / version numbers
+    k = j
+    while k < len(text) and text[k].isspace():
+        k += 1
+    if ch == '.' and i > 0 and text[i - 1].isdigit() and k < len(text) and text[k].isdigit():
+        return False
+
+    return True
+
+
+def split_sentences_for_readability(text, sepcolon=True):
+    text = _normalize_paragraph(text)
+    cuts = []
+
+    for i, _ in enumerate(text):
+        if _should_break(text, i, sepcolon=sepcolon):
+            j = i + 1
+            while j < len(text) and text[j] in _CLOSERS:
+                j += 1
+            cuts.append(j)
+
+    # Also split before enumerated list items: (1), (2), (10), ...
+    for m in re.finditer(r'(?<!^)\s+(?=\(\d+\)\s+)', text):
+        cuts.append(m.start())
+
+    cuts = sorted(set(c for c in cuts if 0 < c < len(text)))
+
+    parts = []
+    start = 0
+    for c in cuts:
+        parts.append(text[start:c].strip())
+        start = c
+    parts.append(text[start:].strip())
+
+    return [p for p in parts if p]
+
+
+def format_single_paragraph_sentences(text, debug=False, myprefix=True,
+                                       sentence_break=True, max_width=73,
+                                       sepcolon=True):
+    """
+
+    Example:
+        >>> from vimtk._dirty import *  # NOQA
+        >>> from vimtk._dirty import _normalize_paragraph, _token_before, _should_break
+        >>> text = '     lorium ipsum doloar dolar dolar dolar erata man foobar is this there yet almost man not quit ate 80 chars yet hold out almost there? dolar erat. sau.ltum. fds.fd... . . fd oob fd. list: (1) abcd, (2) foobar (4) 123456789 123456789 123456789 123456789 123 123 123 123 123456789 123 123 123 123 123456789 123456789 123456789 123456789 123456789 123 123 123 123 123 123456789 123456789 123456789 123456789 123456789 123456789 (3) spam.'
+        >>> #text = 'list: (1) abcd, (2) foobar (3) spam.'
+        >>> #text = 'foo. when: (1) there is a new individual,'
+        >>> #text = 'when: (1) there is a new individual,'
+        >>> #text = '? ? . lorium. ipsum? dolar erat. saultum. fds.fd...  fd oob fd. ? '  # causes breakdown
+        >>> print('text = %r' % (text,))
+        >>> wrapped_text = format_single_paragraph_sentences(text, debug=True)
+        >>> result = ('wrapped_text =\n%s' % (str(wrapped_text),))
+        >>> print(result)
+    """
+    min_indent = get_minimum_indentation(text)
+    continuation = '  ' if myprefix else ''
+    if text.lstrip().startswith('>>>'):
+        continuation = '...     '
+
+    text_ = _normalize_paragraph(text)
+
+    if sentence_break:
+        parts = split_sentences_for_readability(text_, sepcolon=sepcolon)
+    else:
+        parts = [text_]
+
+    wrapped = []
+    width = max_width - min_indent
+    for part in parts:
+        wrapped.append(textwrap.fill(
+            part,
+            width=width,
+            initial_indent='',
+            subsequent_indent=continuation,
+            break_long_words=False,
+            break_on_hyphens=False,
+        ))
+
+    wrapped_block = '\n'.join(wrapped)
+
+    if text.endswith('\n') and not wrapped_block.endswith('\n'):
+        wrapped_block += '\n'
+    if len(text) > 1 and text.startswith('\n') and not wrapped_block.startswith('\n'):
+        wrapped_block = '\n' + wrapped_block
+
+    return ub.indent(wrapped_block, ' ' * min_indent)

@@ -428,6 +428,3 @@ def modname_to_modpath(modname, hide_init=True, hide_main=False, sys_path=None):
         return None
     modpath = normalize_modpath(modpath, hide_init=hide_init, hide_main=hide_main)
     return modpath
-
-
-WIN32 = sys.platform == "win32"  # type: bool

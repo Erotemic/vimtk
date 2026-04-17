@@ -140,7 +140,7 @@ class BufferMock(ub.NiceRepr):
 
     def append(self, other):
         """ the vim buffer append is actually an extend call """
-        self._lines.extend(other)
+        self._lines.extend(other)  # type: ignore
 
 
 class WindowMock(object):

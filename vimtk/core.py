@@ -32,7 +32,7 @@ except Exception:
     else:
         print('\nsys.executable = {} -> {}\n'.format(_sys_exe, _real_exe))
     print('\nsys.path = {}\n'.format(sys.path))
-    ub = None
+    ub = None  # type: ignore
     # raise
 
 from vimtk import xctrl
