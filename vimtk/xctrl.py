@@ -675,7 +675,9 @@ class XCtrl(object):
         CommandLine:
             python -m vimtk.xctrl XCtrl.current_gvim_edit sp ~/.bashrc
         """
-        fpath = ub.shrinkuser(ub.truepath(fpath))
+        import pathlib
+        assert fpath is not None
+        fpath = ub.shrinkuser(pathlib.Path(fpath).resolve())
         # print('fpath = %r' % (fpath,))
         cplat.copy_text_to_clipboard(fpath)
         doscript = [

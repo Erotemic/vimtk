@@ -48,7 +48,7 @@ WIN32   = sys.platform == 'win32'  # type: bool
 def __setup_logger():
     # TODO: setting up logging should be handled by the vim plugin
     # global loggers in python modules should not log anywhere by default
-    global logger
+    # global logger
 
     # logger.propagate = False
 
