@@ -5,12 +5,19 @@ We are currently working on porting this changelog to the specifications in
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Version 0.5.3] - Unreleased
+
+
 ## [Version 0.5.2] - Unreleased
 
 ### Fixed
 
 * Removed pipes to support Python 3.13
 * Fix issue with escape sequence for 3.12
+* Fixed issue in format paragraphs
+
+### Changed
+* Update CI structure and did minor type checking
 
 
 ## [Version 0.5.1] - Unreleased
