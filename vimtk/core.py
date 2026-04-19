@@ -32,7 +32,7 @@ except Exception:
     else:
         print('\nsys.executable = {} -> {}\n'.format(_sys_exe, _real_exe))
     print('\nsys.path = {}\n'.format(sys.path))
-    ub = None
+    ub = None  # type: ignore
     # raise
 
 from vimtk import xctrl
@@ -48,7 +48,7 @@ WIN32   = sys.platform == 'win32'  # type: bool
 def __setup_logger():
     # TODO: setting up logging should be handled by the vim plugin
     # global loggers in python modules should not log anywhere by default
-    global logger
+    # global logger
 
     # logger.propagate = False
 
@@ -148,7 +148,7 @@ def reload_vimtk():
 reload = reload_vimtk
 
 
-class Config(object):
+class Config:
     """
     Query the state of the vim variable namespace.
 
@@ -217,7 +217,7 @@ class Config(object):
         return value
 
 
-class Clipboard(object):
+class Clipboard:
     @staticmethod
     def copy(text):
         return cplat.copy_text_to_clipboard(text)
@@ -234,7 +234,7 @@ class Clipboard(object):
         return text
 
 
-class TextSelector(object):
+class TextSelector:
     r"""
     Tools for selecting and reading text from Vim
     """
@@ -547,7 +547,7 @@ class TextSelector(object):
         return par_range
 
 
-class CursorContext(object):
+class CursorContext:
     """
     moves back to original position after context is done
     """
@@ -560,12 +560,12 @@ class CursorContext(object):
         return self
 
     def __exit__(self, *exc_info):
-        row, col = self.pos
+        row, col = self.pos  # type: ignore
         row += self.offset
         Cursor.move(row, col)
 
 
-class Cursor(object):
+class Cursor:
 
     @staticmethod
     def move(row, col=0):
@@ -582,7 +582,7 @@ class Cursor(object):
         return row, col
 
 
-class TextInsertor(object):
+class TextInsertor:
     """
     Tools for inserting text at various positions
     """
@@ -598,7 +598,7 @@ class TextInsertor(object):
             >>> print(vim.current.buffer._text)
         """
         import vim
-        lines = text.split('\n')
+        lines = text.split('\n')  # type: ignore
         vim.current.buffer[:] = lines
         # del (vim.current.buffer[:])
         # vim.current.buffer.append(lines)
@@ -670,7 +670,7 @@ class TextInsertor(object):
         # vim.current.buffer.append(new_tail)  # append new data
 
 
-class Mode(object):
+class Mode:
     """
     Helper for checking / switching modes
     """
@@ -736,7 +736,7 @@ class Mode(object):
         vim.command("ESC")
 
 
-class Python(object):
+class Python:
     """
     Tools for handling python-specific functions
     """
@@ -986,7 +986,7 @@ class Python(object):
                 if node.func.id == 'dict':
                     keys = [ast.Constant(kw.arg) for kw in node.keywords]
                     values = [kw.value for kw in node.keywords]
-                    literal = ast.Dict(keys=keys, values=values)
+                    literal = ast.Dict(keys=keys, values=values)  # type: ignore
                     return self.visit(literal)
 
         lvl = get_minimum_indentation(text)

@@ -440,7 +440,6 @@ elif language == 'py':
         else:
             statement = "print('{expr} = {{!r}}'.format({expr}))".format(expr=expr)
     elif mode == 'repr2':
-        statement = "print('{expr} = {{}}'.format(ub.repr2({expr}, nl=1)))".format(expr=expr)
         statement = "print('{expr} = {{}}'.format(ub.urepr({expr}, nl=1)))".format(expr=expr)
     elif mode == 'urepr':
         USE_F_STRING = sys.version_info[0:2] >= (3, 6)
@@ -739,7 +738,7 @@ text = vimtk.TextSelector.text_between_lines(row1, row2)
 text = util.ensure_unicode(text)
 
 from vimtk._dirty import format_multiple_paragraph_sentences
-wrapped_text = format_multiple_paragraph_sentences(text, **kwargs)
+wrapped_text = format_multiple_paragraph_sentences2(text, **config)
 
 vimtk.TextInsertor.insert_between_lines(wrapped_text, row1, row2)
 

@@ -18,19 +18,11 @@ TODO:
     xlock
 
 """
-try:
-    import ubelt as ub
-except Exception:
-    ub = None
-
 import time
 import re
 import logging
 from vimtk import cplat
-try:
-    from shlex import quote as cmd_quote
-except ImportError:
-    from pipes import quote as cmd_quote
+from shlex import quote as cmd_quote
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +51,7 @@ def is_directory_open(dpath):
 
 
 def wmctrl_list():
+    import ubelt as ub
     lines = ub.cmd('wmctrl -lxp')['out']
     windows = {}
     for line in lines.split('\n'):
@@ -235,10 +228,12 @@ class XWindow(object):
         Example:
             >>> # xdoctest: +REQUIRES(env:VIMTK_TEST)
             >>> from vimtk.xctrl import *  # NOQA
+            >>> import ubelt as ub
             >>> self = XWindow.current()
             >>> print('self: XWindow = {}'.format(ub.urepr(self, nl=1)))
             >>> print('info = ' + ub.urepr(self.wininfo()))
         """
+        import ubelt as ub
         wm_id = int(ub.cmd('xdotool getwindowfocus')['out'].strip())
         win = XWindow(wm_id)
         return win
@@ -298,12 +293,14 @@ class XWindow(object):
             >>> w, h = self.size()
             >>> self.resize(w + 10, h + 10)
         """
+        import ubelt as ub
         command = f'xdotool windowsize {self.wm_id} {width} {height}'
         ub.cmd(command, verbose=3)
 
     def wininfo(self):
         """
         """
+        import ubelt as ub
         cmdinfo = ub.cmd('xwininfo -id {}'.format(self.wm_id))
         if cmdinfo['ret'] != 0:
             print('info = {}'.format(ub.urepr(cmdinfo, nl=1)))
@@ -333,11 +330,12 @@ class XWindow(object):
         return proc.name()
 
     def focus(self, sleeptime=None):
+        import ubelt as ub
         ub.cmd('wmctrl -ia {}'.format(self.hexid))
         time.sleep(sleeptime if sleeptime is not None else  self.sleeptime)
 
     def info(self):
-        info = self.cache.copy()
+        info = self.cache.copy()  # type: ignore
         info['proc_name'] = self.process_name()
         return info
 
@@ -523,10 +521,11 @@ class XCtrl(object):
 
     @classmethod
     def cmd(XCtrl, command):
+        import ubelt as ub
         logging.debug('[cmd] {}'.format(command))
         info = ub.cmd(command)
         if info['ret'] != 0:
-            logging.warn('Something went wrong {}'.format(ub.urepr(info)))
+            logging.warning('Something went wrong {}'.format(ub.urepr(info)))  # type: ignore
         return info
 
     @classmethod
@@ -593,13 +592,14 @@ class XCtrl(object):
             >>> num = 2
         """
         import psutil
+        import ubelt as ub
         num = int(num)
         winid_list = XCtrl.findall_window_ids(pattern)
         winid_list = XCtrl.sort_window_ids(winid_list, 'mru')[num:]
 
         info = XCtrl.cmd('wmctrl -lxp')
         lines = info['out'].split('\n')
-        lines = [' '.join(list(ub.take(line.split(), [0, 2])))
+        lines = [' '.join(list(ub.take(line.split(), [0, 2])))  # type: ignore
                  for line in lines]
         output_lines = lines
         # output_lines = XCtrl.cmd(
@@ -675,7 +675,10 @@ class XCtrl(object):
         CommandLine:
             python -m vimtk.xctrl XCtrl.current_gvim_edit sp ~/.bashrc
         """
-        fpath = ub.shrinkuser(ub.truepath(fpath))
+        import ubelt as ub
+        import pathlib
+        assert fpath is not None
+        fpath = ub.shrinkuser(pathlib.Path(fpath).resolve())  # type: ignore
         # print('fpath = %r' % (fpath,))
         cplat.copy_text_to_clipboard(fpath)
         doscript = [
@@ -739,13 +742,14 @@ class XCtrl(object):
         """
         DEPRICATE THIS
         """
+        import ubelt as ub
         verbose = kwargs.get('verbose', False)
         if verbose:
             print = logger.info
         else:
             print = logger.debug
 
-        print('Executing x do: %s' % (ub.urepr(cmd_list),))
+        print('Executing x do: %s' % (ub.urepr(cmd_list),))  # type: ignore
 
         # http://askubuntu.com/questions/455762/xbindkeys-wont-work-properly
         # Make things work even if other keys are pressed
@@ -790,7 +794,8 @@ class XCtrl(object):
                 key_ = str(key_)
                 if key_.startswith('$'):
                     key_ = memory[key_[1:]]
-                args = ['wmctrl', '-ia', hex(key_)]
+                assert isinstance(key_, str)
+                args = ['wmctrl', '-ia', hex(key_)]  # type: ignore
             elif xcmd == 'remember_window_id':
                 memory[key_] = XCtrl.current_window_id()
                 continue
@@ -850,7 +855,7 @@ class XCtrl(object):
         """
         print('focus: ' + winhandle)
         args = ['wmctrl', '-xa', winhandle]
-        XCtrl.cmd(*args, verbose=False)
+        XCtrl.cmd(args)
         time.sleep(sleeptime)
 
     @classmethod

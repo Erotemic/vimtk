@@ -1,10 +1,10 @@
-VimTk - The (mostly) Python (g)Vim toolkit 
+VimTk - The (mostly) Python (g)Vim toolkit
 ==========================================
 
 |GithubActions| |Codecov| |Pypi| |PypiDownloads| |ReadTheDocs|
 
 
-Description 
+Description
 -----------
 
 The tools in this package focus on, but are not exclusive to Python development
@@ -14,7 +14,7 @@ with gVim.  This is both a Vim plugin and a pip installable Python module.
 .. image:: https://user-images.githubusercontent.com/3186211/176559069-605e0285-f708-4f40-bc7a-6628db39b7ba.gif
 
 
-Usage 
+Usage
 -----
 
 We suggest using vim-plug to manage plugins. Install vim plug like this:
@@ -30,7 +30,7 @@ We suggest the following vimrc as a template:
 
 .. code:: vim
 
-    " DEMO_VIMRC: 
+    " DEMO_VIMRC:
 
     call plug#begin('~/.vim/bundle')
 
@@ -107,24 +107,24 @@ Here is what some of these functions do:
   creates a few lines of code that will import everything in this module into
   the current namespace. Note, it detects if you need to modify your pythonpath
   and does that.  It also completely disregards ``__all__``. These lines are
-  then executed in your terminal (which should probably be an IPython session). 
+  then executed in your terminal (which should probably be an IPython session).
   Default binding is ``<leader>M``.
 
 - ``vimtk#copy_current_fpath`` - Copies the path to the current file into the
   clipboard. On non-windows the home drive is replaced with ``~``. Default
   binding is ``<leader>C``.
 
-- ``vimtk#auto_import`` - Automatically inserts missing Python imports. 
+- ``vimtk#auto_import`` - Automatically inserts missing Python imports.
 
 - ``vimtk#insert_print_var_at_cursor`` - Insert a print statement around the
   current variable your cursor is on (supports python, bash, cmake, and C++)
   Default binding is ``<leader>pv`` for a repr representation and
-  ``<leader>ps`` for a ubelt repr2 representation.
+  ``<leader>ps`` for a ubelt urepr representation.
 
 - ``vimtk#insert_timerit`` - Make a stub timerit and insert it at the current
   position
 
-- ``vimtk#open_path_at_cursor`` - Open a file path or web url at your cursor. 
+- ``vimtk#open_path_at_cursor`` - Open a file path or web url at your cursor.
 
 - ``vimtk#quickopen(char, fpath)`` - Use ``<leader>[tvio]``` to open predefined
   files / directories
@@ -132,11 +132,11 @@ Here is what some of these functions do:
 - ``vimtk#py_format_doctest`` - Default binding to <visual-select> ``gd``.
   Inserts the doctest ``>>>`` prefix before the visually selected code.
 
-- ``vimtk#py_unformat_doctest`` - Default binding to <visual-select> ``gu``. 
+- ``vimtk#py_unformat_doctest`` - Default binding to <visual-select> ``gu``.
   Removes the doctest ``>>>`` prefix before the visually selected code.
 
 
-Alternate VIMRC 
+Alternate VIMRC
 ---------------
 
 Note to get all the features, you need the following packages:
@@ -161,9 +161,9 @@ working to resolve these issues. Bug reports and patches are welcome!
 
 .. code:: vim
 
-    " VimTK Recommended VimRC: 
+    " VimTK Recommended VimRC:
     " References: https://github.com/Erotemic/vimtk
-    
+
     """""""""""""""
     " # Automatically install vim-plug into your autoload directory
     " " See: https://github.com/junegunn/vim-plug
@@ -174,7 +174,7 @@ working to resolve these issues. Bug reports and patches are welcome!
         \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
       autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
     endif
-    
+
     " Enable normal windows hotkeys like: ctrl+c, ctrl+v, ctrl+a, etc...
     source $VIMRUNTIME/mswin.vim
     behave mswin
@@ -184,7 +184,7 @@ working to resolve these issues. Bug reports and patches are welcome!
     "source $VIMRUNTIME/mswin.vim
     "behave mswin
     set encoding=utf8
-    
+
     call plug#begin('~/.vim/bundle')
     Plug 'sjl/badwolf'
     Plug 'scrooloose/nerdcommenter'
@@ -224,7 +224,7 @@ working to resolve these issues. Bug reports and patches are welcome!
     " Use a colorscheme (murphy is builtin, but I like badwolf)
     colorscheme badwolf
     "colorscheme murphy
-    
+
     " Map your leader key to comma (much easier to hit)
     let mapleader = ","
     let maplocalleader = ","
@@ -264,13 +264,13 @@ working to resolve these issues. Bug reports and patches are welcome!
     "set autochdir
     " better version of autochdir that changes cwd to be at the current file
     autocmd BufEnter * silent! lcd %:p:h
-    
+
     " Note: to use vimtk I think we need to have ubelt installed
     " or get some sort of install-hook pip install command to happen
     " We can hack around this by explicitly sourcing the vimtk plugin
     source $HOME/.vim/bundle/vimtk/plugin/vimtk.vim
-    
-    " Make default vimtk remaps. 
+
+    " Make default vimtk remaps.
     :call VimTK_default_remap()
 
     " Swap colon and semicolon

@@ -37,13 +37,14 @@ attrinfo('vim.current.buffer', vim.current.buffer, 'mark')
 
 endpython
 """
+from __future__ import annotations
 
 
 class VimErrorMock(Exception):
     pass
 
 
-class LineMock(object):
+class LineMock:
     pass
 
 
@@ -61,7 +62,7 @@ class BufferMock(ub.NiceRepr):
         'range', 'valid', 'vars']
     """
     def __init__(self, text=None):
-        self._lines = None
+        self._lines: list[str] | None = None
         self.name = ''
 
         self.number = 1
@@ -102,33 +103,34 @@ class BufferMock(ub.NiceRepr):
 
     @property
     def _text(self):
-        return '\n'.join(self._lines)
+        return '\n'.join(self._lines)  # type: ignore
 
     def __delitem__(self, key):
-        del self._lines[key]
+        del self._lines[key]  # type: ignore
 
     def __getitem__(self, key):
         # Note indexing into a buffer is zero indexed like normal
         # However remember reported cursor positions are 1 indexed
         if isinstance(key, slice):
-            return self._lines[key.start : key.stop : key.step]
+            return self._lines[key.start : key.stop : key.step]  # type: ignore
         if not isinstance(key, int):
             raise TypeError("Index should be integer, not %s" % classname(key))
-        return self._lines[key]
+        return self._lines[key]  # type: ignore
 
     def __setitem__(self, key, value):
         if isinstance(key, slice):
-            self._lines[key.start : key.stop : key.step] = value
+            self._lines[key.start : key.stop : key.step] = value  # type: ignore
         elif not isinstance(key, int):
             raise TypeError("Indes should be integer, not %s" % classname(key))
-        self._lines[key] = value
+        self._lines[key] = value  # type: ignore
 
     def __len__(self):
-        return len(self._lines)
+        return len(self._lines)  # type: ignore
 
     def setup_text(self, text=None, name=''):
         text = text or ''
-        self._lines = text.splitlines()
+        assert isinstance(text, str)
+        self._lines = text.splitlines()  # type: ignore
         self.valid = True
         self.name = name
 
@@ -140,10 +142,10 @@ class BufferMock(ub.NiceRepr):
 
     def append(self, other):
         """ the vim buffer append is actually an extend call """
-        self._lines.extend(other)
+        self._lines.extend(other)  # type: ignore
 
 
-class WindowMock(object):
+class WindowMock:
     """"
     RealObjectInfo:
         vim.current.window: <window 0>
@@ -157,7 +159,7 @@ class WindowMock(object):
         self.cursor = cursor or (1, 0)
 
 
-class RangeMock(object):
+class RangeMock:
     """
     RealObjectInfo:
         vim.current.range: <range  (1:1)>
@@ -167,7 +169,7 @@ class RangeMock(object):
     pass
 
 
-class TabPageMock(object):
+class TabPageMock:
     """
     RealObjectInfo:
         vim.current.tabpage: <tabpage 0>
@@ -178,7 +180,7 @@ class TabPageMock(object):
     pass
 
 
-class CurrentMock(object):
+class CurrentMock:
     """
     RealObjectInfo:
         vim.current: <vim.currentdata object at 0x8718a0>
@@ -193,7 +195,7 @@ class CurrentMock(object):
         self.tabpage = TabPageMock()
 
 
-class VimMock(object):
+class VimMock:
     """
 
     The real vim module is defined in the c source code (if_python.c,

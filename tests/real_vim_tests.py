@@ -135,7 +135,7 @@ def test_vim_config():
         import vimtk
         import ubelt as ub
         print('<START_CONFIG>')
-        print(ub.repr2(vimtk.CONFIG.state, nl=2))
+        print(ub.urepr(vimtk.CONFIG.state, nl=2))
         print('<END_CONFIG>')
         EOF
         ''')

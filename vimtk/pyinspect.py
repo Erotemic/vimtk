@@ -31,20 +31,53 @@ def check_module_installed(modname):
         >>> print('module(%r).is_imported = %r' % (modname, is_imported))
         >>> assert 'this' not in sys.modules, 'module(this) should not have ever been imported'
     """
-    import pkgutil
-    if '.' in modname:
-        # Prevent explicit import if possible
+    try:
+        # Old code
+        import pkgutil
+        if '.' in modname:
+            # Prevent explicit import if possible
+            parts = modname.split('.')
+            base = parts[0]
+            submods = parts[1:]
+            loader = pkgutil.find_loader(base)  # type: ignore
+            if loader is not None:
+                # TODO: check to see if path to the submod exists
+                submods
+                return True
+        loader = pkgutil.find_loader(modname)  # type: ignore
+        is_installed = loader is not None
+        return is_installed
+    except Exception:
+        # More modern code
+        import importlib.machinery
+        import importlib.util
+
         parts = modname.split('.')
-        base = parts[0]
-        submods = parts[1:]
-        loader = pkgutil.find_loader(base)
-        if loader is not None:
-            # TODO: check to see if path to the submod exists
-            submods
-            return True
-    loader = pkgutil.find_loader(modname)
-    is_installed = loader is not None
-    return is_installed
+        fullname = parts[0]
+
+        try:
+            spec = importlib.util.find_spec(fullname)
+        except (ImportError, AttributeError, ValueError, ModuleNotFoundError):
+            return False
+
+        if spec is None:
+            return False
+
+        search_path = spec.submodule_search_locations
+
+        for part in parts[1:]:
+            if search_path is None:
+                return False
+            fullname = fullname + '.' + part
+            try:
+                spec = importlib.machinery.PathFinder.find_spec(fullname, search_path)
+            except (ImportError, AttributeError, ValueError, ModuleNotFoundError):
+                return False
+            if spec is None:
+                return False
+            search_path = spec.submodule_search_locations
+
+        return True
 
 
 def in_pythonpath(modname):

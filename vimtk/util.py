@@ -8,10 +8,17 @@ Autogen:
 import itertools as it
 import os
 import sys
+import typing
+import ast
 from collections import OrderedDict, defaultdict
 from os.path import (abspath, basename, dirname, exists, expanduser,
                      expandvars, isdir, isfile, join, normpath, realpath,
                      relpath, split, splitext)
+
+
+IS_PY_GE_312: bool = sys.version_info[0:2] >= (3, 12)
+IS_PY_GE_308: bool = sys.version_info[0:2] >= (3, 8)
+IS_PY_LT_314: bool = sys.version_info[0:2] < (3, 14)
 
 
 def expandpath(path):
@@ -175,37 +182,59 @@ def modpath_to_modname(
 IS_PY_GE_308 = (sys.version_info[0] >= 3) and (sys.version_info[1] >= 8)
 
 
-def _parse_static_node_value(node):
-    import ast
-    import numbers
-    from collections import OrderedDict
+def _parse_static_node_value(node: ast.AST) -> typing.Any:
+    """
+    Extract a constant value from a node if possible
+    """
 
-    if (
-        isinstance(node, ast.Constant) and isinstance(node.value, numbers.Number)
-        if IS_PY_GE_308
-        else isinstance(node, ast.Num)
+    # Prefer using ast.literal_eval when possible as it handles constants
+    # and container literals robustly across Python versions.
+    try:
+        return ast.literal_eval(node)
+    except Exception:
+        pass
+
+    import numbers
+
+    value: typing.Any = None
+    if isinstance(node, ast.Constant) and isinstance(
+        node.value, numbers.Number
     ):
-        value = node.value if IS_PY_GE_308 else node.n
-    elif (
-        isinstance(node, ast.Constant) and isinstance(node.value, str)
-        if IS_PY_GE_308
-        else isinstance(node, ast.Str)
-    ):
-        value = node.value if IS_PY_GE_308 else node.s
-    elif isinstance(node, ast.List):
-        value = list(map(_parse_static_node_value, node.elts))
-    elif isinstance(node, ast.Tuple):
-        value = tuple(map(_parse_static_node_value, node.elts))
-    elif isinstance(node, (ast.Dict)):
-        keys = map(_parse_static_node_value, node.keys)
-        values = map(_parse_static_node_value, node.values)
+        value = node.value
+    elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+        value = node.value
+    # Accept sequence-like nodes (List/Tuple in different Python versions)
+    elif hasattr(node, 'elts'):
+        # Sequence-like node (list/tuple) — accept any iterable of elts
+        elts = [(_parse_static_node_value(e)) for e in getattr(node, 'elts')]
+        # Preserve tuple vs list if possible by checking node class name
+        if node.__class__.__name__ == 'Tuple':
+            value = tuple(elts)
+        else:
+            value = list(elts)
+    # Handle mapping-like nodes
+    elif hasattr(node, 'keys') and hasattr(node, 'values'):
+        keys = list(map(_parse_static_node_value, node.keys))  # type: ignore
+        values = list(map(_parse_static_node_value, node.values))  # type: ignore
         value = OrderedDict(zip(keys, values))
-    elif isinstance(node, (ast.NameConstant)):
+    # Avoid direct reference to ast.NameConstant which is deprecated in
+    # Python 3.14; access it via getattr so linters won't emit a deprecation
+    # warning while preserving compatibility with older Pythons.
+    NameConstant = getattr(ast, 'NameConstant', None)
+    if (
+        IS_PY_LT_314
+        and NameConstant is not None
+        and isinstance(node, NameConstant)
+    ):
+        assert hasattr(node, 'value')
+        value = node.value
+    elif isinstance(node, ast.Constant):
         value = node.value
     else:
+        print(node.__dict__)
         raise TypeError(
-            "Cannot parse a static value from non-static node "
-            "of type: {!r}".format(type(node))
+            'Cannot parse a static value from non-static node '
+            'of type: {!r}'.format(type(node))
         )
     return value
 
@@ -399,6 +428,3 @@ def modname_to_modpath(modname, hide_init=True, hide_main=False, sys_path=None):
         return None
     modpath = normalize_modpath(modpath, hide_init=hide_init, hide_main=hide_main)
     return modpath
-
-
-WIN32 = sys.platform == "win32"  # type: bool

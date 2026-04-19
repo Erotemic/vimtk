@@ -1,7 +1,7 @@
 """
 Notes:
     Based on template code in:
-        ~/code/xcookie/xcookie/builders/docs_conf.py
+        ~/code/xcookie/xcookie/builders/docs.py
         ~/code/xcookie/xcookie/rc/conf_ext.py
 
     http://docs.readthedocs.io/en/latest/getting_started.html
@@ -16,11 +16,15 @@ Notes:
 
     # need to edit the conf.py
 
+    # Remove any old auto docs folder and regenerate it.
+    rm -rf ~/code/vimtk/docs/source/auto
     cd ~/code/vimtk/docs
-    sphinx-apidoc --private -f -o ~/code/vimtk/docs/source ~/code/vimtk/vimtk --separate
-    make html
+    sphinx-apidoc --private --separate --force --output-dir ~/code/vimtk/docs/source/auto ~/code/vimtk/vimtk
+    git add source/auto/*.rst
 
-    git add source/*.rst
+    # Note: the module should importable before running this
+    # (e.g. install it in developer mode or munge the PYTHONPATH)
+    make html
 
     Also:
         To turn on PR checks
@@ -34,31 +38,55 @@ Notes:
 
         ### For gitlab
 
+        To enable the read-the-docs go to https://readthedocs.org/dashboard/ and login
+
         The user will need to enable the repo on their readthedocs account:
         https://readthedocs.org/dashboard/import/manual/?
 
-        To enable the read-the-docs go to https://readthedocs.org/dashboard/ and login
-
-        Make sure you have a .readthedocs.yml file
-
-        Click import project: (for github you can select, but gitlab you need to import manually)
+        Enter the following information:
             Set the Repository NAME: vimtk
             Set the Repository URL: https://github.com/Erotemic/vimtk
+
+        Make sure you have a .readthedocs.yml file
 
         For gitlab you also need to setup an integrations. Navigate to:
 
             https://readthedocs.org/dashboard/vimtk/integrations/create/
 
         Then add gitlab incoming webhook and copy the URL (make sure
-        you copy the real url and not the text so https is included).
+        you copy the real url and not the text so https is included),
+        specifically:
+
+            In the "Integration type:" dropdown menu, select
+            "Gitlab incoming webhook"
+
+            Click "Add integration"
+
+            Copy the text in the "Webhook URL" box to be used later.
+
+            Copy the text in the "Secret" box to be used later.
 
         Then go to
 
             https://github.com/Erotemic/vimtk/hooks
 
-        and add the URL
+            Click "Add new webhook".
 
-        select push, tag, and merge request
+            Copy the text previously saved from the "Webhook URL" box
+            in the readthedocs form into the "URL" box in the gitlab
+            form.
+
+            Copy the text previously saved from the "Secret" box
+            in the readthedocs form into the "Secret token" box in the
+            gitlab form.
+
+            For trigger permissions select the following checkboxes:
+                push events,
+                tag push events,
+                merge request events
+                release events
+
+            Click the "Add webhook" button.
 
         See Docs for more details https://docs.readthedocs.io/en/stable/integrations.html
 
@@ -82,7 +110,6 @@ Notes:
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
-
 # -- Project information -----------------------------------------------------
 import sphinx_rtd_theme
 from os.path import exists
@@ -95,29 +122,38 @@ def parse_version(fpath):
     Statically parse the version number from a python file
     """
     import ast
+
     if not exists(fpath):
         raise ValueError('fpath={!r} does not exist'.format(fpath))
     with open(fpath, 'r') as file_:
         sourcecode = file_.read()
     pt = ast.parse(sourcecode)
+
     class VersionVisitor(ast.NodeVisitor):
         def visit_Assign(self, node):
             for target in node.targets:
                 if getattr(target, 'id', None) == '__version__':
                     self.version = node.value.s
+
     visitor = VersionVisitor()
     visitor.visit(pt)
     return visitor.version
 
+
 project = 'vimtk'
-copyright = '2023, Jon Crall'
+copyright = '2026, Jon Crall'
 author = 'Jon Crall'
 modname = 'vimtk'
 
-modpath = join(dirname(dirname(dirname(__file__))), 'vimtk', '__init__.py')
+repo_dpath = dirname(dirname(dirname(__file__)))
+mod_dpath = join(repo_dpath, 'vimtk')
+src_dpath = dirname(mod_dpath)
+modpath = join(mod_dpath, '__init__.py')
 release = parse_version(modpath)
 version = '.'.join(release.split('.')[0:2])
 
+# Hack to ensure the module is importable
+# sys.path.insert(0, os.path.abspath(src_dpath))
 
 # -- General configuration ---------------------------------------------------
 
@@ -136,10 +172,11 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    # 'myst_parser',  # TODO
-
+    'myst_parser',  # For markdown docs
+    'sphinx.ext.imgconverter',  # For building latexpdf
     'sphinx.ext.githubpages',
     # 'sphinxcontrib.redirects',
+    'sphinxcontrib.jquery',  # Fix for search
     'sphinx_reredirects',
 ]
 
@@ -148,7 +185,24 @@ napoleon_google_docstring = True
 napoleon_use_param = False
 napoleon_use_ivar = True
 
+# autoapi_type = 'python'
+# autoapi_dirs = [mod_dpath]
+
 autodoc_inherit_docstrings = False
+
+# Hack for geowatch, todo configure
+autosummary_mock_imports = [
+    'geowatch.utils.lightning_ext._jsonargparse_ext_ge_4_24_and_lt_4_xx',
+    'geowatch.utils.lightning_ext._jsonargparse_ext_ge_4_22_and_lt_4_24',
+    'geowatch.utils.lightning_ext._jsonargparse_ext_ge_4_21_and_lt_4_22',
+    'geowatch.tasks.fusion.datamodules.temporal_sampling.affinity_sampling',
+    'geowatch.tasks.depth_pcd.model',
+    'geowatch.tasks.cold.export_change_map',
+]
+
+autodoc_default_options = {  # Document callable classes
+    'special-members': '__call__'
+}
 
 autodoc_member_order = 'bysource'
 autoclass_content = 'both'
@@ -163,6 +217,9 @@ autoclass_content = 'both'
 # autoapi_dirs = [f'../../src/{modname}']
 # autoapi_keep_files = True
 
+# References:
+# https://stackoverflow.com/questions/21538983/specifying-targets-for-intersphinx-links-to-numpy-scipy-and-matplotlib
+
 intersphinx_mapping = {
     # 'pytorch': ('http://pytorch.org/docs/master/', None),
     'python': ('https://docs.python.org/3', None),
@@ -170,7 +227,7 @@ intersphinx_mapping = {
     # 'xxhash': ('https://pypi.org/project/xxhash/', None),
     # 'pygments': ('https://pygments.org/docs/', None),
     # 'tqdm': ('https://tqdm.github.io/', None),
-    # Requries that the repo have objects.inv
+    # Requires that the repo have objects.inv
     'kwarray': ('https://kwarray.readthedocs.io/en/latest/', None),
     'kwimage': ('https://kwimage.readthedocs.io/en/latest/', None),
     # 'kwplot': ('https://kwplot.readthedocs.io/en/latest/', None),
@@ -180,11 +237,18 @@ intersphinx_mapping = {
     'networkx': ('https://networkx.org/documentation/stable/', None),
     'scriptconfig': ('https://scriptconfig.readthedocs.io/en/latest/', None),
     'rich': ('https://rich.readthedocs.io/en/latest/', None),
-
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'sympy': ('https://docs.sympy.org/latest/', None),
+    'scikit-learn': ('https://scikit-learn.org/stable/', None),
+    'pandas': ('https://pandas.pydata.org/docs/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
     'pytest': ('https://docs.pytest.org/en/latest/', None),
+    'platformdirs': ('https://platformdirs.readthedocs.io/en/latest/', None),
+    'timerit': ('https://timerit.readthedocs.io/en/latest/', None),
+    'progiter': ('https://progiter.readthedocs.io/en/latest/', None),
+    'dateutil': ('https://dateutil.readthedocs.io/en/latest/', None),
     # 'pytest._pytest.doctest': ('https://docs.pytest.org/en/latest/_modules/_pytest/doctest.html', None),
     # 'colorama': ('https://pypi.org/project/colorama/', None),
-    # 'numpy': ('http://docs.scipy.org/doc/numpy/', None),
     # 'cv2' : ('http://docs.opencv.org/2.4/', None),
     # 'h5py' : ('http://docs.h5py.org/en/latest/', None)
 }
@@ -246,6 +310,7 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_theme_options = {
     'collapse_navigation': False,
     'display_version': True,
+    'navigation_depth': -1,
     # 'logo_only': True,
 }
 # html_logo = '.static/vimtk.svg'
@@ -275,19 +340,31 @@ htmlhelp_basename = project + 'doc'
 
 # -- Options for LaTeX output ------------------------------------------------
 
+# References:
+# https://tex.stackexchange.com/questions/546246/centos-8-the-font-freeserif-cannot-be-found
+
+"""
+# https://www.sphinx-doc.org/en/master/usage/builders/index.html#sphinx.builders.latex.LaTeXBuilder
+# https://tex.stackexchange.com/a/570691/83399
+sudo apt install fonts-freefont-otf texlive-luatex texlive-latex-extra texlive-fonts-recommended texlive-latex-recommended tex-gyre latexmk
+make latexpdf LATEXMKOPTS="-shell-escape --synctex=-1 -src-specials -interaction=nonstopmode"
+make latexpdf LATEXMKOPTS="-lualatex -interaction=nonstopmode"
+make LATEXMKOPTS="-lualatex -interaction=nonstopmode"
+
+"""
+# latex_engine = 'lualatex'
+# latex_engine = 'xelatex'
+
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -297,8 +374,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'vimtk.tex', 'vimtk Documentation',
-     'Jon Crall', 'manual'),
+    (master_doc, 'vimtk.tex', 'vimtk Documentation', 'Jon Crall', 'manual'),
 ]
 
 
@@ -306,10 +382,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'vimtk', 'vimtk Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, 'vimtk', 'vimtk Documentation', [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -318,16 +391,33 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'vimtk', 'vimtk Documentation',
-     author, 'vimtk', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        'vimtk',
+        'vimtk Documentation',
+        author,
+        'vimtk',
+        'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
 
 
 # -- Extension configuration -------------------------------------------------
 from sphinx.domains.python import PythonDomain  # NOQA
+
 # from sphinx.application import Sphinx  # NOQA
 from typing import Any, List  # NOQA
+
+
+# HACK TO PREVENT EXCESSIVE TIME.
+# TODO: FIXME FOR REAL
+MAX_TIME_MINUTES = None
+if MAX_TIME_MINUTES:
+    import ubelt  # NOQA
+
+    TIMER = ubelt.Timer()
+    TIMER.tic()
 
 
 class PatchedPythonDomain(PythonDomain):
@@ -335,12 +425,20 @@ class PatchedPythonDomain(PythonDomain):
     References:
         https://github.com/sphinx-doc/sphinx/issues/3866
     """
-    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
-        # TODO: can use this to resolve references nicely
-        # if target.startswith('ub.'):
-        #     target = 'ubelt.' + target[3]
+
+    def resolve_xref(
+        self, env, fromdocname, builder, type, target, node, contnode
+    ):
+        """
+        Helps to resolves cross-references
+        """
+        if target.startswith('ub.'):
+            target = 'ubelt.' + target[3]
+        if target.startswith('xdoc.'):
+            target = 'xdoctest.' + target[3]
         return_value = super(PatchedPythonDomain, self).resolve_xref(
-            env, fromdocname, builder, typ, target, node, contnode)
+            env, fromdocname, builder, type, target, node, contnode
+        )
         return return_value
 
 
@@ -351,6 +449,7 @@ class GoogleStyleDocstringProcessor:
     """
 
     def __init__(self, autobuild=1):
+        self.debug = 0
         self.registry = {}
         if autobuild:
             self._register_builtins()
@@ -367,6 +466,7 @@ class GoogleStyleDocstringProcessor:
         alias = [alias] if not isinstance(alias, (list, tuple, set)) else alias
         alias.append(tag)
         alias = tuple(alias)
+
         # TODO: better tag patterns
         def _wrap(func):
             self.registry[tag] = {
@@ -375,6 +475,7 @@ class GoogleStyleDocstringProcessor:
                 'func': func,
             }
             return func
+
         return _wrap
 
     def _register_builtins(self):
@@ -392,9 +493,12 @@ class GoogleStyleDocstringProcessor:
             new_lines.extend(lines[1:])
             return new_lines
 
-        @self.register_section(tag='SpecialExample', alias=['Benchmark', 'Sympy', 'Doctest'])
+        @self.register_section(
+            tag='SpecialExample', alias=['Benchmark', 'Sympy', 'Doctest']
+        )
         def benchmark(lines):
             import textwrap
+
             new_lines = []
             tag = lines[0].replace(':', '').strip()
             # new_lines.append(lines[0])  # TODO: it would be nice to change the tagline.
@@ -405,7 +509,7 @@ class GoogleStyleDocstringProcessor:
             redone = new_text.split('\n')
             new_lines.extend(redone)
             # import ubelt as ub
-            # print('new_lines = {}'.format(ub.repr2(new_lines, nl=1)))
+            # print('new_lines = {}'.format(ub.urepr(new_lines, nl=1)))
             # new_lines.append('')
             return new_lines
 
@@ -418,6 +522,17 @@ class GoogleStyleDocstringProcessor:
             new_lines.append('')
             new_lines.extend(lines[1:])
             return new_lines
+
+        # @self.register_section(tag='TODO', alias=['.. todo::'])
+        # def todo_section(lines):
+        #     """
+        #     Fixup todo sections
+        #     """
+        #     import xdev
+        #     xdev.embed()
+        #     import ubelt as ub
+        #     print('lines = {}'.format(ub.urepr(lines, nl=1)))
+        #     return new_lines
 
         @self.register_section(tag='Ignore')
         def ignore(lines):
@@ -456,7 +571,7 @@ class GoogleStyleDocstringProcessor:
         accum = []
 
         def accept():
-            """ called when we finish reading a section """
+            """called when we finish reading a section"""
             if curr_mode == '__doc__':
                 # Keep the lines as-is
                 new_lines.extend(accum)
@@ -470,7 +585,6 @@ class GoogleStyleDocstringProcessor:
             accum[:] = []
 
         for line in orig_lines:
-
             found = None
             for regitem in self.registry.values():
                 if line.startswith(regitem['alias']):
@@ -490,7 +604,7 @@ class GoogleStyleDocstringProcessor:
 
             accum.append(line)
 
-        # Finialize the last section
+        # Finalize the last section
         accept()
 
         lines[:] = new_lines
@@ -500,8 +614,15 @@ class GoogleStyleDocstringProcessor:
 
         return lines
 
-    def process_docstring_callback(self, app, what_: str, name: str, obj: Any,
-                                   options: Any, lines: List[str]) -> None:
+    def process_docstring_callback(
+        self,
+        app,
+        what_: str,
+        name: str,
+        obj: Any,
+        options: Any,
+        lines: List[str],
+    ) -> None:
         """
         Callback to be registered to autodoc-process-docstring
 
@@ -529,10 +650,14 @@ class GoogleStyleDocstringProcessor:
             https://www.sphinx-doc.org/en/1.5.1/_modules/sphinx/ext/autodoc.html
             https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
         """
-        # print(f'name={name}')
+        if self.debug:
+            print(
+                f'ProcessDocstring: name={name}, what_={what_}, num_lines={len(lines)}'
+            )
+
         # print('BEFORE:')
         # import ubelt as ub
-        # print('lines = {}'.format(ub.repr2(lines, nl=1)))
+        # print('lines = {}'.format(ub.urepr(lines, nl=1)))
 
         self.process(lines)
 
@@ -545,8 +670,12 @@ class GoogleStyleDocstringProcessor:
         #     import xdev
         #     xdev.embed()
 
-        RENDER_IMAGES = 1
-        if RENDER_IMAGES:
+        render_doc_images = 0
+
+        if MAX_TIME_MINUTES and TIMER.toc() > (60 * MAX_TIME_MINUTES):
+            render_doc_images = False  # FIXME too slow on RTD
+
+        if render_doc_images:
             # DEVELOPING
             if any('REQUIRES(--show)' in line for line in lines):
                 # import xdev
@@ -556,9 +685,9 @@ class GoogleStyleDocstringProcessor:
         FIX_EXAMPLE_FORMATTING = 1
         if FIX_EXAMPLE_FORMATTING:
             for idx, line in enumerate(lines):
-                if line == "Example:":
-                    lines[idx] = "**Example:**"
-                    lines.insert(idx + 1, "")
+                if line == 'Example:':
+                    lines[idx] = '**Example:**'
+                    lines.insert(idx + 1, '')
 
         REFORMAT_SECTIONS = 0
         if REFORMAT_SECTIONS:
@@ -600,7 +729,7 @@ class GoogleStyleDocstringProcessor:
                     text = found['text']
                     new_lines = []
                     for para in text.split('\n\n'):
-                        indent = para[:len(para) - len(para.lstrip())]
+                        indent = para[: len(para) - len(para.lstrip())]
                         new_paragraph = indent + paragraph(para)
                         new_lines.append(new_paragraph)
                         new_lines.append('')
@@ -608,7 +737,7 @@ class GoogleStyleDocstringProcessor:
                     lines[edit_slice] = new_lines
 
         # print('AFTER:')
-        # print('lines = {}'.format(ub.repr2(lines, nl=1)))
+        # print('lines = {}'.format(ub.urepr(lines, nl=1)))
 
         # if name == 'kwimage.Affine.translate':
         #     import sys
@@ -619,11 +748,13 @@ class SphinxDocstring:
     """
     Helper to parse and modify sphinx docstrings
     """
+
     def __init__(docstr, lines):
         docstr.lines = lines
 
         # FORMAT THE RETURNS SECTION A BIT NICER
         import re
+
         tag_pat = re.compile(r'^:(\w*):')
         directive_pat = re.compile(r'^.. (\w*)::\s*(\w*)')
 
@@ -634,16 +765,22 @@ class SphinxDocstring:
             directive_match = directive_pat.search(line)
             if tag_match:
                 tag = tag_match.groups()[0]
-                sphinx_parts.append({
-                    'tag': tag, 'start_offset': idx,
-                    'type': 'tag',
-                })
+                sphinx_parts.append(
+                    {
+                        'tag': tag,
+                        'start_offset': idx,
+                        'type': 'tag',
+                    }
+                )
             elif directive_match:
                 tag = directive_match.groups()[0]
-                sphinx_parts.append({
-                    'tag': tag, 'start_offset': idx,
-                    'type': 'directive',
-                })
+                sphinx_parts.append(
+                    {
+                        'tag': tag,
+                        'start_offset': idx,
+                        'type': 'directive',
+                    }
+                )
 
         prev_offset = len(lines)
         for part in sphinx_parts[::-1]:
@@ -683,6 +820,7 @@ def paragraph(text):
         str: the reduced text block
     """
     import re
+
     out = re.sub(r'\s\s*', ' ', text).strip()
     return out
 
@@ -692,9 +830,12 @@ def create_doctest_figure(app, obj, name, lines):
     The idea is that each doctest that produces a figure should generate that
     and then that figure should be part of the docs.
     """
-    import xdoctest
     import sys
     import types
+
+    import xdoctest
+    import xdoctest.core
+
     if isinstance(obj, types.ModuleType):
         module = obj
     else:
@@ -708,14 +849,15 @@ def create_doctest_figure(app, obj, name, lines):
 
     # print(doctest.format_src())
     import pathlib
+
     # HACK: write to the srcdir
     doc_outdir = pathlib.Path(app.outdir)
     doc_srcdir = pathlib.Path(app.srcdir)
     doc_static_outdir = doc_outdir / '_static'
     doc_static_srcdir = doc_srcdir / '_static'
-    src_fig_dpath = (doc_static_srcdir / 'images')
+    src_fig_dpath = doc_static_srcdir / 'images'
     src_fig_dpath.mkdir(exist_ok=True, parents=True)
-    out_fig_dpath = (doc_static_outdir / 'images')
+    out_fig_dpath = doc_static_outdir / 'images'
     out_fig_dpath.mkdir(exist_ok=True, parents=True)
 
     # fig_dpath = (doc_outdir / 'autofigs' / name).mkdir(exist_ok=True)
@@ -723,6 +865,7 @@ def create_doctest_figure(app, obj, name, lines):
     fig_num = 1
 
     import kwplot
+
     kwplot.autompl(force='agg')
     plt = kwplot.autoplt()
 
@@ -733,7 +876,10 @@ def create_doctest_figure(app, obj, name, lines):
     # so we can get different figures. But we can hack it for now.
 
     import re
-    split_parts = re.split('({}\\s*\n)'.format(re.escape('.. rubric:: Example')), docstr)
+
+    split_parts = re.split(
+        '({}\\s*\n)'.format(re.escape('.. rubric:: Example')), docstr
+    )
     # split_parts = docstr.split('.. rubric:: Example')
 
     # import xdev
@@ -743,7 +889,9 @@ def create_doctest_figure(app, obj, name, lines):
         # Where the doctests starts and ends relative to the file
         start_line_offset = doctest.lineno - 1
         last_part = doctest._parts[-1]
-        last_line_offset = start_line_offset + last_part.line_offset + last_part.n_lines - 1
+        last_line_offset = (
+            start_line_offset + last_part.line_offset + last_part.n_lines - 1
+        )
         offsets = {
             'start': start_line_offset,
             'end': last_line_offset,
@@ -760,10 +908,14 @@ def create_doctest_figure(app, obj, name, lines):
     for part in split_parts:
         num_lines = part.count('\n')
 
-        doctests = list(xdoctest.core.parse_docstr_examples(
-            part, modpath=modpath, callname=name,
-            # style='google'
-        ))
+        doctests = list(
+            xdoctest.core.parse_docstr_examples(
+                part,
+                modpath=modpath,
+                callname=name,
+                # style='google'
+            )
+        )
         # print(doctests)
 
         # doctests = list(xdoctest.core.parse_docstr_examples(
@@ -784,6 +936,7 @@ def create_doctest_figure(app, obj, name, lines):
                     # Define dummy skipped exception if pytest is not available
                     class Skipped(Exception):
                         pass
+
                 try:
                     doctest.mode = 'native'
                     doctest.run(verbose=0, on_error='raise')
@@ -803,19 +956,23 @@ def create_doctest_figure(app, obj, name, lines):
                     fig_num += 1
                     # path_name = path_sanatize(name)
                     path_name = (name).replace('.', '_')
-                    fig_fpath = src_fig_dpath / f'fig_{path_name}_{fig_num:03d}.jpeg'
+                    fig_fpath = (
+                        src_fig_dpath / f'fig_{path_name}_{fig_num:03d}.jpeg'
+                    )
                     fig.savefig(fig_fpath)
                     print(f'Wrote figure: {fig_fpath}')
-                    to_insert_fpaths.append({
-                        'insert_line_index': insert_line_index,
-                        'fpath': fig_fpath,
-                    })
+                    to_insert_fpaths.append(
+                        {
+                            'insert_line_index': insert_line_index,
+                            'fpath': fig_fpath,
+                        }
+                    )
 
                 for fig in figures:
                     plt.close(fig)
                 # kwplot.close_figures(figures)
 
-        curr_line_offset += (num_lines)
+        curr_line_offset += num_lines
 
     # if len(doctests) > 1:
     #     doctests
@@ -828,6 +985,7 @@ def create_doctest_figure(app, obj, name, lines):
     end_index = len(lines)
     # Reverse order for inserts
     import shutil
+
     for info in to_insert_fpaths[::-1]:
         src_abs_fpath = info['fpath']
 
@@ -856,27 +1014,87 @@ def create_doctest_figure(app, obj, name, lines):
             insert_index = end_index
         else:
             raise KeyError(INSERT_AT)
-        lines.insert(insert_index, '.. image:: {}'.format(rel_to_root_fpath))
+        lines.insert(
+            insert_index, '.. image:: {}'.format('..' / rel_to_root_fpath)
+        )
+        # lines.insert(insert_index, '.. image:: {}'.format(rel_to_root_fpath))
         # lines.insert(insert_index, '.. image:: {}'.format(rel_to_static_fpath))
         lines.insert(insert_index, '')
 
 
+def postprocess_hyperlinks(app, doctree, docname):
+    """
+    Extension to fixup hyperlinks.
+    This should be connected to the Sphinx application's
+    "autodoc-process-docstring" event.
+    """
+    # Your hyperlink postprocessing logic here
+    import pathlib
+
+    from docutils import nodes
+
+    for node in doctree.traverse(nodes.reference):
+        if 'refuri' in node.attributes:
+            refuri = node.attributes['refuri']
+            if '.rst' in refuri:
+                if 'source' in node.document:
+                    fpath = pathlib.Path(node.document['source'])
+                    parent_dpath = fpath.parent
+                    if (parent_dpath / refuri).exists():
+                        node.attributes['refuri'] = refuri.replace(
+                            '.rst', '.html'
+                        )
+                else:
+                    raise AssertionError
+
+
+def fix_rst_todo_section(lines):
+    # new_lines = []
+    for line in lines:
+        ...
+    ...
+
+
 def setup(app):
     import sphinx
-    app : sphinx.application.Sphinx = app
+    import sphinx.application
+
+    app: sphinx.application.Sphinx = app
     app.add_domain(PatchedPythonDomain, override=True)
+
+    app.connect('doctree-resolved', postprocess_hyperlinks)
+
     docstring_processor = GoogleStyleDocstringProcessor()
     # https://stackoverflow.com/questions/26534184/can-sphinx-ignore-certain-tags-in-python-docstrings
-    app.connect('autodoc-process-docstring', docstring_processor.process_docstring_callback)
+    app.connect(
+        'autodoc-process-docstring',
+        docstring_processor.process_docstring_callback,
+    )
+
+    def copy(src, dst):
+        import shutil
+
+        print(f'Copy {src} -> {dst}')
+        assert src.exists()
+        if not dst.parent.exists():
+            dst.parent.mkdir()
+        shutil.copy(src, dst)
 
     ### Hack for kwcoco: TODO: figure out a way for the user to configure this.
     HACK_FOR_KWCOCO = 0
     if HACK_FOR_KWCOCO:
         import pathlib
-        import shutil
-        doc_outdir = pathlib.Path(app.outdir)
-        doc_srcdir = pathlib.Path(app.srcdir)
-        schema_src = (doc_srcdir / '../../kwcoco/coco_schema.json')
-        shutil.copy(schema_src, doc_outdir / 'coco_schema.json')
-        shutil.copy(schema_src, doc_srcdir / 'coco_schema.json')
+
+        doc_outdir = pathlib.Path(app.outdir) / 'auto'
+        doc_srcdir = pathlib.Path(app.srcdir) / 'auto'
+
+        mod_dpath = doc_srcdir / '../../../kwcoco'
+
+        src_fpath = mod_dpath / 'coco_schema.json'
+        copy(src_fpath, doc_outdir / src_fpath.name)
+        copy(src_fpath, doc_srcdir / src_fpath.name)
+
+        src_fpath = mod_dpath / 'coco_schema_informal.rst'
+        copy(src_fpath, doc_outdir / src_fpath.name)
+        copy(src_fpath, doc_srcdir / src_fpath.name)
     return app
