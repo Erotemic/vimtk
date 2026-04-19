@@ -737,8 +737,8 @@ row1, row2 = vimtk.TextSelector.paragraph_range_at_cursor()
 text = vimtk.TextSelector.text_between_lines(row1, row2)
 text = util.ensure_unicode(text)
 
-from vimtk._dirty import format_multiple_paragraph_sentences
-wrapped_text = format_multiple_paragraph_sentences2(text, **config)
+from vimtk._dirty import format_single_paragraph_sentences
+wrapped_text = format_single_paragraph_sentences(text, **config)
 
 vimtk.TextInsertor.insert_between_lines(wrapped_text, row1, row2)
 
