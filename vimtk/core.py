@@ -17,7 +17,7 @@ import pathlib
 import logging
 from vimtk import util
 from vimtk.util import (
-    dict_union, ensure_unicode, indent, codeblock, group_items, expandpath)
+    dict_union, indent, codeblock, group_items, expandpath)
 
 try:
     import ubelt as ub
@@ -429,7 +429,7 @@ class TextSelector:
         import vim
         # lines = vim.eval('getline({}, {})'.format(lnum1, lnum2))
         lines = vim.current.buffer[lnum1 - 1:lnum2]
-        lines = [ensure_unicode(line) for line in lines]
+        # lines = [ensure_unicode(line) for line in lines]
         try:
             if len(lines) == 0:
                 pass
@@ -504,7 +504,8 @@ class TextSelector:
 
         def is_paragraph_end(line_):
             # Hack, par_marker_list should be an argument
-            striped_line = ensure_unicode(line_.strip())
+            # striped_line = ensure_unicode(line_.strip())
+            striped_line = line_.strip()
             isblank = striped_line == ''
             if isblank:
                 return True

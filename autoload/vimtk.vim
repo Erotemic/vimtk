@@ -735,7 +735,11 @@ config = util.dict_union(default_config, kwargs)
 
 row1, row2 = vimtk.TextSelector.paragraph_range_at_cursor()
 text = vimtk.TextSelector.text_between_lines(row1, row2)
-text = util.ensure_unicode(text)
+if isinstance(text, bytes):
+    text = text.decode("utf8")
+elif not isinstance(text, str):
+    raise ValueError("unknown input type {!r}".format(text))
+
 
 from vimtk._dirty import format_single_paragraph_sentences
 wrapped_text = format_single_paragraph_sentences(text, **config)
